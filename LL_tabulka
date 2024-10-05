@@ -1,2 +1,7 @@
-<PROG> ::= <STATEMENT>, <NEXT_STATEMENT>
-<STATEMENT> ::= <CONST> | <FCE>
+PROG ::= STATEMENT, NEXT_STATEMENT
+STATEMENT ::= CONST | FCE
+NEXT_STATEMENT ::= STATEMENT, NEXT_STATEMENT | ε
+
+FCE ::= token_pub, token_fn, token_ id, token_(, <ARGS>, token_), token_typ, token_{, CODE, token_}
+
+CONST ::= token_const, token_id, token_:, token_typ, token_=, EXPR, token_;
