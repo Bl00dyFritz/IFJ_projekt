@@ -7,7 +7,6 @@
  * TODO: V FSM prepísať Intiger na Integer, niektoré stavy sa nepoužívajú (treba odstrániť z sState)
  *       Pridať v FSM State_Array z Start -> Typeid a z FuncID -> TypeId
  *       Pridať v FSM State_Array z Typeid -> State_FuncID_1
- *       Ešte vyriešit ID funkce IFJ24 s predponou ifj. (pred a za bodkou môže byť hocikoľko whitespace)
  *       Pridat v FSM State_Check_Float z Integer -> Float 
  *       Pridat v FSM State_Check_Exp z Float -> Exp, ten pojde do Exp a Signed/Unsigned
  *       Potom Signed/Unsigned pojde do Exp (Signed/Unsigned -> Exp)
