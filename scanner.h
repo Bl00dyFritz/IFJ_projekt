@@ -165,8 +165,6 @@ int PrologueScan();
 
 void CheckKW(tToken *token, sStr *string);
 
-int NextToken(tToken *token, int character);
-
 int GetToken(tToken *token, int c);
 
 int String_Init(sStr *str);

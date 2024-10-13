@@ -13,8 +13,8 @@ void SetSourceFile(FILE *f) {
 }
 
 int GetToken(tToken *token, int c) {
-    sStr *str = NULL;
-    if (String_Init(str)) return INTERNAL_COMP_ERROR;
+    sStr str;
+    if (String_Init(&str)) return INTERNAL_COMP_ERROR;
     token->state = State_Start;
     token->type = Token_Empty;
     char HexVal[3] = {0};
@@ -78,6 +78,7 @@ int GetToken(tToken *token, int c) {
                         break;
                     case '[':
                             token->state = State_Array;
+                            String_Add(&str, c);
                         break;
                     case '?':
                             token->state = State_TypeID;
@@ -89,17 +90,19 @@ int GetToken(tToken *token, int c) {
                     default:
                         if (c == 'i') {
                             token->state = State_IFJ_1;
-                            String_Add(str, c);
+                            String_Add(&str, c);
                         } else if (isalpha(c) || c == '_') {
                             token->state = State_FuncID;
                             token->type = Token_FuncID;
+                            String_Add(&str, c);
                         } else if (isdigit(c)) {
                             token->state = State_Integer;
                             token->type = Token_Integer;
+                            String_Add(&str, c);
                         } else if (isspace(c) || c == '\n' || c == '\t') {
                             token->state = State_Start;
                         } else {
-                            String_Free(str);
+                            String_Free(&str);
                             return LEXICAL_ERROR;
                         }
                         break;
@@ -107,7 +110,7 @@ int GetToken(tToken *token, int c) {
                 break;
             case State_IFJ_1:
                 if (c == 'f') {
-                    String_Add(str, c);
+                    String_Add(&str, c);
                     token->state = State_IFJ_2;
                 } else if (isalnum(c)) {
                     ungetc(c, file);
@@ -116,7 +119,7 @@ int GetToken(tToken *token, int c) {
                 break;
             case State_IFJ_2:
                 if (c == 'j') {
-                    String_Add(str, c);
+                    String_Add(&str, c);
                     WhiteSpaceCount = 0;
                     token->state = State_IFJ_3;
                 } else {
@@ -129,7 +132,7 @@ int GetToken(tToken *token, int c) {
                     WhiteSpaceCount++;
                     token->state = State_IFJ_3;
                 } else if (c == '.') {
-                    String_Add(str, c);
+                    String_Add(&str, c);
                     WhiteSpaceCount = 0;
                     token->state = State_IFJ_4; 
                 } else if (WhiteSpaceCount == 0) {              //Mozu byt funkcie alebo premenne menom ifjnnnnn  
@@ -151,7 +154,7 @@ int GetToken(tToken *token, int c) {
                 break;
             case State_BuildIn_Func:
                 if (isalnum(c)) {
-                    String_Add(str, c);
+                    String_Add(&str, c);
                 } else {
                     token->type = Token_BuildIn_Func;
                     ungetc(c, file);
@@ -160,43 +163,46 @@ int GetToken(tToken *token, int c) {
                 break;
             case State_FuncID:
                 if (isalpha(c) || c == '_' || c == '.') {
-                    String_Add(str, c);
+                    String_Add(&str, c);
                 } else if (isdigit(c)) {
                     token->state = State_TypeID;
                     token->type = Token_TypeID;
                     ungetc(c, file);
                 } else {
                     ungetc(c, file);
-                    CheckKW(token, str);
+                    CheckKW(token, &str);
                     Completed = true;
                 }
                 break;
             case State_Array:
                 if (c == ']') {
+                    String_Add(&str, c);
                     token->state = State_TypeID;
                     token->type = Token_TypeID;
                 } else if (c == isspace(c)) {
                     token->state = State_Array;
-                } else {
-                    String_Free(str);
+                } else if (isspace(c)) {
+                    token->state = State_Array;
+                } else { 
+                    String_Free(&str);
                     return LEXICAL_ERROR;
                 }
                 break;
             case State_TypeID:
                 if (isdigit(c)) {
-                    String_Add(str, c);
+                    String_Add(&str, c);
                 } else if (isalpha(c) || c == '_' || c == '.') {
                     token->type= Token_FuncID;
                     token->state = State_FuncID_1;
                 } else {
                     ungetc(c, file);
-                    CheckKW(token, str);
+                    CheckKW(token, &str);
                     Completed = true;
                 }
                 break;
             case State_FuncID_1:
                 if (isalnum(c) || c == '_' || c == '.') { 
-                    String_Add(str, c);
+                    String_Add(&str, c);
                 } else {
                     ungetc(c, file);
                     Completed = true;
@@ -204,19 +210,19 @@ int GetToken(tToken *token, int c) {
                 break;
             case State_Integer:
                 if (isdigit(c)) {
-                    String_Add(str, c);
+                    String_Add(&str, c);
                 } else if (c == '.') {
-                    String_Add(str, c);
+                    String_Add(&str, c);
                     token->state = State_Check_Float;
                 } else if (c == 'e' || c == 'E') {
-                    String_Add(str, c);
+                    String_Add(&str, c);
                     token->state = State_Exp;
                 } else {
                     ungetc(c, file);
                     char *tmp = NULL;
-                    unsigned long val = strtoul(str->string, &tmp, 10);
+                    unsigned long val = strtoul(str.string, &tmp, 10);
                     if (*tmp != '\0') {
-                        String_Free(str);
+                        String_Free(&str);
                         fprintf(stderr, "Error: Failed to convert string to integer\n");
                         return INTERNAL_COMP_ERROR;
                     }
@@ -230,22 +236,22 @@ int GetToken(tToken *token, int c) {
                     token->state = State_Float;
                     ungetc(c, file);
                 } else {
-                    String_Free(str);
+                    String_Free(&str);
                     return LEXICAL_ERROR;
                 }
                 break;
             case State_Float:
                 if (isdigit(c)) {
-                    String_Add(str, c);
+                    String_Add(&str, c);
                 } else if (c == 'e' || c == 'E') {
                     token->state = State_Exp;
-                    String_Add(str, c);
+                    String_Add(&str, c);
                 } else {
                     ungetc(c, file);
                     char *tmp = NULL;
-                    double val = strtod(str->string, &tmp);
+                    double val = strtod(str.string, &tmp);
                     if (*tmp != '\0') {
-                        String_Free(str);
+                        String_Free(&str);
                         fprintf(stderr, "Error: Failed to convert string to double\n");
                         return INTERNAL_COMP_ERROR;
                     }
@@ -257,25 +263,25 @@ int GetToken(tToken *token, int c) {
             case State_Check_Exp:
                 if (c == '+' || c == '-') {
                     token->state = State_UnSigned_Signed_Exp;
-                    String_Add(str, c);
+                    String_Add(&str, c);
                 } else if (isdigit(c)) {
                     token->state = State_Exp;
                     ungetc(c, file);
                 } else {
-                    String_Free(str);
+                    String_Free(&str);
                     fprintf(stderr, "Error: Exponent (E/e) must be followed by a digit or plus/minus sign\n");
                     return LEXICAL_ERROR;
                 }
                 break;
             case State_Exp:
                 if (isdigit(c)) {
-                    String_Add(str, c);
+                    String_Add(&str, c);
                 } else {
                     ungetc(c, file);
                     char *tmp = NULL;
-                    double val = strtod(str->string, &tmp);
+                    double val = strtod(str.string, &tmp);
                     if (*tmp != '\0') {
-                        String_Free(str);
+                        String_Free(&str);
                         fprintf(stderr, "Error: Failed to convert string to float\n");
                         return INTERNAL_COMP_ERROR;
                     }
@@ -289,14 +295,14 @@ int GetToken(tToken *token, int c) {
                     token->state = State_Exp;
                     ungetc(c, file);
                 } else {
-                    String_Free(str);
+                    String_Free(&str);
                     fprintf(stderr, "Error: Exponent with a sign (E+/-) must be followed by a digit\n");
                     return LEXICAL_ERROR;
                 }
                 break;
             case State_String:
                 if (c < 32) {
-                    String_Free(str);
+                    String_Free(&str);
                     fprintf(stderr, "Error: Unsupported characters\n");
                     return LEXICAL_ERROR;
                 } else if (c == '"') {
@@ -304,36 +310,36 @@ int GetToken(tToken *token, int c) {
                 } else if (c == '\\') {
                     token->state = State_Esc_Seq;
                 } else {
-                    String_Add(str, c);
+                    String_Add(&str, c);
                 }
                 break;
             case State_Esc_Seq:
                 switch (c) {
                     case 'n':
-                        String_Add(str, '\n');                                           
+                        String_Add(&str, '\n');                                           
                         token->state = State_String;
                         break;
                     case 'r':
-                        String_Add(str, '\r');
+                        String_Add(&str, '\r');
                         token->state = State_String;
                         break;
                     case 't':
-                        String_Add(str, '\t');
+                        String_Add(&str, '\t');
                         token->state = State_String;
                         break;
                     case '\\':
-                        String_Add(str, '\\');
+                        String_Add(&str, '\\');
                         token->state = State_String;
                         break;
                     case '"':
-                        String_Add(str, '\"');
+                        String_Add(&str, '\"');
                         token->state = State_String;
                         break;
                     case 'x':
                         token->state = State_HexVal;
                         break;
                     default:
-                        String_Free(str);
+                        String_Free(&str);
                         fprintf(stderr, "Error: Invalid escape sequence\n");
                         return LEXICAL_ERROR;
                 }
@@ -343,7 +349,7 @@ int GetToken(tToken *token, int c) {
                     HexVal[0] = c;
                     token->state = State_Hex_1;
                 } else {
-                    String_Free(str);
+                    String_Free(&str);
                     fprintf(stderr, "Error: Invalid Hexadecimal number\n");
                     return LEXICAL_ERROR;
                 }
@@ -356,14 +362,14 @@ int GetToken(tToken *token, int c) {
                     char *tmp = NULL;
                     long val = strtol(HexVal, &tmp, 16);
                     if (*tmp != '\0') {
-                        String_Free(str);
+                        String_Free(&str);
                         fprintf(stderr, "Error: Failed to convert string to Hexadecimal number\n");
                         return INTERNAL_COMP_ERROR;
                     }
-                    String_Add(str, val); 
+                    String_Add(&str, val); 
                     token->state = State_String;
                 } else {
-                    String_Free(str);
+                    String_Free(&str);
                     fprintf(stderr, "Error: Invalid Hexadecimal number\n");
                     return LEXICAL_ERROR;
                 }
@@ -457,7 +463,7 @@ int GetToken(tToken *token, int c) {
                     Completed = true;
                     ungetc(c, file);
                 } else {
-                    String_Free(str);
+                    String_Free(&str);
                     return LEXICAL_ERROR;
                 }
                 break;
@@ -465,7 +471,7 @@ int GetToken(tToken *token, int c) {
                 if (c == '=') {
                     token->state = State_Not_Equal;
                 } else {
-                    String_Free(str);
+                    String_Free(&str);
                     return LEXICAL_ERROR;
                 }
                 break;
@@ -495,17 +501,17 @@ int GetToken(tToken *token, int c) {
             case State_EOF:
                 token->type = Token_EOF;
                 Completed = true;
-                ungetc(c, file);
+
                 break;
         }
     }
 
     if (token->type == Token_String || token->type == Token_FuncID || token->type == Token_TypeID || token->type == Token_BuildIn_Func) {
-        token->value.string = str->string;
+        token->value.string = str.string;
     } else {
-        String_Free(str);
+        String_Free(&str);
     } 
-
+    printf("%s ", str.string);
     return 0;
 }
 
@@ -553,24 +559,24 @@ void CheckKW(tToken *token, sStr *str) {
 }
 
 int PrologueScan() {
-    sStr *str = NULL;
+    sStr str;
     int c;
-    if (String_Init(str)) return INTERNAL_COMP_ERROR;
+    if (String_Init(&str)) return INTERNAL_COMP_ERROR;
 
     c = getc(file);
     while (c != ';') {
-        String_Add(str, c);
+        String_Add(&str, c);
         c = getc(file);
     }
-    String_Add(str, c);
+    String_Add(&str, c);
     
-    if (strcmp(str->string, "const ifj = @import(\"ifj24.zig\");")) {
-        String_Free(str);
+    if (strcmp(str.string, "const ifj = @import(\"ifj24.zig\");")) {
+        String_Free(&str);
         fprintf(stderr, "Error: The program has to start with a Prologue\n");
         return LEXICAL_ERROR;
     }
 
-    String_Free(str);
+    String_Free(&str);
     return 0;
 }
 
