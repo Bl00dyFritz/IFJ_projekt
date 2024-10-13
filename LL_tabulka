@@ -1,5 +1,6 @@
-PROG ::= STATEMENT NEXT_STATEMENT
-STATEMENT ::= CONST_INIT | FCE
+PROG ::= PROLOG STATEMENT NEXT_STATEMENT
+PROLOG ::= token_const token_ifj token_= token_@ token_import token_( token_" token_ifj24.zig token_" token_) token_;
+STATEMENT ::= FCE
 NEXT_STATEMENT ::= STATEMENT NEXT_STATEMENT | ε
 
 FCE ::= token_pub token_fn token_id token_( ARGS_DEF token_) TYP token_{ FCE_BODY token_}
@@ -7,11 +8,11 @@ FCE_ID ::= token_ifj token_. IMPORTED_ID | token_id
 
 IMPORTED_ID ::= token_readstr | token_readi32 | token_readf64 | token_write | token_i2f | token_f2i | token_string | token_length | token_concat | token_substring | token_strcmp | token_ord | token_chr 
 
-CONST_INIT ::= CONST_DECL CONST_DEF
-VAR_INIT ::= VAR_DECL VAR_DEF
+CONST_INIT ::= CONST_DECL CONST_DEF token_;
+VAR_INIT ::= VAR_DECL VAR_DEF token_;
 
-CONST_DEF ::= token_= EXPR token_; | ε
-VAR_DEF ::= token_= EXPR token_; | ε
+CONST_DEF ::= token_= EXPR | ε
+VAR_DEF ::= token_= EXPR | ε
 TYPE_DECL ::= token_: TYP | ε
 TYP ::= token_i32 | token_f64 | token_[]u8 | token_void
 CONST_DECL ::= token_const token_id TYPE_DECL
@@ -22,13 +23,14 @@ ARG_DEF ::= token_id token_: TYP
 NEXT_ARG_DEF ::= token_, ARGS_DEF | ε
 
 FCE_BODY ::= BODY RETURN
-RETURN ::= token_return EXPR token_; | ε
+RETURN ::= token_return RET_EXPR token_; | ε
+RET_EXPR ::= EXPR | ε
 BODY ::= BODY_STATEMENT NEXT_BODY_STATEMENT
 NEXT_BODY_STATEMENT ::= BODY_STATEMENT NEXT_BODY_STATEMENT | ε
 
 BODY_STATEMENT ::= IF_BLOCK | WHILE_LOOP | VAR_INIT | CONST_INIT | ASSIGN_VAL | FCE_CALL token_;
 
-ASSIGN_VAL ::= token_id token_= EXPR
+ASSIGN_VAL ::= token_id token_= EXPR token_;
 
 IF_BLOCK ::= IF ELSE
 IF ::= token_if token_( EXPR token_) NON_NULL_ID token_{ BODY token_}
@@ -38,7 +40,12 @@ NON_NULL_ID ::= token_| token_id token_| | ε
 
 WHILE_LOOP ::= token_while token_( EXPR token_) NON_NULL_ID token_{ BODY token_}
 
-FCE_CALL ::=FCE_ID token_( ARGS token_)
+FCE_CALL ::= FCE_ID token_( ARGS token_)
 ARGS ::= ARG NEXT_ARG | ε
 ARG ::= token_id | EXPR
 NEXT_ARG ::= token_, ARGS | ε
+
+EXPR ::= OPERAND EXPR_NEXT
+OPERAND ::= FCE_CALL | token_id | token_val | token_( EXPR token_)
+EXPR_NEXT ::= OPERATOR OPERAND EXPR_NEXT | ε
+OPERATOR ::= token_* | token_/ | token_+ | token_- | token_== | token_!= | token_< | token_> | token_<= | token_>=
