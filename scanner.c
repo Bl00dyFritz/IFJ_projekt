@@ -62,7 +62,7 @@ int GetToken(tToken *token, int c) {
                             token->state = State_Dot;
                         break;
                     case '=':
-                            token->state = State_Assign;
+                            token->state = State_Assign_or_Equal;
                         break;
                     case '<':
                             token->state = State_Lesser_Equal;
@@ -179,8 +179,6 @@ int GetToken(tToken *token, int c) {
                     String_Add(&str, c);
                     token->state = State_TypeID;
                     token->type = Token_TypeID;
-                } else if (c == isspace(c)) {
-                    token->state = State_Array;
                 } else if (isspace(c)) {
                     token->state = State_Array;
                 } else { 
@@ -244,7 +242,7 @@ int GetToken(tToken *token, int c) {
                 if (isdigit(c)) {
                     String_Add(&str, c);
                 } else if (c == 'e' || c == 'E') {
-                    token->state = State_Exp;
+                    token->state = State_Check_Exp;
                     String_Add(&str, c);
                 } else {
                     ungetc(c, file);
@@ -358,7 +356,6 @@ int GetToken(tToken *token, int c) {
                 if (isdigit(c)) {
                     HexVal[1] = c;
                     HexVal[2] = '\0';
-                    ungetc(c, file);
                     char *tmp = NULL;
                     long val = strtol(HexVal, &tmp, 16);
                     if (*tmp != '\0') {
@@ -389,8 +386,11 @@ int GetToken(tToken *token, int c) {
                 }
                 break;
             case State_Comment:
-                if (c == '\n' || c == EOF) {
+                if (c == '\n') {
                     token->state = State_Start;
+                } else if (c == EOF) {
+                    token->type = Token_EOF;
+                    Completed = true;
                 }
                 break;
             case State_Lpar:
@@ -448,23 +448,15 @@ int GetToken(tToken *token, int c) {
                 Completed = true;
                 ungetc(c, file);
                 break;
-            case State_Assign:
+            case State_Assign_or_Equal:
                 if (c != '=') {
                     token->type = Token_Assign;
                     Completed = true;
                     ungetc(c, file);
-                } else {
-                    token->state = State_Equal;
-                }
-                break;
-            case State_Equal:
-                if (c == '=') {
+                } else if (c == '=') {
                     token->type = Token_Equal;
                     Completed = true;
                     ungetc(c, file);
-                } else {
-                    String_Free(&str);
-                    return LEXICAL_ERROR;
                 }
                 break;
             case State_Ex_Mark:
@@ -511,7 +503,7 @@ int GetToken(tToken *token, int c) {
     } else {
         String_Free(&str);
     } 
-    printf("%s ", str.string);
+
     return 0;
 }
 
