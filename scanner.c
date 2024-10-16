@@ -162,7 +162,7 @@ int GetToken(tToken *token, int c) {
                 }
                 break;
             case State_FuncID:
-                if (isalpha(c) || c == '_' || c == '.') {
+                if (isalpha(c) || c == '_') {
                     String_Add(&str, c);
                 } else if (isdigit(c)) {
                     token->state = State_TypeID;

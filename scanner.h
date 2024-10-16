@@ -4,7 +4,7 @@
  * @brief Hlavičkový súbor pre lexikálny analyzátor
  * @author Alexander Žikla, xziklaa00
  * 
- * TODO: V FSM prepísať Intiger na Integer, niektoré stavy sa nepoužívajú (treba odstrániť z sState)
+ * TODO: V FSM prepísať Intiger na Integer
  *       Pridať v FSM State_Array z Start -> Typeid a z FuncID -> TypeId
  *       Pridať v FSM State_Array z Typeid -> State_FuncID_1
  *       Pridat v FSM State_Check_Float z Integer -> Float 
@@ -103,11 +103,7 @@ typedef enum {
 
     Token_Quote,
     Token_Esc_Seq,
-    Token_HexVal,
-    Token_Hex_1,
 
-    Token_BackSLash,
-    Token_DoubleBackSlash,
     Token_Lpar,
     Token_Rpar,
     Token_Lbrack,
@@ -116,7 +112,6 @@ typedef enum {
     Token_Semicolon,
     Token_Dot,
     Token_Comma,
-    Token_Ex_Mark,
 
     Token_EOF,
     Token_BuildIn_Func,
