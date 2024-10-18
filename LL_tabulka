@@ -6,7 +6,7 @@ NEXT_STATEMENT ::= STATEMENT NEXT_STATEMENT | ε
 FCE ::= token_pub token_fn token_id token_( ARGS_DEF token_) TYP token_{ FCE_BODY token_}
 FCE_ID ::= token_ifj token_. IMPORTED_ID | token_id
 
-IMPORTED_ID ::= token_readstr | token_readi32 | token_readf64 | token_write | token_i2f | token_f2i | token_string | token_length | token_concat | token_substring | token_strcmp | token_ord | token_chr 
+IMPORTED_ID ::= token_readstr | token_readi32 | token_readf64 | token_write | token_i2f | token_f2i | token_string | token_length | token_concat | token_substring | token_strcmp | token_ord | token_chr
 
 CONST_INIT ::= CONST_DECL CONST_DEF token_;
 VAR_INIT ::= VAR_DECL VAR_DEF token_;
@@ -19,7 +19,7 @@ CONST_DECL ::= token_const token_id TYPE_DECL
 VAR_DECL ::= token_var token_id TYPE_DECL
 
 ARGS_DEF ::= ARG_DEF NEXT_ARG_DEF | ε
-ARG_DEF ::= token_id token_: TYP 
+ARG_DEF ::= token_id token_: TYP
 NEXT_ARG_DEF ::= token_, ARGS_DEF | ε
 
 FCE_BODY ::= BODY RETURN
@@ -46,6 +46,7 @@ ARG ::= token_id | EXPR
 NEXT_ARG ::= token_, ARGS | ε
 
 EXPR ::= OPERAND EXPR_NEXT
-OPERAND ::= FCE_CALL | token_id | token_val | token_( EXPR token_)
+OPERAND ::= FCE_CALL | token_id | VAL | token_( EXPR token_)
+VAL ::= token_int | token_float
 EXPR_NEXT ::= OPERATOR OPERAND EXPR_NEXT | ε
 OPERATOR ::= token_* | token_/ | token_+ | token_- | token_== | token_!= | token_< | token_> | token_<= | token_>=
