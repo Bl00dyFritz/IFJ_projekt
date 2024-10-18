@@ -54,6 +54,7 @@ ARG ::= token_id | EXPR
 NEXT_ARG ::= token_, ARGS | ε
 
 EXPR ::= OPERAND EXPR_NEXT
-OPERAND ::= FCE_CALL | token_id | token_val | token_( EXPR token_)
+OPERAND ::= FCE_CALL | token_id | VAL | token_( EXPR token_)
+VAL ::= token_int | token_float
 EXPR_NEXT ::= OPERATOR OPERAND EXPR_NEXT | ε
 OPERATOR ::= token_* | token_/ | token_+ | token_- | token_== | token_!= | token_< | token_> | token_<= | token_>=
