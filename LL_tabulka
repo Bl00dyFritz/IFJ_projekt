@@ -1,5 +1,5 @@
 PROG ::= PROLOG STATEMENT NEXT_STATEMENT
-PROLOG ::= token_const token_ifj token_= token_@ token_import token_( token_" token_ifj24.zig token_" token_) token_;
+PROLOG ::= token_const token_ifj token_= token_@import token_( token_"ifj24.zig" token_) token_;
 STATEMENT ::= FCE
 NEXT_STATEMENT ::= STATEMENT NEXT_STATEMENT | ε
 
@@ -14,7 +14,9 @@ VAR_INIT ::= VAR_DECL VAR_DEF token_;
 CONST_DEF ::= token_= EXPR | ε
 VAR_DEF ::= token_= EXPR | ε
 TYPE_DECL ::= token_: TYP | ε
-TYP ::= token_i32 | token_f64 | token_[]u8 | token_void
+NULL_TYP ::= token_?i32 | token_?f64 | token_?[]u8
+NN_TYP ::= token_i32 | token_f64 | token_[]u8 | token_void
+TYP ::= NULL_TYP | NN_TYP
 CONST_DECL ::= token_const token_id TYPE_DECL
 VAR_DECL ::= token_var token_id TYPE_DECL
 
