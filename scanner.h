@@ -32,6 +32,7 @@
 typedef enum {
     State_Start,
     State_FuncID,
+    State_Check_TypeID,
     State_TypeID,
     State_FuncID_1,
     State_Array,
@@ -91,7 +92,17 @@ typedef enum {
 
     Token_FuncID,
     Token_TypeID,
-    Token_KeyWord,
+    
+    Token_const,
+    Token_else,
+    Token_fn,
+    Token_if,
+    Token_null,
+    Token_pub,
+    Token_return,
+    Token_var,
+    Token_void,
+    Token_while,
 
     Token_Assign,
     Token_Equal,

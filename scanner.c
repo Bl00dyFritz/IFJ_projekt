@@ -81,8 +81,7 @@ int GetToken(tToken *token, int c) {
                             String_Add(&str, c);
                         break;
                     case '?':
-                            token->state = State_TypeID;
-                            token->type = Token_TypeID;
+                            token->state = State_Check_TypeID;
                         break;
                     case EOF:
                             token->state = State_EOF;
@@ -166,10 +165,10 @@ int GetToken(tToken *token, int c) {
                     String_Add(&str, c);
                 } else if (isdigit(c)) {
                     token->state = State_TypeID;
-                    token->type = Token_TypeID;
                     ungetc(c, file);
                 } else {
                     ungetc(c, file);
+                    token->type = Token_FuncID;
                     CheckKW(token, &str);
                     Completed = true;
                 }
@@ -186,12 +185,23 @@ int GetToken(tToken *token, int c) {
                     return LEXICAL_ERROR;
                 }
                 break;
+            case State_Check_TypeID:
+                if (c == 'f' || c == 'i') {
+                    String_Add(&str, c);
+                    token->state = State_TypeID;
+                    token->type = Token_FuncID;
+                } else if (c == '[') {
+                    String_Add(&str, c);
+                    token->state = State_Array;
+                }
+                break;
             case State_TypeID:
                 if (isdigit(c)) {
                     String_Add(&str, c);
-                } else if (isalpha(c) || c == '_' || c == '.') {
+                } else if (isalpha(c) || c == '_') {
                     token->type= Token_FuncID;
                     token->state = State_FuncID_1;
+                    ungetc(c, file);
                 } else {
                     ungetc(c, file);
                     CheckKW(token, &str);
@@ -199,7 +209,7 @@ int GetToken(tToken *token, int c) {
                 }
                 break;
             case State_FuncID_1:
-                if (isalnum(c) || c == '_' || c == '.') { 
+                if (isalnum(c) || c == '_') { 
                     String_Add(&str, c);
                 } else {
                     ungetc(c, file);
@@ -214,7 +224,7 @@ int GetToken(tToken *token, int c) {
                     token->state = State_Check_Float;
                 } else if (c == 'e' || c == 'E') {
                     String_Add(&str, c);
-                    token->state = State_Exp;
+                    token->state = State_Check_Exp;
                 } else {
                     ungetc(c, file);
                     char *tmp = NULL;
@@ -414,9 +424,9 @@ int GetToken(tToken *token, int c) {
                 ungetc(c, file);
                 break;
             case State_Plus:
-                    token->type = Token_Plus;
-                    Completed = true;
-                    ungetc(c, file);
+                token->type = Token_Plus;
+                Completed = true;
+                ungetc(c, file);
                 break;
             case State_Minus:
                 token->type = Token_Minus;
@@ -509,43 +519,43 @@ int GetToken(tToken *token, int c) {
 
 void CheckKW(tToken *token, sStr *str) {
     if (strcmp(str->string, "const") == 0) {
-        token->type = Token_KeyWord;
+        token->type = Token_const;
         token->value.keyword = KW_const;
     } else if (strcmp(str->string, "else") == 0) {
-        token->type = Token_KeyWord;
+        token->type = Token_else;
         token->value.keyword = KW_else;
     } else if (strcmp(str->string, "fn") == 0) {
-        token->type = Token_KeyWord;
+        token->type = Token_fn;
         token->value.keyword = KW_fn;
     } else if (strcmp(str->string, "if") == 0) {
-        token->type = Token_KeyWord;
+        token->type = Token_if;
         token->value.keyword = KW_if;
     } else if (strcmp(str->string, "i32") == 0) {
-        token->type = Token_KeyWord;
+        token->type = Token_TypeID;
         token->value.keyword = KW_i32;
     } else if (strcmp(str->string, "f64") == 0) {
-        token->type = Token_KeyWord;
+        token->type = Token_TypeID;
         token->value.keyword = KW_f64;
     } else if (strcmp(str->string, "null") == 0) {
-        token->type = Token_KeyWord;
+        token->type = Token_null;
         token->value.keyword = KW_null;
     } else if (strcmp(str->string, "pub") == 0) {
-        token->type = Token_KeyWord;
+        token->type = Token_pub;
         token->value.keyword = KW_pub;
     } else if (strcmp(str->string, "return") == 0) {
-        token->type = Token_KeyWord;
+        token->type = Token_return;
         token->value.keyword = KW_return;
     } else if (strcmp(str->string, "u8") == 0) {
-        token->type = Token_KeyWord;
+        token->type = Token_TypeID;
         token->value.keyword = KW_u8;
     } else if (strcmp(str->string, "var") == 0) {
-        token->type = Token_KeyWord;
+        token->type = Token_var;
         token->value.keyword = KW_var;
     } else if (strcmp(str->string, "void") == 0) {
-        token->type = Token_KeyWord;
+        token->type = Token_void;
         token->value.keyword = KW_void;
     } else if (strcmp(str->string, "while") == 0) {
-        token->type = Token_KeyWord;
+        token->type = Token_while;
         token->value.keyword = KW_while;
     }
 }
