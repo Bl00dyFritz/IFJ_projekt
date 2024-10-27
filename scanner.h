@@ -36,6 +36,8 @@ typedef enum {
     State_TypeID,
     State_FuncID_1,
     State_Array,
+    State_Array_1,
+    State_Array_2,
 
     State_IFJ_1,
     State_IFJ_2,
@@ -91,7 +93,6 @@ typedef enum {
     Token_String,
 
     Token_FuncID,
-    Token_TypeID,
     
     Token_const,
     Token_else,
@@ -103,6 +104,9 @@ typedef enum {
     Token_var,
     Token_void,
     Token_while,
+    Token_i32,
+    Token_f64,
+    Token_u8,
 
     Token_Assign,
     Token_Equal,
