@@ -12,8 +12,9 @@ void SetSourceFile(FILE *f) {
     file = f;
 }
 
-int GetToken(tToken *token, int c) {
-    sStr str;
+int GetToken(tToken *token) {
+    int c;
+	sStr str;
     if (String_Init(&str)) return INTERNAL_COMP_ERROR;
     token->state = State_Start;
     token->type = Token_Empty;

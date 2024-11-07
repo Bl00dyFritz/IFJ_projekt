@@ -4,18 +4,51 @@
 * @author Lucie Pojslová (xpojsll00)
 */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include "parser.h"
+#include "error.h"
+#include "scanner.h"
 
-int statement(){ //statement in a program
-    return;
+int statement(tToken *in_t){ //statement in a program
+	function(in_t);
+	return;
 }
 
 int next_statement(){ //next statement in a program
-    return;
+	tToken token;
+	GetToken(&token);
+	switch(token->type){
+		case Token_pub: statement(&token);
+						next_statement();
+						break;
+		case Token_EOF: exit(0);
+		default: exit(100);//TODO dat spravny error code
+	}
+	return;
 }
 
-int function(){ //declaration of a function
-    return;
+int function(tToken *in_t){ //declaration of a function
+    tToken token;
+	tTokenType cmp_type = Token_pub;
+	if (in_t) token = *in_t;
+	else GetToken(&token);
+	int err_found = 1;
+	while (token->type==cmp_type){
+		if(cmp_type==Token_Lpar) {
+			err_found = 0;
+			break;
+		}
+		GetToken(&token);
+		switch cmp_type{
+			case Token_pub: cmp_type=Token_fn; break;
+			case Token_fn: cmp_type=Token_FuncID; break;
+			case Token_FuncID: cmp_type=Token_Lpar; break;
+			default: exit(100)//TODO dat spravny err code
+		}
+		argument_list_def();
+	}
+	return;
 }
 
 int imported_ID(){ //imported function identifiers
