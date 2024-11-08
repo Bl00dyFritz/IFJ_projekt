@@ -21,6 +21,7 @@ typedef struct param_type{
 //data uzlu pro f-ce
 typedef struct function_vals{
 	tParam *params;		//pole parametru
+	int paramCnt;		//velikost pole parametru
 	tTokenType ret_type;//navratovy typ
 	tBstNode *loc_bst;	//odkaz na lokalni vyhledavaci strom
 	bool defined;		//ulozeni ci f-ce byla definovana
@@ -60,5 +61,8 @@ void BstDelete(tBstNode **tree, char *key);
 void BstDispose(tBstNode **tree);
 
 void ReplaceByRightmost(tBstNode *target, tBstNode **tree);
+void ReplaceByLeftmost(tBstNode *target, tBstNode **tree);
+int CheckHeight(tBstNode **tree);
+void FreeNodeContent(tBstNode **tree);
 
 #endif
