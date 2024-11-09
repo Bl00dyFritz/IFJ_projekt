@@ -18,12 +18,12 @@
 void FreeNodeContent(tBstNode **tree){
 	if (!tree) exit(99);
 	if ((*tree)->content.type==VARIABLE)
-		free((*tree)->content.value->value);
+		free(((tVarVals*)(*tree)->content.value)->value);
 	else{
-		for (int i = 0; i<(*tree)->content.value.paramCnt; i++){
-			free((*tree)->content.value->params[i]->name);
+		for (int i = 0; i<((tFunctionVals*)(*tree)->content.value)->paramCnt; i++){
+			free(((tFunctionVals*)(*tree)->content.value)->params[i].name);
 		}
-		free((*tree)->content.value->params);
+		free(((tFunctionVals*)(*tree)->content.value)->params);
 		free((*tree)->content.value);
 	}
 }
@@ -35,6 +35,65 @@ void FreeNodeContent(tBstNode **tree){
 void BstInit(tBstNode **tree){
 	if (!tree) exit(99);
 	(*tree) = NULL;
+}
+
+/**
+ * @brief Pomocna funkce na rotace stromu o jeden uzel doleva pri vnejsi nevyvazenost
+ * @param tree Odkaz na strom k rotaci
+ */
+void RotLeft(tBstNode **tree){
+	if (!tree) exit(99);
+	if(!(*tree)) return;
+	tBstNode *tmp = (*tree)->right;
+	(*tree)->right = tmp->left;
+	tmp->left = (*tree);
+	(*tree) = tmp;
+}
+
+
+/**
+ * @brief Pomocna funkce na rotace stromu o jeden uzel doprava pri vnejsi nevyvazenost
+ * @param tree Odkaz na strom k rotaci
+ */
+void RotRight(tBstNode **tree){
+	if (!tree) exit(99);
+	if (!(*tree)) return;
+	tBstNode *tmp = (*tree)->left;
+	(*tree)->left = tmp->right;
+	tmp->right = (*tree);
+	(*tree) = tmp;
+}
+
+/**
+ * @brief Pomocna funkce na rotace stromu o jeden uzel doleva pri vnitrni nevyvazenost
+ * @param tree Odkaz na strom k rotaci
+ */
+void RotRLeft(tBstNode **tree){
+	if (!tree) exit (99);
+	if (!(*tree)) return;
+	tBstNode *tmpA = (*tree);
+	tBstNode *tmpB = (*tree)->right;
+	(*tree) = tmpB->left;
+	tmpA->right = (*tree)->left;
+	tmpB->left = (*tree)->right;
+	(*tree)->left = tmpA;
+	(*tree)->right = tmpB;
+}
+
+/**
+ * @brief Pomocna funkce na rotace stromu o jeden uzel doprava pri vnitrni nevyvazenost
+ * @param tree Odkaz na strom k rotaci
+ */
+void RotLRight(tBstNode **tree){
+	if (!tree) exit(99);
+	if (!(*tree)) return;
+	tBstNode *tmpA = (*tree);
+	tBstNode *tmpB = (*tree)->left;
+	(*tree) = tmpB->right;
+	tmpB->right = (*tree)->left;
+	tmpA->left = (*tree)->right;
+	(*tree)->left = tmpB;
+	(*tree)->right = tmpA;
 }
 
 /**
@@ -115,7 +174,7 @@ void ReplaceByLeftmost(tBstNode *target, tBstNode **tree){
 		target->content.type = (*tree)->content.type;
 		if ((*tree)->right){
 			tBstNode *tmp = (*tree)->right;
-			(*tree)->key = tmp>key;
+			(*tree)->key = tmp->key;
 			(*tree)->content.value = tmp->content.value;
 			(*tree)->content.type = tmp->content.type;
 			(*tree)->left = tmp->left;
@@ -132,18 +191,69 @@ void ReplaceByLeftmost(tBstNode *target, tBstNode **tree){
 
 /**
  * @brief Pomocne funkce ktera vraci velikost (pod)stromu
- * @param tree mereny strom
- * @return vyska stromu jako cele cislo int
+ * @param tree Mereny strom
+ * @param first_break Ukazatel na nejnizi uzel kde vyvazenost je narusena, pokud neni narusena hodnota ukazatele se nemeni
+ * @return vyska stromu jako cele cislo int; pokud je narisena vyskova vyvazenost vraci -1
  */
-int CheckHeight(tBstNode *tree){
+int CheckHeight(tBstNode *tree, tBstNode **first_break){
 	int hl, hr;
 	if (tree!=NULL){
-		hl = CheckHeight(tree->left);
-		hr = CheckHeight(tree->right);
-		if (hl>hr) return hl+1;
-		else return hr+1;
+		hl = CheckHeight(tree->left, first_break);
+		if (hl==-1) return -1;
+		hr = CheckHeight(tree->right, first_break);
+		if (hr==-1) return -1;
+		if (hl>hr){
+			if(hl-hr>1){
+				*first_break = tree;
+				return -1;
+			}
+			return hl+1;
+		}
+		else{
+			if (hr-hl>1){
+				*first_break = tree;
+				return -1;
+			}
+			return hr+1;
+		}
 	}
 	else return 0;
+}
+
+/**
+ * @brief Funkce ktera kontroluje poruseni vyskove vyvazenosti a opravuje ji
+ * @param tree (Pod)strom ktery je kontrolovan
+ */
+void Realign (tBstNode **tree){
+	if(!tree) exit(99);
+	tBstNode **br = NULL;
+	if (CheckHeight(*tree, br)!=-1) return;
+	int lh = CheckHeight((*br)->left, br);
+	int rh = CheckHeight((*br)->right, br);
+	int cmp1;
+	int cmp2;
+	if (lh>rh){
+		cmp1='l';
+		lh = CheckHeight((*br)->left->left, br);
+		rh = CheckHeight((*br)->left->right, br);
+	}
+	else{
+		cmp1='r';
+		lh = CheckHeight((*br)->right->left, br);
+		rh = CheckHeight((*br)->right->left, br);
+	}
+	if(lh>rh) cmp2='l';
+	else cmp2='r';
+	switch(cmp1){
+		case 'l':
+			if (cmp2=='l') RotRight(br);
+			else if(cmp2=='r') RotLRight(br);
+			break;
+		case 'r':
+			if (cmp2=='l') RotRLeft(br);
+			else if(cmp2=='r') RotLeft(br);
+			break;
+	}
 }
 
 /**
@@ -153,6 +263,8 @@ int CheckHeight(tBstNode *tree){
  */
 void BstDelete(tBstNode **tree, char *key){
 	if (!tree || !key) exit(99);
+	if (!(*tree)) return;
+	
 	//TODO
 }
 

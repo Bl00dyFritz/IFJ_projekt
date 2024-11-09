@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include "scanner.h"
 
+struct bst_node;
+
 //vstupni parametr f-ce
 typedef struct param_type{
 	char *name;			//ID parametru
@@ -23,7 +25,7 @@ typedef struct function_vals{
 	tParam *params;		//pole parametru
 	int paramCnt;		//velikost pole parametru
 	tTokenType ret_type;//navratovy typ
-	tBstNode *loc_bst;	//odkaz na lokalni vyhledavaci strom
+	struct bst_node *loc_bst;	//odkaz na lokalni vyhledavaci strom
 	bool defined;		//ulozeni ci f-ce byla definovana
 }tFunctionVals;
 
@@ -62,7 +64,13 @@ void BstDispose(tBstNode **tree);
 
 void ReplaceByRightmost(tBstNode *target, tBstNode **tree);
 void ReplaceByLeftmost(tBstNode *target, tBstNode **tree);
-int CheckHeight(tBstNode **tree);
+int CheckHeight(tBstNode *tree, tBstNode **first_break);
 void FreeNodeContent(tBstNode **tree);
+
+void RotLeft(tBstNode **tree);
+void RotRight(tBstNode **tree);
+void RotRLeft(tBstNode **tree);
+void RotLRight(tBstNode **tree);
+void Realign(tBstNode **tree);
 
 #endif
