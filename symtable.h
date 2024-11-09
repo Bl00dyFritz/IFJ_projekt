@@ -57,9 +57,14 @@ typedef struct bst_node{
 }tBstNode;
 
 void BstInit(tBstNode **tree);
+
 void BstInsert(tBstNode **tree, char *key, tBstNodeContent content);
+void BstInsAndReal(tBstNode **tree, char *key, tBstNodeContent content);
+
 bool BstSearch(tBstNode *tree, char *key, tBstNodeContent **content);
+
 void BstDelete(tBstNode **tree, char *key);
+void BstDelAndReal(tBstNode **tree, char *key);
 void BstDispose(tBstNode **tree);
 
 void ReplaceByRightmost(tBstNode *target, tBstNode **tree);

@@ -128,7 +128,26 @@ bool BstSearch(tBstNode *tree, char *key, tBstNodeContent **content){
  */
 void BstInsert(tBstNode **tree, char *key, tBstNodeContent content){
 	if (!tree) exit(99);
-	//TODO 
+	if (!(*tree)){
+		(*tree) = (tBstNode *) malloc(sizeof(tBstNode));
+		if (!(*tree)) return;
+		(*tree)->key = (char *) malloc(sizeof(key));
+		if (!(*tree)->key) return;
+		strcpy((*tree)->key, key);
+		(*tree)->content = content;
+		(*tree)->left = NULL;
+		(*tree)->right = NULL;
+	}
+	else{
+		if (strcmp(key, (*tree)->key)<0)
+			BstInsert(&(*tree)->left, key, content);
+		else if (strcmp(key, (*tree)->key)>0)
+			BstInsert(&(*tree)->right, key, content);
+		else{
+			FreeNodeContent(tree);
+			(*tree)->content = content;
+		}
+	}
 }
 
 /**
@@ -264,8 +283,55 @@ void Realign (tBstNode **tree){
 void BstDelete(tBstNode **tree, char *key){
 	if (!tree || !key) exit(99);
 	if (!(*tree)) return;
-	
-	//TODO
+	if (strcmp(key, (*tree)->key)<0)
+		BstDelete(&(*tree)->left, key);
+	else if(strcmp(key, (*tree)->key)>0)
+		BstDelete(&(*tree)->right, key);
+	else{
+		if (!(*tree)->left && !(*tree)->right){
+			FreeNodeContent(tree);
+			free((*tree)->key);
+			free(*tree);
+			(*tree) = NULL;
+		}
+		else if ((*tree)->left && (*tree)->right){
+			ReplaceByRightmost((*tree), &(*tree)->left);
+		}
+		else{
+			tBstNode *tmp = NULL;
+			if (!(*tree)->left) tmp = (*tree)->right;
+			else if(!(*tree)->right) tmp = (*tree)->left;
+			free((*tree)->key);
+			(*tree)->key = tmp->key;
+			FreeNodeContent(tree);
+			(*tree)->content = tmp->content;
+			(*tree)->left = tmp->left;
+			(*tree)->right = tmp->right;
+			free(tmp);
+		}
+	}
+}
+/**
+ * @brief Funkce ktera prida prvek do stromu a pak ho vyrovna
+ * @param tree Odkaz na vypracovavany strom
+ * @param key Klic noveho prvku
+ * @param content Data noveho prvku
+ */
+void BstInsAndReal(tBstNode **tree, char *key, tBstNodeContent content){
+	if (!tree || !key) exit(99);
+	BstInsert(tree, key, content);
+	Realign(tree);
+}
+
+/**
+ * @brief Funkce ktera odstrani prvek ze stromu a pak vyrovna strom
+ * @param tree Cilovy strom
+ * @param key Klic prvku ktery se ma odstranit
+ */
+void BstDelAndReal(tBstNode **tree, char *key){
+	if (!tree || !key) exit(99);
+	BstDelete(tree, key);
+	Realign(tree);
 }
 
 /**
