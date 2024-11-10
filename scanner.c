@@ -582,7 +582,7 @@ void CheckKW(tToken *token, sStr *str) {
     }
 }
 
-int PrologueScan() {
+int PrologueScan(void) {
     sStr str;
     int c;
     if (String_Init(&str)) return INTERNAL_COMP_ERROR;

@@ -170,11 +170,11 @@ typedef struct {
 
 void SetSourceFile(FILE *f);
 
-int PrologueScan();
+int PrologueScan(void);
 
 void CheckKW(tToken *token, sStr *string);
 
-int GetToken(tToken *token, int c);
+int GetToken(tToken *token);
 
 int String_Init(sStr *str);
 

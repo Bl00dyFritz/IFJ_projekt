@@ -12,20 +12,20 @@
 
 int statement(tToken *in_t){ //statement in a program
 	function(in_t);
-	return;
+	return 0;
 }
 
-int next_statement(){ //next statement in a program
+int next_statement(void){ //next statement in a program
 	tToken token;
 	GetToken(&token);
-	switch(token->type){
+	switch(token.type){
 		case Token_pub: statement(&token);
 						next_statement();
 						break;
 		case Token_EOF: exit(0);
-		default: exit(100);//TODO dat spravny error code
+		default: exit(SYNTAX_ERROR);
 	}
-	return;
+	return 0;
 }
 
 int function(tToken *in_t){ //declaration of a function
@@ -34,160 +34,213 @@ int function(tToken *in_t){ //declaration of a function
 	if (in_t) token = *in_t;
 	else GetToken(&token);
 	int err_found = 1;
-	while (token->type==cmp_type){
+	while (token.type==cmp_type){
 		if(cmp_type==Token_Lpar) {
 			err_found = 0;
 			break;
 		}
 		GetToken(&token);
-		switch cmp_type{
+		switch (cmp_type){
 			case Token_pub: cmp_type=Token_fn; break;
 			case Token_fn: cmp_type=Token_FuncID; break;
 			case Token_FuncID: cmp_type=Token_Lpar; break;
-			default: exit(100)//TODO dat spravny err code
+			default: exit(99);
 		}
-		argument_list_def();
 	}
-	return;
+	if (err_found) exit(SYNTAX_ERROR);
+	argument_list_def();
+	err_found = 1;
+	GetToken(&token);
+	if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
+	type();
+	GetToken(&token);
+	if(token.type!=Token_Lbrack) exit(SYNTAX_ERROR);
+	function_body();
+	GetToken(&token);
+	if(token.type!=Token_Rbrack) exit(SYNTAX_ERROR);
+	return 0;
 }
 
-int imported_ID(){ //imported function identifiers
-    return;
+int function_id(void){
+	tToken token;
+	GetToken(&token);
+	switch (token.type){
+		case Token_BuildIn_Func: return 0;
+		case Token_FuncID: return 0;
+		default: exit(SYNTAX_ERROR);
+	}
+	return 0;
 }
 
-int const_init(){
-    return;
+int const_init(void){
+	tToken token;
+	const_decl();
+	const_def();
+	GetToken(&token);
+	if (token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
+    return 0;
 }
 
-int var_init(){ 
-    return;
+int var_init(void){
+	tToken token;
+	var_decl();
+	var_def();
+	GetToken(&token);
+	if (token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
+    return 0;
 }
 
-int const_def(){ 
-    return;
+int const_def(void){
+	tToken token;
+	GetToken(&token);
+	if (token.type==Token_Assign) expression();
+    return 0;
 }
 
-int var_def(){
-    return;
+int var_def(void){
+	tToken token;
+	GetToken(&token);
+	if(token.type==Token_Assign) expression();
+    return 0;
 }
 
-int type_decl(){
-    return;
+int type_decl(void){
+	tToken token;
+	GetToken(&token);
+	if (token.type==Token_Colon) type();
+    return 0;
 }
 
-int null_type(){
-    return;
+int null_type(tToken *in_t){
+	tToken token;
+	if (in_t) token=*in_t;
+	else GetToken(&token);
+	if (token.type!=Token_Ni32 || token.type!=Token_Nf64 || token.type!=Token_Nu8) return 1;
+    return 0;
 }
 
-int non_null_type(){
-    return;
+int non_null_type(tToken *in_t){
+	tToken token;
+	if (in_t) token=*in_t;
+	else GetToken(&token);
+	if (token.type!=Token_i32 || token.type!=Token_f64 || token.type!=Token_u8 || token.type!=Token_void) return 1;
+    return 0;
 }
 
-int type(){
-    return;
+int type(void){
+	tToken token;
+	GetToken(&token);
+	if(non_null_type(&token) && null_type(&token)) exit(SYNTAX_ERROR);
+    return 0;
 }
 
-int const_decl(){
-    return;
+int const_decl(void){
+	tToken token;
+	GetToken(&token);
+	if (token.type!=Token_const) exit(SYNTAX_ERROR);
+	GetToken(&token);
+	if(token.type!=Token_FuncID) exit(SYNTAX_ERROR);
+	type_decl();
+    return 0;
 }
 
 int var_decl(){
-    return;
+    return 0;
 }
 
 int argument_list_def(){
-    return;
+    return 0;
 }
 
 int argument_def(){
-    return;
+    return 0;
 }
 
 int next_argument_def(){
-    return;
+    return 0;
 }
 
 int function_body(){
-    return;
+    return 0;
 }
 
 int return_(){
-    return;
+    return 0;
 }
 
 int return_expression(){
-    return;
+    return 0;
 }
 
 int body(){
-    return;
+    return 0;
 }
 
 int next_body_statement(){
-    return;
+    return 0;
 }
 
 int body_statement(){
-    return;
+    return 0;
 }
 
 int assign_value(){
-    return;
+    return 0;
 }
 
 int if_block(){
-    return;
+    return 0;
 }
 
 int if_(){
-    return;
+    return 0;
 }
 int else_(){
-    return;
+    return 0;
 }
 
 int non_null_ID(){
-    return;
+    return 0;
 }
 
 int while_loop(){
-    return;
+    return 0;
 }
 
 int function_call(){
-    return;
+    return 0;
 }
 
 int argument_list(){
-    return;
+    return 0;
 }
 
 int argument(){
-    return;
+    return 0;
 }
 
 int next_argument(){
-    return;
+    return 0;
 }
 
 int expression(){
-    return;
+    return 0;
 }
 
 int operand(){
-    return;
+    return 0;
 }
 
 int value(){
-    return;
+    return 0;
 }
 
 int next_expression(){
-    return;
+    return 0;
 }
 
 int operator_(){
-    return;
+    return 0;
 }
 
 int program(){ //the whole program
