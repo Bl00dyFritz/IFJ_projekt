@@ -77,6 +77,9 @@ int GetToken(tToken *token) {
                     case '"':
                             token->state = State_String;
                         break;
+                    case '|':
+                            token->state = State_Pipe;
+                        break;
                     case '[':
                             token->state = State_Array;
                             String_Add(&str, c);
@@ -488,6 +491,11 @@ int GetToken(tToken *token) {
                 break;
             case State_Comma:
                 token->type = Token_Comma;
+                Completed = true;
+                ungetc(c, file);
+                break;
+            case State_Pipe:
+                token->type = Token_Pipe;
                 Completed = true;
                 ungetc(c, file);
                 break;

@@ -58,6 +58,7 @@ typedef enum {
     State_Hex_1,
     State_StringEnd,
 
+    State_Pipe,
     State_Slash,
     State_Comment,
     State_Lpar,
@@ -130,6 +131,7 @@ typedef enum {
     Token_Semicolon,
     Token_Dot,
     Token_Comma,
+    Token_Pipe,
 
     Token_write,
     Token_readstr,
