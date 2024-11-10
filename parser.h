@@ -33,9 +33,9 @@ int non_null_type(tToken *in_t);
 
 int type(void);
 
-int const_decl(void);
+int const_decl(tToken *in_t);
 
-int var_decl(void);
+int var_decl(tToken *in_t);
 
 int argument_list_def(void);
 
@@ -73,16 +73,14 @@ int function_call(tToken *in_t);
 
 int argument_list(void);
 
-int argument(void);
+int argument(tToken *in_t);
 
 int next_argument(void);
 
 int expression(tToken *in_t);
 
-int operand(void);
-
-int value(void);
+int operand(tToken *in_t);
 
 int next_expression(void);
 
-int operator_(void);
+int operator_(tToken *in_t);
