@@ -72,7 +72,7 @@ int function_id(void){
 	return 0;
 }
 
-int const_init(void){
+int const_init(tToken *in_t){
 	tToken token;
 	const_decl();
 	const_def();
@@ -81,7 +81,7 @@ int const_init(void){
     return 0;
 }
 
-int var_init(void){
+int var_init(tToken *in_t){
 	tToken token;
 	var_decl();
 	var_def();
@@ -93,14 +93,14 @@ int var_init(void){
 int const_def(void){
 	tToken token;
 	GetToken(&token);
-	if (token.type==Token_Assign) expression();
+	if (token.type==Token_Assign) expression(NULL);
     return 0;
 }
 
 int var_def(void){
 	tToken token;
 	GetToken(&token);
-	if(token.type==Token_Assign) expression();
+	if(token.type==Token_Assign) expression(NULL);
     return 0;
 }
 
@@ -115,7 +115,7 @@ int null_type(tToken *in_t){
 	tToken token;
 	if (in_t) token=*in_t;
 	else GetToken(&token);
-	if (token.type!=Token_Ni32 || token.type!=Token_Nf64 || token.type!=Token_Nu8) return 1;
+	if (token.type!=Token_Ni32 && token.type!=Token_Nf64 && token.type!=Token_Nu8) return 1;
     return 0;
 }
 
@@ -123,7 +123,7 @@ int non_null_type(tToken *in_t){
 	tToken token;
 	if (in_t) token=*in_t;
 	else GetToken(&token);
-	if (token.type!=Token_i32 || token.type!=Token_f64 || token.type!=Token_u8 || token.type!=Token_void) return 1;
+	if (token.type!=Token_i32 && token.type!=Token_f64 && token.type!=Token_u8 && token.type!=Token_void) return 1;
     return 0;
 }
 
@@ -144,70 +144,177 @@ int const_decl(void){
     return 0;
 }
 
-int var_decl(){
+int var_decl(void){
+	tToken token;
+	GetToken(&token);
+	if(token.type!=Token_var) exit(SYNTAX_ERROR);
+	GetToken(&token);
+	if(token.type!=Token_FuncID) exit(SYNTAX_ERROR);
+	type_decl();
     return 0;
 }
 
-int argument_list_def(){
+int argument_list_def(void){
+	tToken token;
+	GetToken(&token);
+	if (token.type==Token_FuncID){
+		argument_def(&token);
+		next_argument_def();
+	}
     return 0;
 }
 
-int argument_def(){
+int argument_def(tToken *in_t){
+	tToken token;
+	if(in_t) token = *in_t;
+	else GetToken(&token);
+	if(token.type!=Token_FuncID) exit(SYNTAX_ERROR);
+	GetToken(&token);
+	if(token.type!=Token_Colon) exit(SYNTAX_ERROR);
+	type();
     return 0;
 }
 
-int next_argument_def(){
+int next_argument_def(void){
+	tToken token;
+	GetToken(&token);
+	if(token.type==Token_Comma) argument_list_def();
     return 0;
 }
 
-int function_body(){
+int function_body(void){
+	body();
+	return_();
     return 0;
 }
 
-int return_(){
+int return_(void){
+	tToken token;
+	GetToken(&token);
+	if (token.type==Token_return){
+		return_expression();
+		GetToken(&token);
+		if(token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
+	}
     return 0;
 }
 
-int return_expression(){
+int return_expression(void){
+	tToken token;
+	GetToken(&token);
+	switch (token.type){
+		case Token_FuncID:
+		case Token_BuildIn_Func:
+		case Token_Integer:
+		case Token_Float:
+		case Token_Lpar:expression(&token);
+		default:break;
+	}
     return 0;
 }
 
-int body(){
+int body(void){
+	body_statement(NULL);
+	next_body_statement();
     return 0;
 }
 
-int next_body_statement(){
+int next_body_statement(void){
+	tToken token;
+	GetToken(&token);
+	switch (token.type){
+		case Token_while:
+		case Token_var:
+		case Token_const:
+		case Token_FuncID:
+		case Token_BuildIn_Func:
+		case Token_if: 
+			body_statement(&token);
+			next_body_statement();
+		default:break;
+	}
     return 0;
 }
 
-int body_statement(){
+int body_statement(tToken *in_t){
+	tToken token;
+	if (in_t) token = *in_t;
+	else GetToken(&token);
+	switch(token.type){
+		case Token_if: if_block(&token); break;
+		case Token_while: while_loop(&token); break;
+		case Token_var: var_init(&token); break;
+		case Token_const: const_init(&token); break;
+		case Token_FuncID: check_var_or_func(); break;
+		case Token_BuildIn_Func: 
+						   function_call(&token);
+						   GetToken(&token);
+						   if(token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
+						   break;
+		default: exit(SYNTAX_ERROR);
+	}
     return 0;
 }
 
-int assign_value(){
+int check_var_or_func(void){
+	//TODO navrhnout spravne
+	return 0;
+}
+
+int assign_value(void){
+	//TODO navazuje na check_var_or_func
     return 0;
 }
 
-int if_block(){
+int if_block(tToken *in_t){
+	if_(in_t);
+	else_();
     return 0;
 }
 
-int if_(){
+int if_(tToken *in_t){
+	tToken token;
+	token = *in_t;
+	if (token.type!=Token_if) exit(SYNTAX_ERROR);
+	GetToken(&token);
+	if (token.type!=Token_Lpar) exit(SYNTAX_ERROR);
+	expression(NULL);
+	GetToken(&token);
+	if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
+	non_null_ID();
+	GetToken(&token);
+	if(token.type!=Token_Lbrack) exit(SYNTAX_ERROR);
+	body();
+	GetToken(&token);
+	if(token.type!=Token_Rbrack) exit(SYNTAX_ERROR);
     return 0;
 }
-int else_(){
+int else_(void){
+	tToken token;
+	GetToken(&token);
+	if (token.type!=Token_else) exit(SYNTAX_ERROR);
+	GetToken(&token);
+	if (token.type!=Token_Lbrack) exit(SYNTAX_ERROR);
+	body();
+	GetToken(&token);
+	if (token.type!=Token_Rbrack) exit(SYNTAX_ERROR);
     return 0;
 }
 
-int non_null_ID(){
+int non_null_ID(void){
+	tToken token;
+	GetToken(&token);
+	if (token.type==Token_Pipe){
+		
+	}
     return 0;
 }
 
-int while_loop(){
+int while_loop(tToken *in_t){
     return 0;
 }
 
-int function_call(){
+int function_call(tToken *in_t){
     return 0;
 }
 
@@ -223,7 +330,7 @@ int next_argument(){
     return 0;
 }
 
-int expression(){
+int expression(tToken *in_t){
     return 0;
 }
 

@@ -17,9 +17,9 @@ int function(tToken *in_t);
 
 int function_id(void);
 
-int const_init(void);
+int const_init(tToken *in_t);
 
-int var_init(void);
+int var_init(tToken *in_t);
 
 int const_def(void);
 
@@ -39,7 +39,7 @@ int var_decl(void);
 
 int argument_list_def(void);
 
-int argument_def(void);
+int argument_def(tToken *in_t);
 
 int next_argument_def(void);
 
@@ -53,21 +53,23 @@ int body(void);
 
 int next_body_statement(void);
 
-int body_statement(void);
+int body_statement(tToken *in_t);
+
+int check_var_or_func(void);
 
 int assign_value(void);
 
-int if_block(void);
+int if_block(tToken *in_t);
 
-int if_(void);
+int if_(tToken *in_t);
 
 int else_(void);
 
 int non_null_ID(void);
 
-int while_loop(void);
+int while_loop(tToken *in_t);
 
-int function_call(void);
+int function_call(tToken *in_t);
 
 int argument_list(void);
 
@@ -75,7 +77,7 @@ int argument(void);
 
 int next_argument(void);
 
-int expression(void);
+int expression(tToken *in_t);
 
 int operand(void);
 
