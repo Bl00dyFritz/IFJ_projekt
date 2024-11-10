@@ -83,6 +83,7 @@ int GetToken(tToken *token) {
                         break;
                     case '?':
                             token->state = State_Check_TypeID;
+                            String_Add(&str, c);
                         break;
                     case EOF:
                             token->state = State_EOF;
@@ -156,7 +157,10 @@ int GetToken(tToken *token) {
                 if (isalnum(c)) {
                     String_Add(&str, c);
                 } else {
-                    token->type = Token_BuildIn_Func;
+                    if (!CheckBuildInFunc(token, &str)) {
+                        String_Free(&str);
+                        return LEXICAL_ERROR;
+                    } 
                     ungetc(c, file);
                     Completed = true;
                 }
@@ -199,7 +203,9 @@ int GetToken(tToken *token) {
             case State_Array_2:
                 if (c == '8') {
                     String_Add(&str, c);
-                    token->type = Token_u8;
+                    if (!CheckToken(token, &str)) {
+                        token->type = Token_u8;
+                    }
                     token->value.keyword = KW_u8;
                     Completed = true;
                 } else {
@@ -208,13 +214,15 @@ int GetToken(tToken *token) {
                 }
                 break;
             case State_Check_TypeID:
-                if (c == 'f' || c == 'i') {
+                if (isalnum(c)) {
                     String_Add(&str, c);
-                    token->state = State_TypeID;
-                    token->type = Token_FuncID;
+                    token->state = State_Check_TypeID;
                 } else if (c == '[') {
                     String_Add(&str, c);
                     token->state = State_Array;
+                } else if (CheckToken(token, &str)) {
+                    ungetc(c, file);
+                    Completed = true;
                 } else { 
                     String_Free(&str);
                     return LEXICAL_ERROR;
@@ -582,7 +590,65 @@ void CheckKW(tToken *token, sStr *str) {
     }
 }
 
-int PrologueScan() {
+int CheckToken(tToken *token, sStr *str) {
+    if (strcmp(str->string, "?i32") == 0) {
+        token->type = Token_Ni32;
+        token->value.keyword = KW_i32;
+        return 1;
+    } else if (strcmp(str->string, "?f64") == 0) {
+        token->type = Token_Nf64;
+        token->value.keyword = KW_f64;
+        return 1;
+    } else if (strcmp(str->string, "?[]u8") == 0) {
+        token->type = Token_Nu8;
+        return 1;
+    } else return 0;
+}
+
+int CheckBuildInFunc(tToken *token, sStr *str) {
+    if (strcmp(str->string, "ifj.write") == 0) {
+        token->type = Token_write;
+        return 1;
+    } else if (strcmp(str->string, "ifj.readstr") == 0) {
+        token->type = Token_readstr;
+        return 1;
+    } else if (strcmp(str->string, "ifj.readi32") == 0) {
+        token->type = Token_readi32;
+        return 1;
+    } else if (strcmp(str->string, "ifj.readf64") == 0) {
+        token->type = Token_readf64;
+        return 1;
+    } else if (strcmp(str->string, "ifj.string") == 0) {
+        token->type = Token_string;
+        return 1;
+    } else if (strcmp(str->string, "ifj.concat") == 0) {
+        token->type = Token_concat;
+        return 1;
+    } else if (strcmp(str->string, "ifj.length") == 0) {
+        token->type = Token_length;
+        return 1;
+    } else if (strcmp(str->string, "ifj.i2f") == 0) {
+        token->type = Token_i2f;
+        return 1;
+    } else if (strcmp(str->string, "ifj.f2i") == 0) {
+        token->type = Token_f2i;
+        return 1;
+    } else if (strcmp(str->string, "ifj.substring") == 0) {
+        token->type = Token_substring;
+        return 1;
+    } else if (strcmp(str->string, "ifj.ord") == 0) {
+        token->type = Token_ord;
+        return 1;
+    } else if (strcmp(str->string, "ifj.chr") == 0) {
+        token->type = Token_chr;
+        return 1;
+    } else if (strcmp(str->string, "ifj.strcmp") == 0) {
+        token->type = Token_strcmp;
+        return 1;
+    } else return 0;
+}
+
+int PrologueScan(void) {
     sStr str;
     int c;
     if (String_Init(&str)) return INTERNAL_COMP_ERROR;

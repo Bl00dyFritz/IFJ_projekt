@@ -107,6 +107,9 @@ typedef enum {
     Token_i32,
     Token_f64,
     Token_u8,
+    Token_Ni32,
+    Token_Nf64,
+    Token_Nu8,
 
     Token_Assign,
     Token_Equal,
@@ -127,6 +130,20 @@ typedef enum {
     Token_Semicolon,
     Token_Dot,
     Token_Comma,
+
+    Token_write,
+    Token_readstr,
+    Token_readi32,
+    Token_readf64,
+    Token_string,
+    Token_concat,
+    Token_length,
+    Token_i2f,
+    Token_f2i,
+    Token_substring,
+    Token_ord,
+    Token_chr,
+    Token_strcmp,
 
     Token_EOF,
     Token_BuildIn_Func,
@@ -170,11 +187,15 @@ typedef struct {
 
 void SetSourceFile(FILE *f);
 
-int PrologueScan();
+int PrologueScan(void);
 
 void CheckKW(tToken *token, sStr *string);
 
-int GetToken(tToken *token, int c);
+int CheckToken(tToken *token, sStr *string);
+
+int CheckBuildInFunc(tToken *token, sStr *string);
+
+int GetToken(tToken *token);
 
 int String_Init(sStr *str);
 
