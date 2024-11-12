@@ -28,7 +28,9 @@ void GenAssignVar(void);
 
 void GenDefFunc(void);
 
-void GenCallFunc(tBstNode *node);
+void GenCallFunc(tBstNode *node, tFunctionVals *vals);
+
+void GenFuncEnd(tFunctionVals *vals);
 
 void GenExpBegin(void);
 
