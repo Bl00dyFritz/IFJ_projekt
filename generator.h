@@ -30,7 +30,11 @@ void GenDefFunc(void);
 
 void GenCallFunc(tBstNode *node);
 
-void GenExp(tBstNode *node, tToken Token);
+void GenExpBegin(void);
+
+void GenExpEnd(void);
+
+void GenExp(tBstNode *node, tToken *token);
 
 void GenIfStart(void);
 
