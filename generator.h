@@ -34,7 +34,7 @@ void GenExpBegin(void);
 
 void GenExpEnd(void);
 
-void GenExp(tBstNode *node, tToken *token);
+void GenStackOp(tBstNode *node, tToken *token);
 
 void GenIfStart(void);
 

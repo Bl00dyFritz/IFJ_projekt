@@ -29,7 +29,7 @@ void GenExpEnd() {
     printf("POPFRAME\n");
 }
 
-void GenExp(tBstNode *node, tToken *token) {
+void GenStackOp(tBstNode *node, tToken *token) {
     switch (token->type) {
         case Token_Plus:
             printf("ADDS\n");
@@ -40,7 +40,7 @@ void GenExp(tBstNode *node, tToken *token) {
         case Token_Multiply:
             printf("MULS\n");
             break;
-        case Token_Divide:
+        case Token_Divide:                          //Vyriesit ako s IDIV
             printf("DIVS\n");
             break;
         case Token_Integer:
@@ -49,34 +49,24 @@ void GenExp(tBstNode *node, tToken *token) {
         case Token_Float:
             printf("PUSHS float@%d\n", token->value.decimal);
             break;
-        case Token_concat:
-            printf("\n");
-            printf("CREATEFRAME\n");
-            printf("PUSHFRAME\n");
-            printf("DEFVAR LF@%%l1\n");
-            printf("DEFVAR LF@%%l2\n");
-            printf("DEFVAR LF@%%result\n");
-	        printf("CONCAT LF@%%result LF@%%l1 LF@%%l2\n");
-	        printf("PUSHS LF@%%result\n");
-            printf("POPFRAME\n");
-            break;
         case Token_Equal:
-
+            printf("EQS\n");
             break;
         case Token_Not_Equal:
-
+            printf("EQS\n");
+            printf("NOT\n");
             break;
         case Token_Lesser_Equal:
 
             break;
         case Token_Lesser:
-
+            printf("LTS\n");
             break;
         case Token_Greater_Equal:
 
             break;
         case Token_Greater:
-
+            printf("GTS\n");
             break;
         case Token_String:
 
@@ -86,9 +76,32 @@ void GenExp(tBstNode *node, tToken *token) {
     }
 }
 
-void GenCallFunc(tBstNode *node) {
+void GenCallFunc(tBstNode *node, tFunctionVals *vals) {
     if (strcmp(node->key, "ifj.write") == 0) {
-        
+        printf("LABEL $write\n");
+        printf("CREATEFRAME\n");
+        printf("PUSHFRAME\n");
+        printf("\n");
+        printf("\n");
+        printf("\n");
+        printf("\n");
+        printf("\n");
+        printf("\n");
+        printf("\n");
+        printf("\n");
+        printf("POPFRAME\n");
+        printf("RETURN\n");
+    } else if (strcmp(node->key, "ifj.concat") == 0) {
+        printf("CREATEFRAME\n");
+        printf("PUSHFRAME\n");
+        printf("DEFVAR LF@%%l1\n");
+        printf("DEFVAR LF@%%l2\n");
+        printf("POPS LF@l2\n");
+        printf("POPS LF@l1\n");
+        printf("DEFVAR LF@%%result\n");
+	    printf("CONCAT LF@%%result LF@%%l1 LF@%%l2\n");
+	    printf("PUSHS LF@%%result\n");
+        printf("POPFRAME\n");
     } else if (strcmp(node->key, "ifj.readstr") == 0) {
     
     } else if (strcmp(node->key, "ifj.readi32") == 0) {
@@ -113,5 +126,6 @@ void GenCallFunc(tBstNode *node) {
         
     } else {
         printf("CALL %s\n", node->key);
+        
     }
 }
