@@ -166,11 +166,13 @@ void GenCallFunc(tBstNode *node, tFunctionVals *vals) {
         printf("POPFRAME\n");
     } else if (strcmp(node->key, "ifj.ord") == 0) {
         printf("PUSHFRAME\n");
-        printf("\n");
-        printf("\n");
-        printf("\n");
-        printf("\n");
-        printf("\n");
+        printf("DEFVAR LF@retval\n");
+        printf("POPS LF@retval\n");
+        //printf("DEFVAR LF@t\n");
+        //printf("TYPE LF@t LF@retval\n");
+        printf("STRI2INT LF@retval LF@retval int@0\n");
+        printf("PUSHS LF@retval\n");
+        printf("POPS GF@func_resul\n");
         printf("POPFRAME\n");
     } else if (strcmp(node->key, "ifj.chr") == 0) {
         printf("PUSHFRAME\n");
@@ -207,20 +209,41 @@ void GenFuncEnd(tFunctionVals *vals) {
     printf("RETURN\n");
 }
 
-
-//vytvorit strukturu zasobnbiku, -- funkce na to, push, pop, init, popAll
-
-void generate3AK(void) {
-    //dostaneme ukazatel na strom, zasobnik
-    //potom to dat do zasobnik
-
+/**
+ * 
+ * tBstNode *strom -- vymeni sa za ukazatel na strom (Niko vytvori)
+ * dostaneme ukazatel na strom, zasobnik
+ * potom to dat do zasobniku
+ */
+void generate3AK(tBstNode *strom, sStack *stack) {
+    tBstNode *tmp = strom;
+    while (tmp) {
+        Stack_Push(stack, tmp->content.type, tmp->content.value);
+        tmp = tmp->right;
+    }
 }
 
-void GenerateOutput(void) {
-    //dostaneme 3AK ()
-    //vypopuje zasobnik
-    //Assembler kod vytlaci
+/**
+ * 
+ * tBstNode *strom -- vymenit za 3AK strukturu (idk co to bude, Niko tvori)
+ * dostaneme 3AK ()
+ * vypopuje zasobnik
+ * Assembler kod vytlaci
+ */
+void GenerateOutput(tBstNode *strom, sStack *stack, tToken token) {
+    void *val;
+    DataType Dtype;
+    GenHead();
+    while (stack) {
+        Stack_Pop(stack, val);
+        switch (token.type) {
+            
+            default:
+                break;
+        }
+    }
+
+    if (!Stack_IsEmpty(stack)) {
+        Stack_PopAll(stack);
+    }
 }
-
-
-//PARSER BRANCH - zmenit naspat na Token_BuildInFunc v CheckKW

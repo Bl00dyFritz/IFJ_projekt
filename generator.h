@@ -11,6 +11,8 @@
 
 #include "parser.h"
 #include "symtable.h"
+#include "scanner.h"
+#include "stack.c"
 
 void GenHead(void);
 
@@ -52,8 +54,8 @@ void GenWhileEnd(void);
 
 void GenReturn(void);
 
-void generate3AK(void);
+void generate3AK(tBstNode *strom, sStack *stack);
 
-void GenerateOutput(void);
+void GenerateOutput(tBstNode *strom, sStack *stack, tToken token);
 
 #endif /** GENERATOR_H **/
