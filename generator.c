@@ -206,3 +206,21 @@ void GenFuncEnd(tFunctionVals *vals) {
     printf("POPFRAME\n");
     printf("RETURN\n");
 }
+
+
+//vytvorit strukturu zasobnbiku, -- funkce na to, push, pop, init, popAll
+
+void generate3AK(void) {
+    //dostaneme ukazatel na strom, zasobnik
+    //potom to dat do zasobnik
+
+}
+
+void GenerateOutput(void) {
+    //dostaneme 3AK ()
+    //vypopuje zasobnik
+    //Assembler kod vytlaci
+}
+
+
+//PARSER BRANCH - zmenit naspat na Token_BuildInFunc v CheckKW

@@ -52,4 +52,8 @@ void GenWhileEnd(void);
 
 void GenReturn(void);
 
+void generate3AK(void);
+
+void GenerateOutput(void);
+
 #endif /** GENERATOR_H **/
