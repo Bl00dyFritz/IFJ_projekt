@@ -9,16 +9,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void Stack_Init(Stack *s) {
+void Stack_Init(sStack *s) {
     s->top = NULL;
 }
 
-int Stack_IsEmpty(Stack *s) {
+int Stack_IsEmpty(sStack *s) {
     return s->top == NULL;
 }
 
-int Stack_Push(Stack *s, int value) {
-    StackNode *new_node = (StackNode *)malloc(sizeof(StackNode));
+int Stack_Push(sStack *s, int value) {
+    sStackNode *new_node = (sStackNode *)malloc(sizeof(sStackNode));
     if (new_node == NULL) {
         fprintf(stderr, "Error: Allocation failed\n");
         return 1;
@@ -29,19 +29,19 @@ int Stack_Push(Stack *s, int value) {
     return 0;
 }
 
-int Stack_Pop(Stack *s, int *value) {
+int Stack_Pop(sStack *s, int *value) {
     if (Stack_IsEmpty(s)) {
         fprintf(stderr, "Error: Stack underflow\n");
         return 1;
     }
-    StackNode *temp = s->top;
+    sStackNode *temp = s->top;
     *value = temp->value;
     s->top = s->top->next;
     free(temp);
     return 0;
 }
 
-void Stack_PopAll(Stack *s) {
+void Stack_PopAll(sStack *s) {
     while (!Stack_IsEmpty(s)) {
         int temp;
         Stack_Pop(s, &temp);

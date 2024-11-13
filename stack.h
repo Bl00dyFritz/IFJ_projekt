@@ -12,18 +12,18 @@
 typedef struct StackNode {
     int value;
     struct StackNode *next;
-} StackNode;
+} sStackNode;
 
 // Definícia štruktúry zásobníka
 typedef struct Stack {
-    StackNode *top;
-} Stack;
+    sStackNode *top;
+} sStack;
 
 // Prototypy funkcií pre zásobník
-void Stack_Init(Stack *s);
-int Stack_IsEmpty(Stack *s);
-int Stack_Push(Stack *s, int value);
-int Stack_Pop(Stack *s, int *value);
-void Stack_PopAll(Stack *s);
+void Stack_Init(sStack *s);
+int Stack_IsEmpty(sStack *s);
+int Stack_Push(sStack *s, int value);
+int Stack_Pop(sStack *s, int *value);
+void Stack_PopAll(sStack *s);
 
 #endif // STACK_H
