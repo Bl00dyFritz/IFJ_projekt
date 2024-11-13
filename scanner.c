@@ -209,7 +209,6 @@ int GetToken(tToken *token) {
                     if (!CheckToken(token, &str)) {
                         token->type = Token_u8;
                     }
-                    token->value.keyword = KW_u8;
                     Completed = true;
                 } else {
                     String_Free(&str);
@@ -561,51 +560,37 @@ int GetToken(tToken *token) {
 void CheckKW(tToken *token, sStr *str) {
     if (strcmp(str->string, "const") == 0) {
         token->type = Token_const;
-        token->value.keyword = KW_const;
     } else if (strcmp(str->string, "else") == 0) {
         token->type = Token_else;
-        token->value.keyword = KW_else;
     } else if (strcmp(str->string, "fn") == 0) {
         token->type = Token_fn;
-        token->value.keyword = KW_fn;
     } else if (strcmp(str->string, "if") == 0) {
         token->type = Token_if;
-        token->value.keyword = KW_if;
     } else if (strcmp(str->string, "i32") == 0) {
         token->type = Token_i32;
-        token->value.keyword = KW_i32;
     } else if (strcmp(str->string, "f64") == 0) {
         token->type = Token_f64;
-        token->value.keyword = KW_f64;
     } else if (strcmp(str->string, "null") == 0) {
         token->type = Token_null;
-        token->value.keyword = KW_null;
     } else if (strcmp(str->string, "pub") == 0) {
         token->type = Token_pub;
-        token->value.keyword = KW_pub;
     } else if (strcmp(str->string, "return") == 0) {
         token->type = Token_return;
-        token->value.keyword = KW_return;
     } else if (strcmp(str->string, "var") == 0) {
         token->type = Token_var;
-        token->value.keyword = KW_var;
     } else if (strcmp(str->string, "void") == 0) {
         token->type = Token_void;
-        token->value.keyword = KW_void;
     } else if (strcmp(str->string, "while") == 0) {
         token->type = Token_while;
-        token->value.keyword = KW_while;
     }
 }
 
 int CheckToken(tToken *token, sStr *str) {
     if (strcmp(str->string, "?i32") == 0) {
         token->type = Token_Ni32;
-        token->value.keyword = KW_i32;
         return 1;
     } else if (strcmp(str->string, "?f64") == 0) {
         token->type = Token_Nf64;
-        token->value.keyword = KW_f64;
         return 1;
     } else if (strcmp(str->string, "?[]u8") == 0) {
         token->type = Token_Nu8;
@@ -615,43 +600,43 @@ int CheckToken(tToken *token, sStr *str) {
 
 int CheckBuildInFunc(tToken *token, sStr *str) {
     if (strcmp(str->string, "ifj.write") == 0) {
-        token->type = Token_write;
+        token->value.BuiltInFunc = BF_write;
         return 1;
     } else if (strcmp(str->string, "ifj.readstr") == 0) {
-        token->type = Token_readstr;
+        token->value.BuiltInFunc = BF_readstr;
         return 1;
     } else if (strcmp(str->string, "ifj.readi32") == 0) {
-        token->type = Token_readi32;
+        token->value.BuiltInFunc = BF_readi32;
         return 1;
     } else if (strcmp(str->string, "ifj.readf64") == 0) {
-        token->type = Token_readf64;
+        token->value.BuiltInFunc = BF_readf64;
         return 1;
     } else if (strcmp(str->string, "ifj.string") == 0) {
-        token->type = Token_string;
+        token->value.BuiltInFunc = BF_string;
         return 1;
     } else if (strcmp(str->string, "ifj.concat") == 0) {
-        token->type = Token_concat;
+        token->value.BuiltInFunc = BF_concat;
         return 1;
     } else if (strcmp(str->string, "ifj.length") == 0) {
-        token->type = Token_length;
+        token->value.BuiltInFunc = BF_length;
         return 1;
     } else if (strcmp(str->string, "ifj.i2f") == 0) {
-        token->type = Token_i2f;
+        token->value.BuiltInFunc = BF_i2f;
         return 1;
     } else if (strcmp(str->string, "ifj.f2i") == 0) {
-        token->type = Token_f2i;
+        token->value.BuiltInFunc = BF_f2i;
         return 1;
     } else if (strcmp(str->string, "ifj.substring") == 0) {
-        token->type = Token_substring;
+        token->value.BuiltInFunc = BF_substring;
         return 1;
     } else if (strcmp(str->string, "ifj.ord") == 0) {
-        token->type = Token_ord;
+        token->value.BuiltInFunc = BF_ord;
         return 1;
     } else if (strcmp(str->string, "ifj.chr") == 0) {
-        token->type = Token_chr;
+        token->value.BuiltInFunc = BF_chr;
         return 1;
     } else if (strcmp(str->string, "ifj.strcmp") == 0) {
-        token->type = Token_strcmp;
+        token->value.BuiltInFunc = BF_strcmp;
         return 1;
     } else return 0;
 }
