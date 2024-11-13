@@ -8,9 +8,22 @@
 #ifndef STACK_H
 #define STACK_H
 
+typedef enum {
+    INT_TYPE,
+    FLOAT_TYPE,
+    CHAR_TYPE,
+    STRING_TYPE
+} DataType;
+
 // Definícia štruktúry uzla zásobníka
 typedef struct StackNode {
-    int value;
+    DataType type;
+    union {
+        int intValue;
+        float floatValue;
+        char charValue;
+        char *stringValue;
+    } data;
     struct StackNode *next;
 } sStackNode;
 
@@ -22,8 +35,8 @@ typedef struct Stack {
 // Prototypy funkcií pre zásobník
 void Stack_Init(sStack *s);
 int Stack_IsEmpty(sStack *s);
-int Stack_Push(sStack *s, int value);
-int Stack_Pop(sStack *s, int *value);
+int Stack_Push(sStack *s, DataType type, void *value);
+int Stack_Pop(sStack *s, void *value);
 void Stack_PopAll(sStack *s);
 
 #endif // STACK_H
