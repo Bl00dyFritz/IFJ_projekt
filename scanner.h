@@ -153,26 +153,26 @@ typedef enum {
 } tTokenType;
 
 typedef enum {
-    KW_const,
-    KW_else,
-    KW_if,
-    KW_return,
-    KW_var,
-    KW_void,
-    KW_while,
-    KW_fn,
-    KW_i32,
-    KW_f64,
-    KW_u8,
-    KW_pub,
-    KW_null
-} kKeyword;
+    BF_write,
+    BF_readstr,
+    BF_readi32,
+    BF_readf64,
+    BF_string,
+    BF_concat,
+    BF_length,
+    BF_i2f,
+    BF_f2i,
+    BF_substring,
+    BF_ord,
+    BF_chr,
+    BF_strcmp
+} bBuiltinFuncs;
 
 typedef union {
     char *string;
     int integer;
     double decimal;
-    kKeyword keyword;
+    bBuiltinFuncs BuiltInFunc;
 } tTokenVal;
 
 typedef struct {
