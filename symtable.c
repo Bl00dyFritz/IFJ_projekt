@@ -206,7 +206,7 @@ void ReplaceByLeftmost(tBstNode *target, tBstNode **tree){
 		}
 	}
 	else ReplaceByLeftmost(target, &(*tree)->left);
-}
+} //nepouziva se atm
 
 /**
  * @brief Pomocne funkce ktera vraci velikost (pod)stromu
