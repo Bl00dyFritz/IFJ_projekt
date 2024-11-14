@@ -16,19 +16,7 @@
 
 void GenHead(void);
 
-void GenStackPush(void);
-
-void GenStackPop(void);
-
-void GenMath(void);
-
-void GenCheckVar(void);
-
-void GenDefVar(void);
-
-void GenAssignVar(void);
-
-void GenDefFunc(void);
+void GenDefFunc(tFunctionVals *vals, char *FuncName);
 
 void GenCallFunc(tBstNode *node, tFunctionVals *vals);
 
@@ -48,7 +36,9 @@ void GenElseStart(void);
 
 void GenElseEnd(void);
 
-void GenWhileStart(void);
+void GenWhileHead(void);
+
+void GenWhile(void);
 
 void GenWhileEnd(void);
 
