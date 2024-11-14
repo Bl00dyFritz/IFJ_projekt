@@ -201,6 +201,26 @@ void GenCallFunc(tBstNode *node, tFunctionVals *vals) {
     }
 }
 
+void GenIfStart(void) {
+    printf("POPS GF@func_result\n");
+    printf("JUMPIFNEQ $$else_label GF@func_result bool@true\n");
+}
+
+void GenElseStart(void) {
+    printf("LABEL $$else_label\n");
+}
+
+void GenElseEnd(void) {
+    printf("LABEL $$endif_label\n");
+}
+
+
+void GenReturn(void) {
+    printf("POP GF@func_result\n");
+    printf("RETURN\n");
+}
+
+
 void GenFuncEnd(tFunctionVals *vals) {
     if (vals->ret_type != Token_null) {
         printf("POP GF@func_result\n");

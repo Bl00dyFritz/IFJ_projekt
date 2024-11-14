@@ -48,7 +48,7 @@ void GenElseStart(void);
 
 void GenElseEnd(void);
 
-void GenWhileStart(void);
+void GenWhileStart(tBstNode *cond_node);
 
 void GenWhileEnd(void);
 
