@@ -40,7 +40,7 @@ typedef struct arg_def{
 
 //struktura uzlu definice funkci
 typedef struct func_def{
-	char *name;
+	tToken token;
 	tArgDef *args;
 	tType ret_type;
 	tAstNode *code;
@@ -69,7 +69,7 @@ typedef struct args{
 
 //struktura uzlu pro volani funkce
 typedef struct func_call{
-	char *name;
+	tToken token;
 	tRetVal ret_val;
 	tType ret_type;
 	tArgs *args;
@@ -77,45 +77,33 @@ typedef struct func_call{
 
 //struktura uzlu pro declaraci konstanty
 typedef struct decl_const{
-	char *name;
+	tToken token;
 	tType type;
 }tConstDecl;
 
 //struktura uzlu pro deklaraci promenne
 typedef struct decl_var{
-	char *name;
+	tToken token;
 	tType type;
 }tVarDecl;
 
 //struktura uzlu pro ukladani hodnoty do promenne
 typedef struct assign{
-	char *dst;
+	tToken token;
+	tAstNode *dst;
 	tAstNode *src;
 }tAssign;
 
-//enum na odlisovani binarnich operatoru
-typedef enum op_type{
-	MUL,
-	DIV,
-	ADD,
-	SUB,
-	EQ,
-	NEQ,
-	LESS,
-	MORE,
-	LESS_EQ,
-	MEQ_EQ
-}tOpType;
-
 //struktura uzlu pro binarni operace
 typedef struct bin_op{
+	tToken token;
 	tAstNode *op1;
 	tAstNode *op2;
-	tOpType operation;
 }tBinOp;
 
 //struktura uzlu pro if block
 typedef struct if_block{
+	tToken token;
 	tAstNode *expr;
 	tAstNode *if_code;
 	tAstNode *else_code;
@@ -123,6 +111,7 @@ typedef struct if_block{
 
 //struktura uzlu pro while loop
 typedef struct while_loop{
+	tToken token;
 	tAstNode *expr;
 	tAstNode *code;
 }tWhileLoop;
@@ -135,13 +124,12 @@ typedef union value{
 
 //struktura uzlu cisla
 typedef struct Num_val{
-	tValue val;
-	tIdOrValType type;
+	tToken token;
 }tNumVal;
 
 //struktura uzlu promenne
 typedef struct var{
-	char *name;
+	tToken token;
 	bool is_const;
 	tRetVal val;
 	tType type;	
@@ -164,7 +152,7 @@ typedef union ast_node_structure{
 	tStatement statement;
 	tCode code;
 	tVar var;
-	tValue val;
+	tNumVal val;
 	tWhileLoop while_loop;
 	tIfBlock if_block;
 	tBinOp bin_op;
