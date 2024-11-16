@@ -42,6 +42,9 @@ int Stack_Push(sStack *s, DataType type, void *value) {
                 return 1;
             }
             break;
+        case AST_NODE_TYPE:
+            new_node->data.astNode = (tAstNode *)value;
+            break;    
         default:
             fprintf(stderr, "Error: Unknown data type\n");
             free(new_node);
@@ -76,6 +79,9 @@ int Stack_Pop(sStack *s, void *value) {
                 return 1;
             }
             break;
+        case AST_NODE_TYPE:
+            *((tAstNode **)value) = temp->data.astNode;
+            break;    
         default:
             fprintf(stderr, "Error: Unknown data type\n");
             return 1;

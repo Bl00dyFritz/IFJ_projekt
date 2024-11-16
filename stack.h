@@ -12,7 +12,8 @@ typedef enum {
     INT_TYPE,
     FLOAT_TYPE,
     CHAR_TYPE,
-    STRING_TYPE
+    STRING_TYPE,
+    AST_NODE_TYPE
 } DataType;
 
 // Definícia štruktúry uzla zásobníka
@@ -23,6 +24,7 @@ typedef struct StackNode {
         float floatValue;
         char charValue;
         char *stringValue;
+        tAstNode *astNode;
     } data;
     struct StackNode *next;
 } sStackNode;

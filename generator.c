@@ -7,6 +7,8 @@
 */
 
 #include "generator.h"
+#include "ast.h"
+
 
 void GenHead(void) {
     printf(".IFJcode24\n");
@@ -345,11 +347,73 @@ void GenFuncEnd(tFunctionVals *vals) {
  * dostaneme ukazatel na strom, zasobnik
  * potom to dat do zasobniku
  */
-void generate3AK(tBstNode *strom, sStack *stack) {
-    tBstNode *tmp = strom;
-    while (tmp) {
-        Stack_Push(stack, tmp->content.type, tmp->content.value);
-        tmp = tmp->right;
+void generate3AK(tAstNode *strom, sStack *stack) {
+    if (strom == NULL) return;
+
+    switch (strom->type) {
+        case FUNC_DEF:
+            Stack_Push(stack, FUNC_DEF, strom);
+            generate3AK(strom->structure.func_def.code, stack);
+            break;
+        
+        case STATEMENT:
+            generate3AK(strom->structure.statement.function, stack);
+            generate3AK(strom->structure.statement.next_statement, stack);
+            break;
+
+        case CODE:
+            generate3AK(strom->structure.code.operation, stack);
+            generate3AK(strom->structure.code.next_code, stack);
+            break;
+
+        case ASSIGN:
+            generate3AK(strom->structure.assign.src, stack);
+            Stack_Push(stack, ASSIGN, strom->structure.assign.dst);
+            break;
+
+        case VAR_DECL:
+            Stack_Push(stack, VAR_DECL, strom);
+            break;
+
+        case CONST_DECL:
+            Stack_Push(stack, CONST_DECL, strom);
+            break;
+
+        case BIN_OP:
+            generate3AK(strom->structure.bin_op.op1, stack);
+            generate3AK(strom->structure.bin_op.op2, stack);
+            Stack_Push(stack, BIN_OP, strom);
+            break;
+
+        case FUNC_CALL:
+            Stack_Push(stack, FUNC_CALL, strom);
+            break;
+
+        case IF:
+            generate3AK(strom->structure.if_block.expr, stack);
+            Stack_Push(stack, IF, strom);
+            generate3AK(strom->structure.if_block.if_code, stack);
+            if (strom->structure.if_block.else_code) {
+                generate3AK(strom->structure.if_block.else_code, stack);
+            }
+            break;
+
+        case WHILE:
+            generate3AK(strom->structure.while_loop.expr, stack);
+            Stack_Push(stack, WHILE, strom);
+            generate3AK(strom->structure.while_loop.code, stack);
+            break;
+
+        case VAR:
+            Stack_Push(stack, VAR, strom);
+            break;
+
+        case VAL:
+            Stack_Push(stack, VAL, strom);
+            break;
+
+        default:
+            break;
     }
 }
 
@@ -363,17 +427,73 @@ void generate3AK(tBstNode *strom, sStack *stack) {
 void GenerateOutput(tBstNode *strom, sStack *stack, tToken token) {
     void *val;
     DataType Dtype;
+
     GenHead();
-    while (stack) {
+
+    while (!Stack_IsEmpty(stack)) {
         Stack_Pop(stack, val);
-        switch (token.type) {
-            
+        tAstNode *node = (tAstNode *)val;
+
+        switch (node->type) {
+            case FUNC_DEF:
+                GenDefFunc(&node->structure.func_def, node->structure.func_def.token.value.string);
+                GenerateOutput(strom, stack, token);
+                GenFuncEnd(&node->structure.func_def);
+                break;
+
+            case FUNC_CALL:
+                GenCallFunc(strom, &node->structure.func_call);
+                break;
+
+            case ASSIGN:
+                printf("MOVE %s ", node->structure.assign.dst->structure.var.token.value.string);
+                printf("GF@func_result\n");
+                break;
+
+            case VAR_DECL:
+                printf("DEFVAR LF@%s\n", node->structure.var_decl.token.value.string);
+                break;
+
+            case CONST_DECL:
+                printf("DEFVAR LF@%s\n", node->structure.const_decl.token.value.string);
+                break;
+
+            case BIN_OP:
+                GenStackOp(strom, &node->structure.bin_op.token);
+                break;
+
+            case IF:
+                GenIfStart();
+                GenerateOutput(strom, stack, token);
+                if (node->structure.if_block.else_code) {
+                    GenElseStart();
+                    GenerateOutput(strom, stack, token);
+                }
+                GenElseEnd();
+                break;
+
+            case WHILE:
+                GenWhileHead();
+                GenerateOutput(strom, stack, token);
+                GenWhileEnd();
+                break;
+
+            case VAR:
+                printf("PUSHS LF@%s\n", node->structure.var.token.value.string);
+                break;
+
+            case VAL:
+                if (node->structure.val.token.type == Token_Integer) {
+                    printf("PUSHS int@%d\n", node->structure.val.token.value.integer);
+                } else if (node->structure.val.token.type == Token_Float) {
+                    printf("PUSHS float@%f\n", node->structure.val.token.value.decimal);
+                } else if (node->structure.val.token.type == Token_String) {
+                    printf("PUSHS string@%s\n", node->structure.val.token.value.string);
+                }
+                break;
+
             default:
                 break;
         }
-    }
-
-    if (!Stack_IsEmpty(stack)) {
-        Stack_PopAll(stack);
     }
 }

@@ -44,7 +44,7 @@ void GenWhileEnd(void);
 
 void GenReturn(void);
 
-void generate3AK(tBstNode *strom, sStack *stack);
+void generate3AK(tAstNode *strom, sStack *stack);
 
 void GenerateOutput(tBstNode *strom, sStack *stack, tToken token);
 
