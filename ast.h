@@ -12,6 +12,12 @@
 //declarace uzlu AST
 typedef struct ast_node tAstNode;
 
+//union na ukladani ciselnou hodnotu
+typedef union value{
+	int i;
+	double f;
+}tValue;
+
 //enum na rozeznavani typu hodnot
 typedef enum type{
 	VOID,
@@ -33,7 +39,7 @@ typedef union ret_val{
 
 //struktura pro zadavani argumenty do definice funkci
 typedef struct arg_def{
-	char *name;
+	tToken token;
 	tType type;
 	struct arg_def *next;
 }tArgDef;
@@ -99,6 +105,8 @@ typedef struct bin_op{
 	tToken token;
 	tAstNode *op1;
 	tAstNode *op2;
+	tValue res_val;
+	tIdOrValType ret_type;
 }tBinOp;
 
 //struktura uzlu pro if block
@@ -115,12 +123,6 @@ typedef struct while_loop{
 	tAstNode *expr;
 	tAstNode *code;
 }tWhileLoop;
-
-//union na ukladani ciselnou hodnotu
-typedef union value{
-	int i;
-	double f;
-}tValue;
 
 //struktura uzlu cisla
 typedef struct Num_val{
