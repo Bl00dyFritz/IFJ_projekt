@@ -28,8 +28,8 @@ ARGS_DEF ::= ARG_DEF NEXT_ARG_DEF | ε
 ARG_DEF ::= token_id token_: TYP
 NEXT_ARG_DEF ::= token_, ARGS_DEF | ε
 
-FCE_BODY ::= BODY RETURN
-RETURN ::= token_return RET_EXPR token_; | ε
+FCE_BODY ::= BODY
+RETURN ::= token_return RET_EXPR token_;
 RET_EXPR ::= EXPR | ε
 BODY ::= BODY_STATEMENT NEXT_BODY_STATEMENT
 NEXT_BODY_STATEMENT ::= BODY | ε

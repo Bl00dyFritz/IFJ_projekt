@@ -206,7 +206,7 @@ void ReplaceByLeftmost(tBstNode *target, tBstNode **tree){
 		}
 	}
 	else ReplaceByLeftmost(target, &(*tree)->left);
-}
+} //nepouziva se atm
 
 /**
  * @brief Pomocne funkce ktera vraci velikost (pod)stromu
@@ -342,7 +342,7 @@ void BstDispose(tBstNode **tree){
 	if (!tree) exit(99);
 	if ((*tree)==NULL) return;
 	if ((*tree)->left) BstDispose(&(*tree)->left);
-	if ((*tree)->left) BstDispose(&(*tree)->right);
+	if ((*tree)->right) BstDispose(&(*tree)->right);
 	free((*tree)->key);
 	FreeNodeContent(tree);
 	free(*tree);

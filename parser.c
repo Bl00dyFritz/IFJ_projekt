@@ -312,6 +312,7 @@ int if_(tToken *in_t){
 	if(token.type!=Token_Rbrack) exit(SYNTAX_ERROR);
     return 0;
 }
+
 int else_(tToken *ret_t){
 	tToken token;
 	GetToken(&token);
