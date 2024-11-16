@@ -38,7 +38,7 @@ typedef struct var_vals{
 
 //typ parametru v uzlu
 typedef enum{
-	FUNCTION = 0,
+	FUNCTION,
 	VARIABLE
 }tBstNodeContentType;
 
@@ -78,4 +78,4 @@ void RotRLeft(tBstNode **tree);
 void RotLRight(tBstNode **tree);
 void Realign(tBstNode **tree);
 
-#endif
+#endif /** SYMTABLE_H **/

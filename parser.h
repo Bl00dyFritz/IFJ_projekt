@@ -4,6 +4,9 @@
 * @author Lucie Pojslová (xpojsll00)
 */
 
+#ifndef PARSER_H
+#define PARSER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "scanner.h"
@@ -82,3 +85,5 @@ int operand(tToken *in_t);
 int next_expression(tToken *ret_t);
 
 int operator_(tToken *in_t);
+
+#endif /** PARSER_H **/

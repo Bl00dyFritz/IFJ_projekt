@@ -494,6 +494,7 @@ int operand(tToken *in_t){
 		case Token_FuncID: check_var_or_func(&token); break;
 		case Token_BuildIn_Func: function_call(&token); break;
 		case Token_Integer:
+		case Token_string:
 		case Token_Float: break;
 		case Token_Lpar: expression(NULL, &token);
 						 if(token.type!=Token_Rpar) exit(SYNTAX_ERROR);
