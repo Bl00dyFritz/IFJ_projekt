@@ -188,6 +188,8 @@ void AddIfBlockNode(tAstNode **node_dest);
 void AddFuncDefNode(tAstNode **node_dest, tTokenStack *stack, tTokenStack *arg_stack);
 void AddStatmentNode(tAstNode **node_dest);
 void AddCodeNode(tAstNode **node_dest);
-void AddExpNode(tAstNode **node_dest);
+void AddExpNodes(tAstNode **node_dest, tTokenStack *stack);
+void PrecedenceCheck(tToken *in_t, tTokenStack *input_stack, tTokenStack *output_stack);
+void AstDispose(tAstNode **tree);
 
 #endif /** AST_H **/

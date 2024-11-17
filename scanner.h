@@ -149,7 +149,9 @@ typedef enum {
 
     Token_EOF,
     Token_BuildIn_Func,
-    Token_IFJ
+    Token_IFJ,
+
+	Token_Dollar //pomocny typ pro precedencni analyzu
 } tTokenType;
 
 typedef enum {

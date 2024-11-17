@@ -25,5 +25,5 @@ void InitTStack (tTokenStack *stack);
 void PushTStack (tTokenStack *stack, tToken token);
 void PopTStack (tTokenStack *stack);
 tToken TopTStack (tTokenStack *stack);
-
+bool StackIsEmpty (tTokenStack *stack);
 #endif /** STACK_H **/

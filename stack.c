@@ -37,3 +37,7 @@ void PopTStack (tTokenStack *stack){
 tToken TopTStack (tTokenStack *stack){
 	return stack->top->token;
 }
+
+bool StackIsEmpty (tTokenStack *stack){
+	return !stack->top;
+}
