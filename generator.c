@@ -99,7 +99,7 @@ void GenWhileEnd(void) {
 void GenCallBuiltInFunc(tAstNode *node) {
     printf("CREATEFRAME\n");
     printf("PUSHFRAME\n");
-    switch (node->structure.func_call.token.value.BuiltInFunc) {
+    switch (node->structure.func_call.name_token.value.BuiltInFunc) {
         case BF_write:
             printf("DEFVAR LF@WriteTerm\n");
             printf("POPS LF@WriteTerm\n");
@@ -210,7 +210,7 @@ void GenCallBuiltInFunc(tAstNode *node) {
             printf("POPS LF@ORDindex\n");
             printf("DEFVAR LF@sLength\n");
             printf("STRLEN LF@sLength LF@s");
-            printf("DEFVAR LF@$BOOLresult\n")
+            printf("DEFVAR LF@$BOOLresult\n");
             printf("JUMPIFEQ $returnORD0$ LF@sLength int@0\n");
             printf("GT LF@$BOOLresult LF@ORDindex LF@sLength\n");
             printf("JUMPIFEQ $returnORD0$ LF@$BOOLresult bool@true\n");
@@ -218,9 +218,9 @@ void GenCallBuiltInFunc(tAstNode *node) {
             printf("JUMPIFEQ $returnORD0$ LF@$BOOLresult bool@true\n");
             printf("STRI2INT LF@s LF@s LF@ORDindex\n");
             printf("PUSHS LF@s\n");
-            printf("JUMP $ENDofORDfunction$\n")
+            printf("JUMP $ENDofORDfunction$\n");
             printf("LABEL $returnORD0$\n");
-            printf("PUSHS int@0\n")
+            printf("PUSHS int@0\n");
             printf("LABEL $ENDofORDfunction$\n");
             printf("POPS GF@func_resul\n");
             break;
@@ -290,7 +290,7 @@ void GenCallBuiltInFunc(tAstNode *node) {
 
 //Toto treba prerobit
 void GenCallFunc(tAstNode *node, tFunctionVals *FuncVals, char *FuncName) {
-    for (int i = vals->paramCnt; i > 0; i--) {
+    for (int i = FuncVals->paramCnt; i > 0; i--) {
         printf("DEFVAR TF@t%d", i);
         printf("PUSHS TF@t%d", i);
     }
@@ -298,7 +298,7 @@ void GenCallFunc(tAstNode *node, tFunctionVals *FuncVals, char *FuncName) {
     printf("CALL $%s\n", FuncName);
     printf("LABEL $%s\n", FuncName);
     printf("PUSHFRAME\n");
-    for (int i = vals->paramCnt; i > 0; i--) {
+    for (int i = FuncVals->paramCnt; i > 0; i--) {
         printf("DEFVAR LF@l%d", i);
         printf("POPS LF@l%d", i);
     }    
