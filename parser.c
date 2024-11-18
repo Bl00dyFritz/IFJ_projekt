@@ -9,18 +9,25 @@
 #include "parser.h"
 #include "error.h"
 #include "scanner.h"
+#include "ast.h"
+#include "symtable.h"
 
 int statement(tToken *in_t){
 	tToken token;
+	int lex_ret=0;
 	if (in_t) token = *in_t;
-	else GetToken(&token);
+	else {
+		lex_ret=GetToken(&token);
+		if(lex_ret) exit(lex_ret);
+	}
 	function(&token);
 	return 0;
 }
 
 int next_statement(void){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	switch(token.type){
 		case Token_pub: statement(&token);
 						next_statement();
@@ -32,16 +39,21 @@ int next_statement(void){
 
 int function(tToken *in_t){
     tToken token;
+	int lex_ret;
 	tTokenType cmp_type = Token_pub;
 	if (in_t) token = *in_t;
-	else GetToken(&token);
+	else {
+		lex_ret = GetToken(&token);
+		if (lex_ret) exit(lex_ret);
+	}
 	int err_found = 1;
 	while (token.type==cmp_type){
 		if(cmp_type==Token_Lpar) {
 			err_found = 0;
 			break;
 		}
-		GetToken(&token);
+		lex_ret = GetToken(&token);
+		if(lex_ret) exit(lex_ret);
 		switch (cmp_type){
 			case Token_pub: cmp_type=Token_fn; break;
 			case Token_fn: cmp_type=Token_FuncID; break;
@@ -53,7 +65,8 @@ int function(tToken *in_t){
 	argument_list_def(&token);
 	if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
 	type();
-	GetToken(&token);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if(token.type!=Token_Lbrack) exit(SYNTAX_ERROR);
 	function_body(&token);
 	if(token.type!=Token_Rbrack) exit(SYNTAX_ERROR);
@@ -78,7 +91,8 @@ int var_init(tToken *in_t){
 
 int const_def(tToken *ret_t){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if (token.type==Token_Assign) expression(NULL, &token);
 	*ret_t = token;
     return 0;
@@ -86,7 +100,8 @@ int const_def(tToken *ret_t){
 
 int var_def(tToken *ret_t){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if(token.type==Token_Assign) expression(NULL, &token);
 	*ret_t = token;
     return 0;
@@ -94,7 +109,8 @@ int var_def(tToken *ret_t){
 
 int type_decl(void){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if(lex_ret) exit(lex_ret);
 	if (token.type==Token_Colon) type();
     return 0;
 }
@@ -102,7 +118,10 @@ int type_decl(void){
 int null_type(tToken *in_t){
 	tToken token;
 	if (in_t) token=*in_t;
-	else GetToken(&token);
+	else {
+		int lex_ret = GetToken(&token);
+		if (lex_ret) exit(lex_ret);
+	}
 	if (token.type!=Token_Ni32 && token.type!=Token_Nf64 && token.type!=Token_Nu8) return 1;
     return 0;
 }
@@ -110,14 +129,18 @@ int null_type(tToken *in_t){
 int non_null_type(tToken *in_t){
 	tToken token;
 	if (in_t) token=*in_t;
-	else GetToken(&token);
+	else {
+		int lex_ret = GetToken(&token);
+		if (lex_ret) exit(lex_ret);
+	}
 	if (token.type!=Token_i32 && token.type!=Token_f64 && token.type!=Token_u8 && token.type!=Token_void) return 1;
     return 0;
 }
 
 int type(void){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if(non_null_type(&token) && null_type(&token)) exit(SYNTAX_ERROR);
     return 0;
 }
@@ -125,7 +148,8 @@ int type(void){
 int const_decl(tToken *in_t){
 	tToken token = *in_t;
 	if (token.type!=Token_const) exit(SYNTAX_ERROR);
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if(token.type!=Token_FuncID) exit(SYNTAX_ERROR);
 	type_decl();
     return 0;
@@ -134,7 +158,8 @@ int const_decl(tToken *in_t){
 int var_decl(tToken *in_t){
 	tToken token = *in_t;
 	if(token.type!=Token_var) exit(SYNTAX_ERROR);
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if(token.type!=Token_FuncID) exit(SYNTAX_ERROR);
 	type_decl();
     return 0;
@@ -142,7 +167,8 @@ int var_decl(tToken *in_t){
 
 int argument_list_def(tToken *ret_t){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if (token.type==Token_FuncID){
 		argument_def(&token);
 		next_argument_def(&token);
@@ -153,10 +179,15 @@ int argument_list_def(tToken *ret_t){
 
 int argument_def(tToken *in_t){
 	tToken token;
+	int lex_ret;
 	if(in_t) token = *in_t;
-	else GetToken(&token);
+	else {
+		lex_ret = GetToken(&token);
+		if (lex_ret) exit(lex_ret);
+	}
 	if(token.type!=Token_FuncID) exit(SYNTAX_ERROR);
-	GetToken(&token);
+	lex_ret = GetToken(&token);
+	if(lex_ret) exit(lex_ret);
 	if(token.type!=Token_Colon) exit(SYNTAX_ERROR);
 	type();
     return 0;
@@ -164,7 +195,8 @@ int argument_def(tToken *in_t){
 
 int next_argument_def(tToken *ret_t){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if(token.type==Token_Comma) argument_list_def(&token);
 	*ret_t = token;
     return 0;
@@ -186,7 +218,8 @@ int return_(tToken *in_t){
 
 int return_expression(tToken *ret_t){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if(lex_ret) exit(lex_ret);
 	switch (token.type){
 		case Token_FuncID:
 		case Token_BuildIn_Func:
@@ -209,7 +242,10 @@ int body(tToken *ret_t){
 int next_body_statement(tToken *in_t, tToken *ret_t){
 	tToken token;
 	if (in_t) token = *in_t;
-	else GetToken(&token);
+	else {
+		int lex_ret = GetToken(&token);
+		if (lex_ret) exit(lex_ret);
+	}
 	switch (token.type){
 		case Token_while:
 		case Token_var:
@@ -227,37 +263,43 @@ int next_body_statement(tToken *in_t, tToken *ret_t){
 
 int body_statement(tToken *in_t, tToken *ret_t){
 	tToken token;
+	int lex_ret = 0;
 	if (in_t) token = *in_t;
-	else GetToken(&token);
+	else {
+		lex_ret = GetToken(&token);
+		if (lex_ret) exit(lex_ret);
+	}
 	switch(token.type){
 		case Token_if: if_block(&token, &token); break;
 		case Token_while: 
 					   while_loop(&token); 
-					   GetToken(&token);
+					   lex_ret = GetToken(&token);
 					   break;
 		case Token_var: 
 					   var_init(&token);
-					   GetToken(&token);
+					   lex_ret = GetToken(&token);
 					   break;
 		case Token_const: 
 					   const_init(&token);
-					   GetToken(&token);
+					   lex_ret = GetToken(&token);
 					   break;
 		case Token_FuncID: 
 					   check_var_or_func(&token);
 					   break;
 		case Token_return: 
 					   return_(&token);
-					   GetToken(&token);
+					   lex_ret = GetToken(&token);
 					   break;
 		case Token_BuildIn_Func: 
 						   function_call(&token);
-						   GetToken(&token);
+						   lex_ret = GetToken(&token);
+						   if (lex_ret) exit(lex_ret);
 						   if(token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
-						   GetToken(&token);
+						   lex_ret = GetToken(&token);
 						   break;
 		default: exit(SYNTAX_ERROR);
 	}
+	if(lex_ret) exit(lex_ret);
 	*ret_t = token;
     return 0;
 }
@@ -265,7 +307,8 @@ int body_statement(tToken *in_t, tToken *ret_t){
 int check_var_or_func(tToken *in_t){
 	tToken token = *in_t;
 	if (token.type!=Token_FuncID) exit(SYNTAX_ERROR);
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	switch(token.type){
 		case Token_Assign:
 			expression(NULL, &token);
@@ -273,7 +316,8 @@ int check_var_or_func(tToken *in_t){
 		case Token_Lpar:
 			argument_list(&token);
 			if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
-			GetToken(&token);
+			lex_ret = GetToken(&token);
+			if (lex_ret) exit(lex_ret);
 			break;
 		default: exit(SYNTAX_ERROR);
 	}
@@ -283,9 +327,11 @@ int check_var_or_func(tToken *in_t){
 
 int assign_value(void){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if (token.type!=Token_FuncID) exit(SYNTAX_ERROR);
-	GetToken(&token);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if (token.type!=Token_Assign) exit(SYNTAX_ERROR);
 	expression(NULL, &token);
 	if (token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
@@ -302,7 +348,8 @@ int if_(tToken *in_t){
 	tToken token;
 	token = *in_t;
 	if (token.type!=Token_if) exit(SYNTAX_ERROR);
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if (token.type!=Token_Lpar) exit(SYNTAX_ERROR);
 	expression(NULL, &token);
 	if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
@@ -315,13 +362,16 @@ int if_(tToken *in_t){
 
 int else_(tToken *ret_t){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if (token.type==Token_else){
-		GetToken(&token);
+		lex_ret = GetToken(&token);
+		if (lex_ret) exit(lex_ret);
 		if (token.type!=Token_Lbrack) exit(SYNTAX_ERROR);
 		body(&token);
 		if (token.type!=Token_Rbrack) exit(SYNTAX_ERROR);
-		GetToken(&token);
+		lex_ret = GetToken(&token);
+		if (lex_ret) exit(lex_ret);
 	}
 	*ret_t = token;
     return 0;
@@ -329,13 +379,17 @@ int else_(tToken *ret_t){
 
 int non_null_ID(tToken *ret_t){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if (token.type==Token_Pipe){
-		GetToken(&token);
+		lex_ret = GetToken(&token);
+		if(lex_ret) exit(lex_ret);
 		if (token.type!=Token_FuncID) exit(SYNTAX_ERROR);
-		GetToken(&token);
+		lex_ret = GetToken(&token);
+		if(lex_ret) exit(lex_ret);
 		if (token.type!=Token_Pipe) exit(SYNTAX_ERROR);
-		GetToken (&token);
+		lex_ret = GetToken (&token);
+		if(lex_ret) exit(lex_ret);
 	}
 	*ret_t = token;
     return 0;
@@ -345,7 +399,8 @@ int while_loop(tToken *in_t){
 	tToken token;
 	token = *in_t;
 	if (token.type!=Token_while) exit(SYNTAX_ERROR);
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if (token.type!=Token_Lpar) exit(SYNTAX_ERROR);
 	expression(NULL, &token);
 	if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
@@ -359,7 +414,8 @@ int while_loop(tToken *in_t){
 int function_call(tToken *in_t){
 	tToken token = *in_t;
 	if (token.type!=Token_FuncID && token.type!=Token_BuildIn_Func) exit(SYNTAX_ERROR);
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if(lex_ret) exit(lex_ret);
 	if (token.type!=Token_Lpar) exit(SYNTAX_ERROR);
 	argument_list(&token);
 	if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
@@ -368,7 +424,8 @@ int function_call(tToken *in_t){
 
 int argument_list(tToken *ret_t){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if(lex_ret) exit(lex_ret);
 	switch(token.type){
 		case Token_FuncID:
 			argument(&token);
@@ -410,7 +467,8 @@ int argument(tToken *in_t){
 
 int next_argument(tToken *ret_t){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if (token.type==Token_Comma) argument_list(&token);
 	*ret_t = token;
     return 0;
@@ -419,7 +477,10 @@ int next_argument(tToken *ret_t){
 int expression(tToken *in_t, tToken *ret_t){
 	tToken token;
 	if (in_t) token = *in_t;
-	else GetToken(&token);
+	else {
+		int lex_ret = GetToken(&token);
+		if (lex_ret) exit(lex_ret);
+	}
 	operand(&token);
 	next_expression(&token);
 	*ret_t = token;
@@ -433,6 +494,7 @@ int operand(tToken *in_t){
 		case Token_FuncID: check_var_or_func(&token); break;
 		case Token_BuildIn_Func: function_call(&token); break;
 		case Token_Integer:
+		case Token_string:
 		case Token_Float: break;
 		case Token_Lpar: expression(NULL, &token);
 						 if(token.type!=Token_Rpar) exit(SYNTAX_ERROR);
@@ -444,9 +506,11 @@ int operand(tToken *in_t){
 
 int next_expression(tToken *ret_t){
 	tToken token;
-	GetToken(&token);
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
 	if(operator_(&token)){
-		GetToken(&token);
+		lex_ret = GetToken(&token);
+		if (lex_ret) exit(lex_ret);
 		operand(&token);
 		next_expression(&token);
 	}

@@ -4,13 +4,23 @@
  * @author Nikola Jordanov xjordan00
  */
 
+#ifndef AST_H
+#define AST_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "error.h"
 #include "scanner.h"
+#include "stack.h"
 
 //declarace uzlu AST
 typedef struct ast_node tAstNode;
+
+//union na ukladani ciselnou hodnotu
+typedef union value{
+	int i;
+	double f;
+}tValue;
 
 //enum na rozeznavani typu hodnot
 typedef enum type{
@@ -33,8 +43,8 @@ typedef union ret_val{
 
 //struktura pro zadavani argumenty do definice funkci
 typedef struct arg_def{
-	char *name;
-	tType type;
+	tToken name_token;
+	tToken type_token;
 	struct arg_def *next;
 }tArgDef;
 
@@ -42,7 +52,7 @@ typedef struct arg_def{
 typedef struct func_def{
 	tToken token;
 	tArgDef *args;
-	tType ret_type;
+	tToken ret_type_token;
 	tAstNode *code;
 }tFuncDef;
 
@@ -62,24 +72,15 @@ typedef enum id_or_val_type{
 
 //struktura pro ukladani argumenty volanych funkci
 typedef struct args{
-	tIdOrVal data;
-	tIdOrValType data_type;
+	tToken token;
 	struct args *next;
 }tArgs;
 
 //struktura uzlu pro volani funkce
 typedef struct func_call{
-	tToken token;
-	tRetVal ret_val;
-	tType ret_type;
+	tToken name_token;
 	tArgs *args;
 }tFuncCall;
-
-//struktura uzlu pro declaraci konstanty
-typedef struct decl_const{
-	tToken token;
-	tType type;
-}tConstDecl;
 
 //struktura uzlu pro deklaraci promenne
 typedef struct decl_var{
@@ -89,7 +90,6 @@ typedef struct decl_var{
 
 //struktura uzlu pro ukladani hodnoty do promenne
 typedef struct assign{
-	tToken token;
 	tAstNode *dst;
 	tAstNode *src;
 }tAssign;
@@ -99,11 +99,13 @@ typedef struct bin_op{
 	tToken token;
 	tAstNode *op1;
 	tAstNode *op2;
+	tValue res_val;
+	tIdOrValType ret_type;
 }tBinOp;
 
 //struktura uzlu pro if block
 typedef struct if_block{
-	tToken token;
+	tAstNode *nn_id;
 	tAstNode *expr;
 	tAstNode *if_code;
 	tAstNode *else_code;
@@ -111,16 +113,10 @@ typedef struct if_block{
 
 //struktura uzlu pro while loop
 typedef struct while_loop{
-	tToken token;
+	tAstNode *nn_id;
 	tAstNode *expr;
 	tAstNode *code;
 }tWhileLoop;
-
-//union na ukladani ciselnou hodnotu
-typedef union value{
-	int i;
-	double f;
-}tValue;
 
 //struktura uzlu cisla
 typedef struct Num_val{
@@ -157,7 +153,6 @@ typedef union ast_node_structure{
 	tIfBlock if_block;
 	tBinOp bin_op;
 	tAssign assign;
-	tConstDecl const_decl;
 	tVarDecl var_decl;
 	tFuncCall func_call;
 	tFuncDef func_def;
@@ -184,3 +179,17 @@ struct ast_node{
 	tStructure structure;
 	tAstNodeType type;
 };
+
+void AddFuncCallNode(tAstNode **node_dest, tToken id_t, tTokenStack *arg_stack);
+void AddAssignNode(tAstNode **node_dest);
+void AddDeclNode(tAstNode **node_dest, tTokenStack *stack);
+void AddWhileNode(tAstNode **node_dest);
+void AddIfBlockNode(tAstNode **node_dest);
+void AddFuncDefNode(tAstNode **node_dest, tTokenStack *stack, tTokenStack *arg_stack);
+void AddStatmentNode(tAstNode **node_dest);
+void AddCodeNode(tAstNode **node_dest);
+void AddExpNodes(tAstNode **node_dest, tTokenStack *stack);
+void PrecedenceCheck(tToken *in_t, tTokenStack *input_stack, tTokenStack *output_stack);
+void AstDispose(tAstNode **tree);
+
+#endif /** AST_H **/
