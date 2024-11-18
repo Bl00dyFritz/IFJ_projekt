@@ -12,13 +12,17 @@
 #include "parser.h"
 #include "symtable.h"
 #include "scanner.h"
-#include "stack.c"
+#include "GenStack.h"
 
 void GenHead(void);
 
+void GenMainHead(void);
+
 void GenDefFunc(tFunctionVals *vals, char *FuncName);
 
-void GenCallFunc(tBstNode *node, tFunctionVals *vals);
+void GenCallBuiltInFunc(tAstNode *node);
+
+void GenCallFunc(tAstNode *node, tFunctionVals *FuncVals, char *FuncName);
 
 void GenFuncEnd(tFunctionVals *vals);
 
@@ -26,7 +30,7 @@ void GenExpBegin(void);
 
 void GenExpEnd(void);
 
-void GenStackOp(tBstNode *node, tToken *token);
+void GenStackOp(tAstNode *node, tToken *token);
 
 void GenIfStart(void);
 
@@ -44,8 +48,8 @@ void GenWhileEnd(void);
 
 void GenReturn(void);
 
-void generate3AK(tAstNode *strom, sStack *stack);
+void generate3AK(sStackGen *stack, tAstNode *tree);
 
-void GenerateOutput(tBstNode *strom, sStack *stack, tToken token);
+void GenerateOutput(tAstNode *tree, sStackGen *stack, tFunctionVals *FuncVals, char *FuncName);
 
 #endif /** GENERATOR_H **/
