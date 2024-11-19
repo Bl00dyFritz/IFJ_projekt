@@ -311,6 +311,7 @@ void BstDelete(tBstNode **tree, char *key){
 		}
 	}
 }
+
 /**
  * @brief Funkce ktera prida prvek do stromu a pak ho vyrovna
  * @param tree Odkaz na vypracovavany strom
