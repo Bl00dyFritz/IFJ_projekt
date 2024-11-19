@@ -9,13 +9,13 @@
 #include "generator.h"
 #include "ast.h"
 
+void GenInitial(void) {
+    GenHead();
+    GenMainHead();
+}
 
 void GenHead(void) {
     printf(".IFJcode24\n");
-    printf("DEFVAR GF@tmp1\n");
-    printf("DEFVAR GF@tmp2\n");
-    printf("DEFVAR GF@tmp3\n");
-    printf("DEFVAR GF@func_result\n");
     printf("JUMP $$main\n");
 }
 
@@ -23,6 +23,10 @@ void GenMainHead(void) {
     printf("LABEL $$main\n");
     printf("CREATEFRAME\n");
     printf("PUSHFRAME\n");
+    printf("DEFVAR GF@tmp1\n");
+    printf("DEFVAR GF@tmp2\n");
+    printf("DEFVAR GF@tmp3\n");
+    printf("DEFVAR GF@func_result\n");
 }
 
 void GenExpBegin() {
@@ -35,8 +39,47 @@ void GenExpEnd() {
     printf("POPFRAME\n");
 }
 
-void GenStackOp(tAstNode *node, tToken *token) {
-    switch (token->type) {
+void GenPushIntFloat(tAstNode *node) {
+    switch (node->structure.val.token.type) {
+        case Token_Integer:
+            printf("PUSHS int@%d", node->structure.bin_op.op1->structure.val.token.value.integer);
+            if (node->structure.bin_op.token.type == Token_Divide) {
+                printf("INT2FLOATS\n");
+            }
+            break;
+        case Token_Float:
+            printf("PUSHS float@%a", node->structure.bin_op.op1->structure.val.token.value.decimal);
+            if (node->structure.bin_op.token.type == Token_Divide) {
+                printf("FLOAT2INTS\n");
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+bool CheckNill(tAstNode *node) {
+    if (node->type == Token_null) {
+        return true;
+    } else return false;
+}
+
+void GenStackOp(tAstNode *node) {
+    GenPushIntFloat(node->structure.bin_op.op1);
+    GenPushIntFloat(node->structure.bin_op.op2);
+    switch (node->structure.bin_op.token.type) {
+        case Token_Lesser:
+        case Token_Lesser_Equal:
+        case Token_Greater:
+        case Token_Greater_Equal:
+            if (CheckNill(node->structure.bin_op.op1)) exit(53);
+            if (CheckNill(node->structure.bin_op.op2)) exit(53);
+            break;
+        default:
+            break;
+    }
+    
+    switch (node->structure.bin_op.token.type) {
         case Token_Plus:
             printf("ADDS\n");
             break;
@@ -46,14 +89,15 @@ void GenStackOp(tAstNode *node, tToken *token) {
         case Token_Multiply:
             printf("MULS\n");
             break;
-        case Token_Divide:                          //Vyriesit ako s IDIV
-            printf("DIVS\n");
-            break;
-        case Token_Integer:
-            printf("PUSHS int@%d\n", token->value.integer);
-            break;
-        case Token_Float:
-            printf("PUSHS float@%d\n", token->value.decimal);
+        case Token_Divide:
+            if (node->structure.bin_op.op2->structure.val.token.value.integer == 0) {
+                exit(57);
+            }
+            if (node->structure.bin_op.op1->structure.val.token.value.integer < 0 || node->structure.bin_op.op2->structure.val.token.value.integer < 0) {
+                printf("IDIVS\n");
+            } else {
+                printf("DIVS\n");
+            }
             break;
         case Token_Equal:
             printf("EQS\n");
@@ -63,19 +107,24 @@ void GenStackOp(tAstNode *node, tToken *token) {
             printf("NOT\n");
             break;
         case Token_Lesser_Equal:
-
+            printf("LTS\n");
+            GenPushIntFloat(node->structure.bin_op.op1);
+            GenPushIntFloat(node->structure.bin_op.op2);
+            printf("EQS\n");
+            printf("ORS\n");
             break;
         case Token_Lesser:
             printf("LTS\n");
             break;
         case Token_Greater_Equal:
-
+            printf("GTS\n");
+            GenPushIntFloat(node->structure.bin_op.op1);
+            GenPushIntFloat(node->structure.bin_op.op2);
+            printf("EQS\n");
+            printf("ORS\n");
             break;
         case Token_Greater:
             printf("GTS\n");
-            break;
-        case Token_String:
-
             break;
         default:
             break;
@@ -288,25 +337,45 @@ void GenCallBuiltInFunc(tAstNode *node) {
 }
 
 
-//Toto treba prerobit
-void GenCallFunc(tAstNode *node, tFunctionVals *FuncVals, char *FuncName) {
-    for (int i = FuncVals->paramCnt; i > 0; i--) {
-        printf("DEFVAR TF@t%d", i);
-        printf("PUSHS TF@t%d", i);
-    }
-    
-    printf("CALL $%s\n", FuncName);
-    printf("LABEL $%s\n", FuncName);
-    printf("PUSHFRAME\n");
-    for (int i = FuncVals->paramCnt; i > 0; i--) {
-        printf("DEFVAR LF@l%d", i);
-        printf("POPS LF@l%d", i);
-    }    
+
+void GenCallFunc(tAstNode *node) {
+    printf("CALL $$%s\n", node->structure.func_call.name_token.value.string);
 }
 
-void GenDefFunc(tFunctionVals *vals, char *FuncName) {
-    printf("LABEL $%s\n", FuncName);
+void GenDefFunc(tAstNode *node) {
+    printf("LABEL $$%s\n", node->structure.func_call.name_token.value.string);
     printf("PUSHFRAME\n");
+
+}
+
+void GenFuncEnd(tAstNode *node) {
+    if (node->structure.func_def.ret_type_token.type != Token_null) {
+        printf("POPS GF@func_result\n");
+    }
+    printf("POPFRAME\n");
+    printf("RETURN\n");
+}
+
+void GenAssign(tAstNode *node) {
+    switch (node->structure.assign.src->structure.var.token.type) {
+        case Token_Integer: case Token_i32: case Token_Ni32:
+            printf("MOVE LF@%s int@%lld\n", node->structure.assign.dst->structure.var.token.value.string, 
+                                            node->structure.assign.src->structure.var.token.value.integer);
+            break;
+        case Token_Float: case Token_f64: case Token_Nf64:
+            printf("MOVE LF@%s float@%a\n", node->structure.assign.dst->structure.var.token.value.string,
+                                            node->structure.assign.src->structure.var.token.value.decimal);
+            break;
+        case Token_String:
+            printf("MOVE LF@%s string@%s\n", node->structure.assign.dst->structure.var.token.value.string,
+                                            node->structure.assign.src->structure.var.token.value.string);
+            break;
+        case Token_null: case Token_void:
+            printf("MOVE LF@%s nil@nil\n", node->structure.assign.dst->structure.var.token.value.string);
+            break;    
+        default:
+            break;
+    }
 }
 
 void GenIfStart(void) {
@@ -328,15 +397,6 @@ void GenReturn(void) {
     printf("RETURN\n");
 }
 
-
-void GenFuncEnd(tFunctionVals *vals) {
-    if (vals->ret_type != Token_null) {
-        printf("POP GF@func_result\n");
-    }
-    printf("POPFRAME\n");
-    printf("RETURN\n");
-}
-
 /**
  * dostaneme ukazatel na tree, zasobnik
  * potom to dat do zasobniku
@@ -353,10 +413,6 @@ void generate3AK(sStackGen *stack, tAstNode *tree) {
  */
 void GenerateOutput(tAstNode *tree, sStackGen *stack, tFunctionVals *FuncVals, char *FuncName) {
     tAstNode val;
-
-    GenHead();
-    GenMainHead();
-
     while (!StackGen_IsEmpty(stack)) {
         StackGen_Pop(stack, &val);
         switch (val.type) {
@@ -367,7 +423,7 @@ void GenerateOutput(tAstNode *tree, sStackGen *stack, tFunctionVals *FuncVals, c
 
                 break;
 	        case VAR:
-
+                
                 break;
 	        case VAL:
 
@@ -379,22 +435,22 @@ void GenerateOutput(tAstNode *tree, sStackGen *stack, tFunctionVals *FuncVals, c
 
                 break;
 	        case BIN_OP:
-
+                GenStackOp(&val);
                 break;
 	        case ASSIGN:
-
+                GenAssign(&val);
                 break;
 	        case CONST_DECL:
 
                 break;
 	        case VAR_DECL:
-
+                printf("DEFVAR LF@%s", val.structure.var_decl.token.value.string);
                 break;
 	        case FUNC_CALL:
-                if (tree->structure.func_call.name_token.type == Token_BuildIn_Func) {
-                    GenCallBuiltInFunc(tree);
+                if (val.structure.func_call.name_token.type == Token_BuildIn_Func) {
+                    GenCallBuiltInFunc(&val);
                 } else {
-                    GenCallFunc(tree, FuncVals, FuncName);
+                    GenCallFunc(&val);
                 }
                 break;
 	        case FUNC_DEF:

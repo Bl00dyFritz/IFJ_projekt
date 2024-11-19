@@ -14,23 +14,31 @@
 #include "scanner.h"
 #include "GenStack.h"
 
+void GenInitial(void);
+
 void GenHead(void);
 
 void GenMainHead(void);
 
-void GenDefFunc(tFunctionVals *vals, char *FuncName);
+void GenDefFunc(tAstNode *node);
 
 void GenCallBuiltInFunc(tAstNode *node);
 
-void GenCallFunc(tAstNode *node, tFunctionVals *FuncVals, char *FuncName);
+void GenCallFunc(tAstNode *node);
 
-void GenFuncEnd(tFunctionVals *vals);
+void GenFuncEnd(tAstNode *node);
+
+void GenAssign(tAstNode *node);
 
 void GenExpBegin(void);
 
 void GenExpEnd(void);
 
-void GenStackOp(tAstNode *node, tToken *token);
+void GenPushIntFloat(tAstNode *node);
+
+bool CheckNill(tAstNode *node);
+
+void GenStackOp(tAstNode *node);
 
 void GenIfStart(void);
 
