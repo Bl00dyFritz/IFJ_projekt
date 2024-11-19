@@ -10,11 +10,20 @@
 #include "scanner.h"
 #include "error.h"
 
+/**
+ * @brief Funkce, ktera inicializuje zasobnik
+ * @param stack Ukazatel na inicializovany zasobnik
+ */
 void InitTStack (tTokenStack *stack){
 	if (!stack) exit(99);
 	stack->top = NULL;
 }
 
+/**
+ * @brief Funkce na pridavani element na vrchol zasobniku
+ * @param stack Zasobnik do ktereho se uklada prvek
+ * @param token Token ktery se ulzi do noveho prvku
+ */
 void PushTStack (tTokenStack *stack, tToken token){
 	if (!stack) exit(99);
 	tTokenStackElem *new = (tTokenStackElem*) malloc(sizeof(tTokenStackElem));
@@ -24,6 +33,10 @@ void PushTStack (tTokenStack *stack, tToken token){
 	stack->top = new;
 }
 
+/**
+ * @brief Funkce na odstraneni prvku z vrcholu zasobniku
+ * @param stack Zasobnik ze kteryho se ma odstranit prvek
+ */
 void PopTStack (tTokenStack *stack){
 	if(!stack) exit(99);
 	tTokenStackElem *elemP;
@@ -34,10 +47,21 @@ void PopTStack (tTokenStack *stack){
 	}
 }
 
+/**
+ * @brief Funkce, ktera vraci hodnotu prvku z vrcholu zasobniku
+ * @param stack Zasobnik ze kteryho se ma vratit hodnota vrcholu
+ * @return Vraci hodnotu ulozenou na vrcholu
+ */
 tToken TopTStack (tTokenStack *stack){
 	return stack->top->token;
 }
 
+
+/**
+ * @brief Funkce ktera kontroluje zda je zasobnik prazdny
+ * @param stack Kontrolovany zasobnik
+ * @return True pokud je zasobnik prazdny, jinka false
+ */
 bool StackIsEmpty (tTokenStack *stack){
 	return !stack->top;
 }

@@ -11,6 +11,10 @@
 #include "scanner.h"
 #include "error.h"
 
+/**
+ * @brief Funkce na ukladani uzlu typu Statement do ast
+ * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ */
 void AddStatmentNode (tAstNode **node_dest){
 	if(!node_dest) exit(99);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
@@ -20,6 +24,10 @@ void AddStatmentNode (tAstNode **node_dest){
 	(*node_dest)->structure.statement.function = NULL;
 }
 
+/**
+ * @brief Funkce na ukladani uzlu typu Code do ast
+ * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ */
 void AddCodeNode (tAstNode **node_dest){
 	if(!node_dest) exit(99);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
@@ -29,6 +37,10 @@ void AddCodeNode (tAstNode **node_dest){
 	(*node_dest)->structure.code.operation = NULL;
 }
 
+/**
+ * @brief Funkce na ukladani uzlu typu IfBlock do ast
+ * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ */
 void AddIfBlockNode (tAstNode **node_dest){
 	if(!node_dest) exit(99);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
@@ -40,6 +52,10 @@ void AddIfBlockNode (tAstNode **node_dest){
 	(*node_dest)->structure.if_block.nn_id = NULL;
 }
 
+/**
+ * @brief Funkce na ukladani uzlu typu WhileLoop do ast
+ * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ */
 void AddWhileNode (tAstNode **node_dest){
 	if(!node_dest) exit(99);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
@@ -50,6 +66,10 @@ void AddWhileNode (tAstNode **node_dest){
 	(*node_dest)->structure.while_loop.nn_id = NULL;
 }
 
+/**
+ * @brief Funkce na ukladani uzlu typu Assign do ast
+ * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ */
 void AddAssignNode (tAstNode **node_dest){
 	if(!node_dest) exit(99);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
@@ -59,6 +79,11 @@ void AddAssignNode (tAstNode **node_dest){
 	(*node_dest)->structure.assign.src = NULL;
 }
 
+/**
+ * @brief Funkce na ukladani uzlu typu VarDecl do ast
+ * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ * @param stack Zasobnik ve kterem se nachazy informace uzlu: Typ, nazev
+ */
 void AddDeclNode (tAstNode **node_dest, tTokenStack *stack){
 	if(!node_dest || !stack) exit(99);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
@@ -94,7 +119,12 @@ void AddDeclNode (tAstNode **node_dest, tTokenStack *stack){
 	else exit(99);
 }
 
-
+/**
+ * @brief Funkce na ukladani uzlu typu FuncDef do ast
+ * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ * @param stack Zasobnik ve kterem se nahazi informace uzlu: typ, nazev
+ * @param arg_stack Zasobnik ve kterem se nazhazi informace definovanych argumentu funkce: typ, nazev (ceka se ze je vzdy dostane ve dvojicich v tomto poradi n-krat, kde n je pocet parametru
+ */
 void AddFuncDefNode (tAstNode **node_dest, tTokenStack *stack, 
 		tTokenStack *arg_stack){
 	if(!node_dest || !stack) exit(99);
@@ -107,7 +137,7 @@ void AddFuncDefNode (tAstNode **node_dest, tTokenStack *stack,
 	token = TopTStack(stack);
 	PopTStack(stack);
 	(*node_dest)->structure.func_def.token = token;
-	while(arg_stack){
+	while(!StackIsEmpty(arg_stack)){
 		tArgDef *tmp = (tArgDef *) malloc(sizeof(tArgDef));
 		if(!tmp) exit(99);
 		token = TopTStack(arg_stack);
@@ -122,6 +152,12 @@ void AddFuncDefNode (tAstNode **node_dest, tTokenStack *stack,
 
 }
 
+/**
+ * @brief Funkce na ukladani uzlu typu FuncCall do ast
+ * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ * @param id_t Token obsahujici nazev funkce
+ * @param arg_stack Zasobnik obsahujuci tokeny nazvu nebo hodnoty argumentu
+ */
 void AddFuncCallNode (tAstNode **node_dest, tToken id_t,
 		tTokenStack *arg_stack){
 	if(!node_dest) exit(99);
@@ -129,7 +165,7 @@ void AddFuncCallNode (tAstNode **node_dest, tToken id_t,
 	if(!(*node_dest)) exit(99);
 	(*node_dest)->type = FUNC_CALL;
 	(*node_dest)->structure.func_call.name_token = id_t;
-	while(arg_stack){
+	while(arg_stack->top){
 		tArgs *tmp = (tArgs *) malloc(sizeof(tArgs));
 		if(!tmp) exit(99);
 		tToken token = TopTStack(arg_stack);
@@ -140,7 +176,14 @@ void AddFuncCallNode (tAstNode **node_dest, tToken id_t,
 	}
 }
 
-void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack, tTokenStack *output_stack){
+/**
+ * @brief Funkce, ktera provadi precedencni analyzu a dle ni sklada zasobnik vystupnich tokenu, ktery se pak pouzije na skladani vyrazovy podstrom v ast
+ * @param in_t Vstupni token, jeho hodnota se precedencne porovnava s hodnotu vrcholu vstupoveho zasobniku
+ * @param input_stack Vstupovy zasobnik, dle vysledku precedencniho provovnani se do bud do toho uklada hodnotu in_t nebo jeho vrchol se posouva do vrcholu vystupoveho zasobniku
+ * @param output_stack Vystupovy zasobnik do ktereho se podle precedence ukladaji operace/operandy
+ */
+void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
+		tTokenStack *output_stack){
 	if(in_t){
 		tToken token_in = *in_t;
 		tToken token_top;
@@ -293,6 +336,11 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack, tTokenStack *outpu
 	}
 }
 
+/**
+ * @brief Funkce ktera sklada podstrom z vyrazu do ast
+ * @param node_dest Pozice kde se ma ulozit vyrazovy podstrom
+ * @param stack Precedencne usporadany zasobnik
+ */
 void AddExpNodes (tAstNode **node_dest, tTokenStack *stack){
 	if(!node_dest) exit(99);
 	if(!stack) exit(SYNTAX_ERROR);
@@ -331,6 +379,10 @@ void AddExpNodes (tAstNode **node_dest, tTokenStack *stack){
 	AddExpNodes(&(*node_dest)->structure.bin_op.op2, stack);
 }
 
+/**
+ * @brief Funkce, ktera vymaze ast a uvolni pamet kterou zabira
+ * @param tree Ukazatel na zacatek stromu
+ */
 void AstDispose (tAstNode **tree){
 	if(!tree) exit(99);
 	if(!(*tree)) return;
