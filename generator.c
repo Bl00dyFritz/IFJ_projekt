@@ -42,7 +42,7 @@ void GenExpEnd() {
 void GenPushIntFloat(tAstNode *node) {
     switch (node->structure.val.token.type) {
         case Token_Integer:
-            printf("PUSHS int@%d", node->structure.bin_op.op1->structure.val.token.value.integer);
+            printf("PUSHS int@%lld", node->structure.bin_op.op1->structure.val.token.value.integer);
             if (node->structure.bin_op.token.type == Token_Divide) {
                 printf("INT2FLOATS\n");
             }
@@ -345,7 +345,12 @@ void GenCallFunc(tAstNode *node) {
 void GenDefFunc(tAstNode *node) {
     printf("LABEL $$%s\n", node->structure.func_call.name_token.value.string);
     printf("PUSHFRAME\n");
-
+    tArgDef *tmp = node->structure.func_def.args;
+    while (tmp) {
+        printf("DEFVAR LF@%s\n", tmp->name_token.value.string);
+        printf("POPS LF@%s\n", tmp->name_token.value.string);
+        tmp = tmp->next;
+    }
 }
 
 void GenFuncEnd(tAstNode *node) {
@@ -376,6 +381,7 @@ void GenAssign(tAstNode *node) {
         default:
             break;
     }
+    printf("PUSHS LF@%s", node->structure.assign.dst->structure.var.token.value.string);
 }
 
 void GenIfStart(void) {
@@ -406,60 +412,73 @@ void generate3AK(sStackGen *stack, tAstNode *tree) {
     StackGen_Push(stack, tree);
 }
 
-/**
- * dostaneme 3AK ()
- * vypopuje zasobnik
- * Assembler kod vytlaci
- */
-void GenerateOutput(tAstNode *tree, sStackGen *stack, tFunctionVals *FuncVals, char *FuncName) {
+void Generate(sStackGen *stack) {
     tAstNode val;
     while (!StackGen_IsEmpty(stack)) {
         StackGen_Pop(stack, &val);
-        switch (val.type) {
-            case STATEMENT:
-                
-                break;
-	        case CODE:
+        GenerateOutput(&val);
+    }
+}
 
-                break;
-	        case VAR:
-                
-                break;
-	        case VAL:
+void GenerateOutput(tAstNode *node) {
+    switch (node->type) {
+        case STATEMENT:
+            
+            break;
+	    case CODE:
 
-                break;
-	        case WHILE:
+            break;
+	    case VAR:
+            switch (node->structure.var.type) {
+                case VOID:
+                    printf("MOVE TF@%s nil@nil", node->structure.var_decl.token.value.string);
+                    break;
+	            case I32: case NI32: 
+                    printf("MOVE TF@%s int@%lld", node->structure.var_decl.token.value.string, node->structure.var.val.i);
+                    break;
+	            case F64: case NF64:
+                    printf("MOVE TF@%s float@%a", node->structure.var_decl.token.value.string, node->structure.var.val.f);
+                    break;
+	            case U8: case NU8:
+                    printf("MOVE TF@%s string@%s", node->structure.var_decl.token.value.string, node->structure.var.val.str);
+                    break;
+                default:
+                    exit(56);
+                    break;
+            }
+            break;
+	    case WHILE:
+            GenWhileHead();
+            GenerateOutput(node->structure.while_loop.expr);
+            GenWhile();
+            GenerateOutput(node->structure.while_loop.code);
+            GenWhileEnd();
+            break;
+	    case IF:
 
-                break;
-	        case IF:
-
-                break;
-	        case BIN_OP:
-                GenStackOp(&val);
-                break;
-	        case ASSIGN:
-                GenAssign(&val);
-                break;
-	        case CONST_DECL:
-
-                break;
-	        case VAR_DECL:
-                printf("DEFVAR LF@%s", val.structure.var_decl.token.value.string);
-                break;
-	        case FUNC_CALL:
-                if (val.structure.func_call.name_token.type == Token_BuildIn_Func) {
-                    GenCallBuiltInFunc(&val);
-                } else {
-                    GenCallFunc(&val);
-                }
-                break;
-	        case FUNC_DEF:
-
-                break;
-
-            default:
-                break;
-        }
+            break;
+	    case BIN_OP:
+            GenStackOp(node);
+            break;
+	    case ASSIGN:
+            GenAssign(node);
+            break;
+	     case CONST_DECL: case VAR_DECL:
+            printf("DEFVAR TF@%s", node->structure.var_decl.token.value.string);
+            break;
+	    case FUNC_CALL:
+            if (node->structure.func_call.name_token.type == Token_BuildIn_Func) {
+                GenCallBuiltInFunc(node);
+            } else {
+                GenCallFunc(node);
+            }
+            break;
+	    case FUNC_DEF:
+            GenDefFunc(node);
+            break;
+        default:
+            break;
+    }
 
 
         /*
@@ -525,5 +544,5 @@ void GenerateOutput(tAstNode *tree, sStackGen *stack, tFunctionVals *FuncVals, c
                 break;
         }
         */
-    }
+    
 }

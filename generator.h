@@ -56,8 +56,10 @@ void GenWhileEnd(void);
 
 void GenReturn(void);
 
+void Generate(sStackGen *stack);
+
 void generate3AK(sStackGen *stack, tAstNode *tree);
 
-void GenerateOutput(tAstNode *tree, sStackGen *stack, tFunctionVals *FuncVals, char *FuncName);
+void GenerateOutput(tAstNode *node);
 
 #endif /** GENERATOR_H **/
