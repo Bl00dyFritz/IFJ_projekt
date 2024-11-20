@@ -136,8 +136,8 @@ void GenWhileHead(void) {
 }
 
 void GenWhile(void) {
-    printf("POPS GF@func_result");
-    printf("JUMPIFEQ $EndWhile$ GF@func_result bool@false\n");
+    printf("POPS GF@tmp2");
+    printf("JUMPIFEQ $EndWhile$ GF@tmp2 bool@false\n");
 }
 
 void GenWhileEnd(void) {
@@ -385,8 +385,12 @@ void GenAssign(tAstNode *node) {
 }
 
 void GenIfStart(void) {
-    printf("POPS GF@func_result\n");
-    printf("JUMPIFNEQ $$else_label GF@func_result bool@true\n");
+    printf("POPS GF@tmp1\n");
+    printf("JUMPIFNEQ $$else_label GF@tmp1 bool@true\n");
+}
+
+void GenIfEnd(void) {
+    printf("JUMPIFNEQ $$endif_label GF@tmp1 bool@false\n");
 }
 
 void GenElseStart(void) {
@@ -455,7 +459,13 @@ void GenerateOutput(tAstNode *node) {
             GenWhileEnd();
             break;
 	    case IF:
-
+            GenerateOutput(node->structure.if_block.expr);
+            GenIfStart();
+            GenerateOutput(node->structure.if_block.if_code);
+            GenIfEnd();
+            GenElseStart();
+            GenerateOutput(node->structure.if_block.else_code);
+            GenElseEnd();
             break;
 	    case BIN_OP:
             GenStackOp(node);
