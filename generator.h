@@ -54,8 +54,6 @@ void GenWhile(void);
 
 void GenWhileEnd(void);
 
-void GenReturn(void);
-
 void Generate(sStackGen *stack);
 
 void generate3AK(sStackGen *stack, tAstNode *tree);
