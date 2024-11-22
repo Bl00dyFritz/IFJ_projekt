@@ -50,6 +50,8 @@ void AddIfBlockNode (tAstNode **node_dest){
 	(*node_dest)->structure.if_block.if_code = NULL;
 	(*node_dest)->structure.if_block.expr = NULL;
 	(*node_dest)->structure.if_block.nn_id = NULL;
+	(*node_dest)->structure.if_block.if_symtable = NULL;
+	(*node_dest)->structure.if_block.else_symtable = NULL;
 }
 
 /**
@@ -64,6 +66,7 @@ void AddWhileNode (tAstNode **node_dest){
 	(*node_dest)->structure.while_loop.code = NULL;
 	(*node_dest)->structure.while_loop.expr = NULL;
 	(*node_dest)->structure.while_loop.nn_id = NULL;
+	(*node_dest)->structure.while_loop.while_symtable = NULL;
 }
 
 /**
@@ -137,6 +140,7 @@ void AddFuncDefNode (tAstNode **node_dest, tTokenStack *stack,
 	token = TopTStack(stack);
 	PopTStack(stack);
 	(*node_dest)->structure.func_def.token = token;
+	(*node_dest)->structure.func_def.internal_symtable = NULL;
 	while(!StackIsEmpty(arg_stack)){
 		tArgDef *tmp = (tArgDef *) malloc(sizeof(tArgDef));
 		if(!tmp) exit(99);

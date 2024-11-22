@@ -12,6 +12,7 @@
 #include "error.h"
 #include "scanner.h"
 #include "stack.h"
+#include "symtable.h"
 
 /**
  * @brief Uzel AST
@@ -65,6 +66,7 @@ typedef struct func_def{
 	tToken token; //token obsahujici nazev funkci
 	tArgDef *args; //seznam argumentu
 	tToken ret_type_token; //token obsahujici navratovy typ funkci
+	tBstNode *internal_symtable; //ukazatel na tabulka symbolu dane funkce
 	tAstNode *code; //ukazatel na uzel kodu dane funkce
 }tFuncDef;
 
@@ -136,6 +138,8 @@ typedef struct if_block{
 	tAstNode *nn_id; //ukazatel na uzel nenulove promenne
 	tAstNode *expr; //ukazatel na pravdivostni vyraz
 	tAstNode *if_code; //ukazatel na vykonavany kod v pripade splneni pravdivostniho vyrazu
+	tBstNode *if_symtable; //ukazatel na tabulka symbolu if bloku
+	tBstNode *else_symtable; //ukazatel na tabulka symbolu else bloku
 	tAstNode *else_code; //ukazatel na vykonavany kod v opacnem pripadu
 }tIfBlock;
 
@@ -145,6 +149,7 @@ typedef struct if_block{
 typedef struct while_loop{
 	tAstNode *nn_id; //ukazatel na uzel nenulove promenne
 	tAstNode *expr; //ukazatel na pravdivostni vyraz
+	tBstNode *while_symtable; //ukazatel na tabulka symbolu while bloku
 	tAstNode *code; //ukazatel na kod cyklu
 }tWhileLoop;
 
