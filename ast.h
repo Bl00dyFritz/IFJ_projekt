@@ -52,15 +52,6 @@ typedef union ret_val{
 }tRetVal;
 
 /**
- * @brief Struktura pro zadavani argumenty do definice funkci
- */
-typedef struct arg_def{
-	tToken name_token; //token obsahujici nazvu argumentu
-	tToken type_token; //token obsahujici ocekavany typ argumentu
-	struct arg_def *next; //ukazatel na dalsi argument
-}tArgDef;
-
-/**
  * @brief Struktura uzlu definice funkci
  */
 typedef struct func_def{
@@ -103,6 +94,7 @@ typedef struct args{
 typedef struct func_call{
 	tToken name_token; //nazev funkce
 	tArgs *args; //seznam argumentu
+	int arg_cnt;
 }tFuncCall;
 
 /**
@@ -155,11 +147,13 @@ typedef struct while_loop{
 }tWhileLoop;
 
 /**
- * @brief Struktura uzlu cisla
+ * @brief Struktura uzlu hodnoty
  */
 typedef struct Num_val{
-	tToken token; //token obsahujici hodnotu ciselneho uzlu
+	tToken token; //token obsahujici hodnotu ciselneho uzlu nebo stringovy term
 }tNumVal;
+
+
 
 /**
  * @brief Struktura uzlu promenne

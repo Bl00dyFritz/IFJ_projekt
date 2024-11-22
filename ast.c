@@ -170,6 +170,7 @@ void AddFuncCallNode (tAstNode **node_dest, tToken id_t,
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
 	if(!(*node_dest)) exit(99);
 	(*node_dest)->type = FUNC_CALL;
+	(*node_dest)->structure.func_call.arg_cnt = 0;
 	(*node_dest)->structure.func_call.name_token = id_t;
 	while(arg_stack->top){
 		tArgs *tmp = (tArgs *) malloc(sizeof(tArgs));
@@ -179,6 +180,7 @@ void AddFuncCallNode (tAstNode **node_dest, tToken id_t,
 		tmp->token = token;
 		tmp->next = (*node_dest)->structure.func_call.args;
 		(*node_dest)->structure.func_call.args = tmp;
+		(*node_dest)->structure.func_call.arg_cnt++;
 	}
 }
 
