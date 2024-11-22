@@ -44,3 +44,5 @@ void SymtableListAdd (tSymtableList *list, tBstNode *symtree);
  * @param list Ukazatel na seznam ze ktereho se ma odebrat prvek
  */
 void SymtableListRemove (tSymtableList *list);
+
+void ExamineSemantics (tAstNode *node);

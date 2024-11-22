@@ -44,3 +44,49 @@ void SymtableListRemove (tSymtableList *list){
 	BstDispose(&tmp->root_ptr);
 	free(tmp);
 }
+
+void ExamineSemantics (tAstNode *node){
+	if(!node) return;
+	switch (node->type){
+		case STATEMENT:
+			ExamineSemantics(node->structure.statement.function);
+			ExamineSemantics(node->structure.statement.next_statement);
+			break;
+		case CODE:
+			ExamineSemantics(node->structure.code.operation);
+			ExamineSemantics(node->structure.code.next_code);
+			break;
+		case VAR:
+			break;
+		case VAL:
+			break;
+		case WHILE:
+			ExamineSemantics(node->structure.while_loop.expr);
+			ExamineSemantics(node->structure.while_loop.nn_id);
+			ExamineSemantics(node->structure.while_loop.code);
+			break;
+		case IF:
+			ExamineSemantics(node->structure.if_block.expr);
+			ExamineSemantics(node->structure.if_block.nn_id);
+			ExamineSemantics(node->structure.if_block.if_code);
+			ExamineSemantics(node->structure.if_block.else_code);
+			break;
+		case BIN_OP:
+			ExamineSemantics(node->structure.bin_op.op1);
+			ExamineSemantics(node->structure.bin_op.op2);
+			break;
+		case ASSIGN:
+			ExamineSemantics(node->structure.assign.dst);
+			ExamineSemantics(node->structure.assign.src);
+			break;
+		case CONST_DECL:
+			break;
+		case VAR_DECL:
+			break;
+		case FUNC_CALL:
+			break;
+		case FUNC_DEF:
+			ExamineSemantics(node->structure.func_def.code);
+			break;
+	}
+}

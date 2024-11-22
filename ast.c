@@ -94,6 +94,8 @@ void AddDeclNode (tAstNode **node_dest, tTokenStack *stack){
 	tToken token = TopTStack(stack);
 	PopTStack(stack);
 	switch (token.type){
+		case Token_Dollar:
+			(*node_dest)->structure.var_decl.type =UNDEF; break;
 		case Token_void:
 			(*node_dest)->structure.var_decl.type = VOID; break;
 		case Token_i32:

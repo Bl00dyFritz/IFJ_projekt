@@ -38,6 +38,7 @@ typedef enum type{
 	NI32,
 	NF64,
 	NU8,
+	UNDEF
 }tType;
 
 /**
@@ -109,7 +110,7 @@ typedef struct func_call{
  */
 typedef struct decl_var{
 	tToken token; //token obsahujici nazev promenne
-	tType type; //token obsahujici typ promenne
+	tType type; //typ promenne
 }tVarDecl;
 
 /**
