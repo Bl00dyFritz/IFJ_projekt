@@ -214,12 +214,12 @@ void ReplaceByLeftmost(tBstNode *target, tBstNode **tree){
  * @param first_break Ukazatel na nejnizi uzel kde vyvazenost je narusena, pokud neni narusena hodnota ukazatele se nemeni
  * @return vyska stromu jako cele cislo int; pokud je narisena vyskova vyvazenost vraci -1
  */
-int CheckHeight(tBstNode *tree, tBstNode **first_break){
+int CheckHeight(tBstNode **tree, tBstNode ***first_break){
 	int hl, hr;
 	if (tree!=NULL){
-		hl = CheckHeight(tree->left, first_break);
+		hl = CheckHeight(&(*tree)->left, first_break);
 		if (hl==-1) return -1;
-		hr = CheckHeight(tree->right, first_break);
+		hr = CheckHeight(&(*tree)->right, first_break);
 		if (hr==-1) return -1;
 		if (hl>hr){
 			if(hl-hr>1){
@@ -245,32 +245,32 @@ int CheckHeight(tBstNode *tree, tBstNode **first_break){
  */
 void Realign (tBstNode **tree){
 	if(!tree) exit(99);
-	tBstNode *br = NULL;
-	if (CheckHeight(*tree, &br)!=-1) return;
-	int lh = CheckHeight(br->left, &br);
-	int rh = CheckHeight(br->right, &br);
+	tBstNode **br = NULL;
+	if (CheckHeight(tree, &br)!=-1) return;
+	int lh = CheckHeight(&(*br)->left, &br);
+	int rh = CheckHeight(&(*br)->right, &br);
 	int cmp1;
 	int cmp2;
 	if (lh>rh){
 		cmp1='l';
-		lh = CheckHeight(br->left->left, &br);
-		rh = CheckHeight(br->left->right, &br);
+		lh = CheckHeight(&(*br)->left->left, &br);
+		rh = CheckHeight(&(*br)->left->right, &br);
 	}
 	else{
 		cmp1='r';
-		lh = CheckHeight(br->right->left, &br);
-		rh = CheckHeight(br->right->left, &br);
+		lh = CheckHeight(&(*br)->right->left, &br);
+		rh = CheckHeight(&(*br)->right->right, &br);
 	}
 	if(lh>rh) cmp2='l';
 	else cmp2='r';
 	switch(cmp1){
 		case 'l':
-			if (cmp2=='l') RotRight(&br);
-			else if(cmp2=='r') RotLRight(&br);
+			if (cmp2=='l') RotRight(br);
+			else if(cmp2=='r') RotLRight(br);
 			break;
 		case 'r':
-			if (cmp2=='l') RotRLeft(&br);
-			else if(cmp2=='r') RotLeft(&br);
+			if (cmp2=='l') RotRLeft(br);
+			else if(cmp2=='r') RotLeft(br);
 			break;
 	}
 }

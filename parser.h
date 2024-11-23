@@ -11,12 +11,13 @@
 #include <stdlib.h>
 #include "scanner.h"
 #include "error.h"
+#include "ast.h"
 
 int prolog(void);
 
-int statement(tToken *in_t);
+int statement(tAstNode *synt_tree, tToken *in_t);
 
-int next_statement(void);
+int next_statement(tAstNode *synt_tree);
 
 int function(tToken *in_t);
 
