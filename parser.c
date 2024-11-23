@@ -6,11 +6,42 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "parser.h"
 #include "error.h"
 #include "scanner.h"
 #include "ast.h"
 #include "symtable.h"
+
+int prolog(void){
+	tToken token;
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_const) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_IFJ) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_Assign) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_AtImport) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_Lpar) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_string) exit(SYNTAX_ERROR);
+	if (strcmp(token.value.string, "ifj24.zig")) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
+	return 0;
+}
 
 int statement(tToken *in_t){
 	tToken token;
@@ -536,11 +567,7 @@ int operator_(tToken *in_t){
 }
 
 int program(void){ //the whole program
-    
-    int prologue = PrologueScan();
-    if(prologue != 0){
-        return prologue;
-    }
+   	prolog(); 
 	statement(NULL);
 	next_statement();
 
