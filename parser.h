@@ -12,6 +12,8 @@
 #include "scanner.h"
 #include "error.h"
 
+int prolog(void);
+
 int statement(tToken *in_t);
 
 int next_statement(void);
