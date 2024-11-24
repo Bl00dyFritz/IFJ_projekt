@@ -216,7 +216,7 @@ void ReplaceByLeftmost(tBstNode *target, tBstNode **tree){
  */
 int CheckHeight(tBstNode **tree, tBstNode ***first_break){
 	int hl, hr;
-	if (tree!=NULL){
+	if (*tree!=NULL){
 		hl = CheckHeight(&(*tree)->left, first_break);
 		if (hl==-1) return -1;
 		hr = CheckHeight(&(*tree)->right, first_break);
