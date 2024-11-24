@@ -182,6 +182,7 @@ int GetToken(tToken *token) {
                         String_Free(&str);
                         return LEXICAL_ERROR;
                     } 
+                    token->type = Token_BuildIn_Func;
                     ungetc(c, file);
                     Completed = true;
                 }
