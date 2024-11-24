@@ -30,6 +30,7 @@
 #define MAX_LENGTH 128
 
 typedef enum {
+    State_AtImport,
     State_Start,
     State_FuncID,
     State_Check_TypeID,
@@ -83,6 +84,7 @@ typedef enum {
 
 typedef enum {
     Token_Empty,
+    Token_AtImport,
 
     Token_Plus,
     Token_Minus,
@@ -190,8 +192,6 @@ typedef struct {
 } sStr;
 
 void SetSourceFile(FILE *f);
-
-int PrologueScan(void);
 
 void CheckKW(tToken *token, sStr *string);
 
