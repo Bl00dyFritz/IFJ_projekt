@@ -181,6 +181,12 @@ typedef struct code{
 	tAstNode *operation; //ukazatel na zpracovavany vyraz kodu
 }tCode;
 
+typedef struct ret{
+	tAstNode *ret_expr;
+	tType type;
+	tValue val;
+}tRet;
+
 /**
  * @brief Union pro struktury uzlu
  */
@@ -196,6 +202,7 @@ typedef union ast_node_structure{
 	tVarDecl var_decl;
 	tFuncCall func_call;
 	tFuncDef func_def;
+	tRet ret;
 }tStructure;
 
 /**
@@ -213,7 +220,8 @@ typedef enum ast_node_type{
 	CONST_DECL,
 	VAR_DECL,
 	FUNC_CALL,
-	FUNC_DEF
+	FUNC_DEF,
+	RET
 }tAstNodeType;
 
 //definice uzlu stromu
@@ -274,6 +282,12 @@ void AddStatmentNode(tAstNode **node_dest);
  * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
  */
 void AddCodeNode(tAstNode **node_dest);
+
+/**
+ * @brief Funkce na ukladani uzlu typu Ret do ast
+ * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ */
+void AddRetNode(tAstNode **node_dest);
 
 /**
  * @brief Funkce ktera sklada podstrom z vyrazu do ast
