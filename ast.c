@@ -336,6 +336,15 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 	}
 }
 
+void AddRetNode(tAstNode **node_dest){
+	if (!node_dest) exit(99);
+	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
+	if(!(*node_dest)) exit(99);
+	(*node_dest)->type = RET;
+	(*node_dest)->structure.ret.ret_expr = NULL;
+	(*node_dest)->structure.ret.type = VOID;
+}
+
 /**
  * @brief Funkce ktera sklada podstrom z vyrazu do ast
  * @param node_dest Pozice kde se ma ulozit vyrazovy podstrom
@@ -433,6 +442,8 @@ void AstDispose (tAstNode **tree){
 			}
 			AstDispose(&(*tree)->structure.func_def.code);
 			break;
+		case RET:
+			AstDispose(&(*tree)->structure.ret.ret_expr);
 	}
 	free(*tree);
 }
