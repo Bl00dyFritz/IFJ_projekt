@@ -213,9 +213,9 @@ void GenCallBuiltInFunc(tAstNode *node) {
             printf("DEFVAR LF@string\n");
             printf("DEFVAR LF@StartIndex\n");
             printf("DEFVAR LF@EndIndex\n");
-            printf("PUSHS LF@string\n");
-            printf("PUSHS LF@StartIndex\n");
-            printf("PUSHS LF@EndIndex\n");
+            printf("POPS LF@EndIndex\n");
+            printf("POPS LF@StartIndex\n");
+            printf("POPS LF@string\n");
             printf("DEFVAR LF@StringLength\n");
             printf("STRLEN LF@StringLength LF@string\n");
             printf("DEFVAR LF@BOOLresultSUBSTRING\n");
@@ -362,20 +362,20 @@ void GenFuncEnd(tAstNode *node) {
 
 void GenAssign(tAstNode *node) {
     printf("DEFVAR LF@%s\n", node->structure.assign.dst->structure.var.token.value.string);
-    switch (node->structure.assign.src->structure.var.token.type) {
-        case Token_Integer: case Token_i32: case Token_Ni32:
+    switch (node->structure.assign.src->structure.var.type) {
+        case I32: case NI32:
             printf("MOVE LF@%s int@%lld\n", node->structure.assign.dst->structure.var.token.value.string, 
                                             (long long int)node->structure.assign.src->structure.var.val.i);
             break;
-        case Token_Float: case Token_f64: case Token_Nf64:
+        case F64: case NF64:
             printf("MOVE LF@%s float@%a\n", node->structure.assign.dst->structure.var.token.value.string,
                                             node->structure.assign.src->structure.var.val.f);
             break;
-        case Token_String:
+        case U8: case NU8:
             printf("MOVE LF@%s string@%s\n", node->structure.assign.dst->structure.var.token.value.string,
                                             node->structure.assign.src->structure.var.val.str);
             break;
-        case Token_null:
+        case VOID:
             printf("MOVE LF@%s nil@nil\n", node->structure.assign.dst->structure.var.token.value.string);
             break;    
         default:
@@ -436,22 +436,22 @@ void GenerateOutput(tAstNode *node) {
 	    case VAR:
             switch (node->structure.var.type) {
                 case VOID:
-                    printf("MOVE TF@%s nil@nil\n", node->structure.var_decl.token.value.string);
+                    printf("MOVE LF@%s nil@nil\n", node->structure.var_decl.token.value.string);
                     break;
 	            case I32: case NI32: 
-                    printf("MOVE TF@%s int@%lld\n", node->structure.var_decl.token.value.string, (long long int)node->structure.var.val.i);
+                    printf("MOVE LF@%s int@%lld\n", node->structure.var_decl.token.value.string, (long long int)node->structure.var.val.i);
                     break;
 	            case F64: case NF64:
-                    printf("MOVE TF@%s float@%a\n", node->structure.var_decl.token.value.string, node->structure.var.val.f);
+                    printf("MOVE LF@%s float@%a\n", node->structure.var_decl.token.value.string, node->structure.var.val.f);
                     break;
 	            case U8: case NU8:
-                    printf("MOVE TF@%s string@%s\n", node->structure.var_decl.token.value.string, node->structure.var.val.str);
+                    printf("MOVE LF@%s string@%s\n", node->structure.var_decl.token.value.string, node->structure.var.val.str);
                     break;
                 default:
                     exit(56);
                     break;
             }
-            printf("PUSHS TF@%s\n", node->structure.var_decl.token.value.string);
+            printf("PUSHS LF@%s\n", node->structure.var_decl.token.value.string);
             break;
 	    case WHILE:
             GenWhileHead();
@@ -476,7 +476,7 @@ void GenerateOutput(tAstNode *node) {
             GenAssign(node);
             break;
 	     case CONST_DECL: case VAR_DECL:
-            printf("DEFVAR TF@%s\n", node->structure.var_decl.token.value.string);
+            printf("DEFVAR LF@%s\n", node->structure.var_decl.token.value.string);
             break;
 	    case FUNC_CALL:
             printf("CREATEFRAME\n");
