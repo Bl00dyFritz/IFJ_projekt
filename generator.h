@@ -22,17 +22,13 @@ void GenMainHead(void);
 
 void GenDefFunc(tAstNode *node);
 
-void GenCallBuiltInFunc(tAstNode *node);
+void GenBuiltInFuncs(void);
 
 void GenCallFunc(tAstNode *node);
 
 void GenFuncEnd(tAstNode *node);
 
 void GenAssign(tAstNode *node);
-
-void GenExpBegin(void);
-
-void GenExpEnd(void);
 
 void GenPushIntFloat(tAstNode *node);
 
