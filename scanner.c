@@ -92,6 +92,10 @@ int GetToken(tToken *token) {
                             token->state = State_Check_TypeID;
                             String_Add(&str, c);
                         break;
+                    case '_':
+                            token->state = State_Underscore;
+                            String_Add(&str, c);
+                        break;
                     case EOF:
                             token->state = State_EOF;
                         break;
@@ -99,7 +103,7 @@ int GetToken(tToken *token) {
                         if (c == 'i') {
                             token->state = State_IFJ_1;
                             String_Add(&str, c);
-                        } else if (isalpha(c) || c == '_') {
+                        } else if (isalpha(c)) {
                             token->state = State_FuncID;
                             token->type = Token_FuncID;
                             String_Add(&str, c);
@@ -516,6 +520,17 @@ int GetToken(tToken *token) {
                 token->type = Token_Pipe;
                 Completed = true;
                 ungetc(c, file);
+                break;
+            case State_Underscore:
+                if (isspace(c) || c == '=') {
+                    token->type = Token_Underscore;
+                    Completed = true;
+                    ungetc(c, file);
+                } else {
+                    token->state = State_FuncID;
+                    token->type = Token_FuncID;
+                    ungetc(c, file);
+                }
                 break;
             case State_Assign_or_Equal:
                 if (c != '=') {

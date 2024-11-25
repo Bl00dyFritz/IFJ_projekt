@@ -32,6 +32,7 @@
 typedef enum {
     State_AtImport,
     State_Start,
+    State_Underscore,
     State_FuncID,
     State_Check_TypeID,
     State_TypeID,
@@ -85,6 +86,7 @@ typedef enum {
 typedef enum {
     Token_Empty,
     Token_AtImport,
+    Token_Underscore,
 
     Token_Plus,
     Token_Minus,
