@@ -381,7 +381,7 @@ void GenAssign(tAstNode *node) {
         default:
             break;
     }
-    printf("PUSHS LF@%s", node->structure.assign.dst->structure.var.token.value.string);
+    printf("PUSHS LF@%s\n", node->structure.assign.dst->structure.var.token.value.string);
 }
 
 void GenIfStart(void) {
