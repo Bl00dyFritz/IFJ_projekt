@@ -62,7 +62,7 @@ int body_statement(tToken *in_t, tToken *ret_t, tAstNode **synt_tree, tAstNode *
 
 int dispose(tToken *in_t, tAstNode **synt_tree);
 
-int check_var_or_func(tToken *in_t, tAstNode **synt_tree);
+int check_assign_or_func(tToken *in_t, tAstNode **synt_tree);
 
 int if_block(tToken *in_t, tToken *ret_t, tAstNode **synt_tree);
 
@@ -76,17 +76,19 @@ int while_loop(tToken *in_t, tAstNode **synt_tree);
 
 int function_call(tToken *in_t, tAstNode **synt_tree);
 
-int argument_list(tToken *ret_t);
+int argument_list(tToken *ret_t, tTokenStack *stack);
 
-int argument(tToken *in_t);
+int argument(tToken *in_t, tTokenStack *stack);
 
-int next_argument(tToken *ret_t);
+int next_argument(tToken *ret_t, tTokenStack *stack);
 
-int expression(tToken *in_t, tToken *ret_t, tAstNode **synt_tree);
+int expression(tToken *in_t, tToken *ret_t, tTokenStack *input_stack, tTokenStack *output_stack, tAstNode **synt_tree);
 
-int operand(tToken *in_t);
+int check_var_or_func (tToken *in_t, tAstNode **synt_tree, tTokenStack *input_stack, tTokenStack *output_stack);
 
-int next_expression(tToken *ret_t);
+int operand(tToken *in_t, tTokenStack *input_stack, tTokenStack *output_stack, tAstNode **synt_tree);
+
+int next_expression(tToken *ret_t, tTokenStack *input_stack, tTokenStack *output_stack, tAstNode **synt_tree);
 
 int operator_(tToken *in_t);
 
