@@ -32,8 +32,6 @@ typedef struct function_vals{
 	tParam *params;		//pole parametru
 	int paramCnt;		//velikost pole parametru
 	tTokenType ret_type;//navratovy typ
-	struct bst_node *loc_bst;	//odkaz na lokalni vyhledavaci strom
-	bool defined;		//ulozeni ci f-ce byla definovana
 }tFunctionVals;
 
 /**
@@ -43,6 +41,7 @@ typedef struct var_vals{
 	void *value;		//odkaz na hodnota promenne
 	tTokenType type;	//datovy typ promenne
 	bool is_constant;	//odlisovani const od var
+	bool is_used;		//kontrola zda promena se pouziva v scope
 }tVarVals;
 
 /**

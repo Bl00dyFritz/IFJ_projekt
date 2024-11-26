@@ -12,6 +12,7 @@
 #include "error.h"
 #include "scanner.h"
 #include "stack.h"
+#include "symtable.h"
 
 /**
  * @brief Uzel AST
@@ -66,6 +67,7 @@ typedef struct func_def{
 	tArgDef *args; //seznam argumentu
 	tToken ret_type_token; //token obsahujici navratovy typ funkci
 	tAstNode *code; //ukazatel na uzel kodu dane funkce
+	tBstNode *loc_symtree; //ukazatel na korene lokalniho vyhledavaciho stromu
 }tFuncDef;
 
 /**
@@ -135,6 +137,8 @@ typedef struct bin_op{
 typedef struct if_block{
 	tAstNode *nn_id; //ukazatel na uzel nenulove promenne
 	tAstNode *expr; //ukazatel na pravdivostni vyraz
+	tBstNode *if_symtree; //ukazatel na lokalni strom symbolu pro if blok
+	tBstNode *else_symtree; //ukazatel an lokalni strom symbolu pro else blok
 	tAstNode *if_code; //ukazatel na vykonavany kod v pripade splneni pravdivostniho vyrazu
 	tAstNode *else_code; //ukazatel na vykonavany kod v opacnem pripadu
 }tIfBlock;
@@ -145,6 +149,7 @@ typedef struct if_block{
 typedef struct while_loop{
 	tAstNode *nn_id; //ukazatel na uzel nenulove promenne
 	tAstNode *expr; //ukazatel na pravdivostni vyraz
+	tBstNode *loc_symtree; //ukazatel na lokalni strom symbolu
 	tAstNode *code; //ukazatel na kod cyklu
 }tWhileLoop;
 

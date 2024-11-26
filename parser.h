@@ -13,14 +13,15 @@
 #include "error.h"
 #include "ast.h"
 #include "stack.h"
+#include "symtable.h"
 
 int prolog(void);
 
-int statement(tAstNode **synt_tree, tToken *in_t, tAstNode ***next_synt_tree);
+int statement(tAstNode **synt_tree, tToken *in_t, tAstNode ***next_synt_tree, tBstNode **func_tree);
 
-int next_statement(tAstNode **synt_tree);
+int next_statement(tAstNode **synt_tree, tBstNode **func_tree);
 
-int function(tToken *in_t, tAstNode **synt_tree);
+int function(tToken *in_t, tAstNode **synt_tree, tBstNode **func_tree);
 
 int const_init(tToken *in_t, tAstNode **synt_tree);
 
