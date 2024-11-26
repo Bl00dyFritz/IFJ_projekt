@@ -33,7 +33,6 @@ typedef struct function_vals{
 	tArgDef *params;		//seznam parametru
 	int paramCnt;		//velikost pole parametru
 	tTokenType ret_type;//navratovy typ
-	struct bst_node *loc_bst;	//odkaz na lokalni vyhledavaci strom
 	bool is_used;
 }tFunctionVals;
 
@@ -43,8 +42,8 @@ typedef struct function_vals{
 typedef struct var_vals{
 	void *value;		//odkaz na hodnota promenne
 	tTokenType type;	//datovy typ promenne
-	bool is_used;
 	bool is_constant;	//odlisovani const od var
+	bool is_used;
 }tVarVals;
 
 /**
