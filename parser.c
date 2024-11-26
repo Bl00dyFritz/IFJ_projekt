@@ -115,6 +115,7 @@ int function(tToken *in_t, tAstNode **synt_tree, tBstNode **func_tree){
 	tFunctionVals *func_vals = (tFunctionVals *) content.value;
 	func_vals->ret_type = (*synt_tree)->structure.func_def.ret_type_token.type;
 	tArgDef *args = (*synt_tree)->structure.func_def.args;
+	func_vals->params = args;
 	while (args){
 		func_vals->paramCnt++;
 		tBstNodeContent *arg = (tBstNodeContent *) malloc(sizeof(tBstNodeContent));
@@ -128,8 +129,7 @@ int function(tToken *in_t, tAstNode **synt_tree, tBstNode **func_tree){
 		BstInsert(&(*synt_tree)->structure.func_def.loc_symtree, args->name_token.value.string, *arg);
 		args = args->next;
 	}
-	
-
+	BstInsert(func_tree, (*synt_tree)->structure.func_def.token.value.string, content);
 	lex_ret = GetToken(&token);
 	if (lex_ret) exit(lex_ret);
 	if(token.type!=Token_Lbrack) exit(SYNTAX_ERROR);
