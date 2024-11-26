@@ -51,8 +51,8 @@ void AddIfBlockNode (tAstNode **node_dest){
 	(*node_dest)->structure.if_block.if_code = NULL;
 	(*node_dest)->structure.if_block.expr = NULL;
 	(*node_dest)->structure.if_block.nn_id = NULL;
-	(*node_dest)->structure.if_block.if_symtable = NULL;
-	(*node_dest)->structure.if_block.else_symtable = NULL;
+	(*node_dest)->structure.if_block.if_symtree = NULL;
+	(*node_dest)->structure.if_block.else_symtree = NULL;
 }
 
 /**
@@ -67,7 +67,7 @@ void AddWhileNode (tAstNode **node_dest){
 	(*node_dest)->structure.while_loop.code = NULL;
 	(*node_dest)->structure.while_loop.expr = NULL;
 	(*node_dest)->structure.while_loop.nn_id = NULL;
-	(*node_dest)->structure.while_loop.while_symtable = NULL;
+	(*node_dest)->structure.while_loop.loc_symtree = NULL;
 }
 
 /**
@@ -156,6 +156,7 @@ void AddFuncDefNode (tAstNode **node_dest, tTokenStack *stack,
 		tmp->next = (*node_dest)->structure.func_def.args;
 		(*node_dest)->structure.func_def.args = tmp;
 	}
+	(*node_dest)->structure.func_def.loc_symtree = NULL;
 }
 
 /**

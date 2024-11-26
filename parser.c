@@ -44,7 +44,7 @@ int prolog(void){
 	return 0;
 }
 
-int statement(tAstNode **synt_tree, tToken *in_t,tAstNode ***next_synt_tree){
+int statement(tAstNode **synt_tree, tToken *in_t,tAstNode ***next_synt_tree, tBstNode **func_tree){
 	tToken token;
 	int lex_ret=0;
 	if (in_t) token = *in_t;
@@ -53,26 +53,26 @@ int statement(tAstNode **synt_tree, tToken *in_t,tAstNode ***next_synt_tree){
 		if(lex_ret) exit(lex_ret);
 	}
 	AddStatmentNode(synt_tree);
-	function(&token, &(*synt_tree)->structure.statement.function);
+	function(&token, &(*synt_tree)->structure.statement.function, func_tree);
 	*next_synt_tree = &(*synt_tree)->structure.statement.next_statement;
 	return 0;
 }
 
-int next_statement(tAstNode **synt_tree){
+int next_statement(tAstNode **synt_tree, tBstNode **func_tree){
 	tToken token;
 	tAstNode **current_p = synt_tree;
 	int lex_ret = GetToken(&token);
 	if (lex_ret) exit(lex_ret);
 	switch(token.type){
-		case Token_pub: statement(synt_tree, &token, &current_p);
-						next_statement(current_p);
+		case Token_pub: statement(synt_tree, &token, &current_p, func_tree);
+						next_statement(current_p, func_tree);
 		case Token_EOF: break;
 		default: exit(SYNTAX_ERROR);
 	}
 	return 0;
 }
 
-int function(tToken *in_t, tAstNode **synt_tree){
+int function(tToken *in_t, tAstNode **synt_tree, tBstNode **func_tree){
     tToken token;
 	int lex_ret;
 	tTokenStack stack;
@@ -108,6 +108,28 @@ int function(tToken *in_t, tAstNode **synt_tree){
 	if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
 	type(&stack);
 	AddFuncDefNode(synt_tree, &stack, &arg_stack);
+	tBstNodeContent content;
+	content.type = FUNCTION;
+	content.value = (tFunctionVals *) malloc(sizeof(tFunctionVals));
+	if (!content.value) exit(99);
+	tFunctionVals *func_vals = (tFunctionVals *) content.value;
+	func_vals->ret_type = (*synt_tree)->structure.func_def.ret_type_token.type;
+	tArgDef *args = (*synt_tree)->structure.func_def.args;
+	while (args){
+		func_vals->paramCnt++;
+		tBstNodeContent *arg = (tBstNodeContent *) malloc(sizeof(tBstNodeContent));
+		if(!arg) exit(99);
+		arg->type = VARIABLE;
+		tVarVals *vals = (tVarVals *) arg->value;
+		vals->is_constant = false;
+		vals->is_used = false;
+		vals->value = NULL;
+		vals->type = args->type_token.type;
+		BstInsert(&(*synt_tree)->structure.func_def.loc_symtree, args->name_token.value.string, *arg);
+		args = args->next;
+	}
+	
+
 	lex_ret = GetToken(&token);
 	if (lex_ret) exit(lex_ret);
 	if(token.type!=Token_Lbrack) exit(SYNTAX_ERROR);
@@ -590,10 +612,13 @@ int argument_list(tToken *ret_t, tTokenStack *stack){
 	if(lex_ret) exit(lex_ret);
 	switch(token.type){
 		case Token_FuncID:
+		case Token_Integer:
+		case Token_Float:
+		case Token_string:
 			argument(&token, stack);
 			next_argument(&token, stack);
+		default:
 			break;
-		 default:break;
 	}
 	*ret_t = token;
     return 0;
@@ -602,7 +627,6 @@ int argument_list(tToken *ret_t, tTokenStack *stack){
 int argument(tToken *in_t, tTokenStack *stack){
 	tToken token;
 	token = *in_t;
-	if (token.type!=Token_FuncID) exit(SYNTAX_ERROR);
 	PushTStack(stack, token);
     return 0;
 }
@@ -650,17 +674,22 @@ int operand(tToken *in_t, tTokenStack *input_stack, tTokenStack *output_stack, t
 	tToken token;
 	token = *in_t;
 	switch(token.type){
-		case Token_FuncID: if (check_var_or_func(&token, synt_tree, input_stack, output_stack)) return 1; break;
-		case Token_BuildIn_Func: function_call(&token, synt_tree); 
-								 return 1;
+		case Token_FuncID: 
+			if (check_var_or_func(&token, synt_tree, input_stack, output_stack)) return 1; 
+			break;
+		case Token_BuildIn_Func: 
+			function_call(&token, synt_tree); 
+			return 1;
 		case Token_Integer:
-		case Token_Float:PrecedenceCheck(&token, input_stack, output_stack);
-						 break;
-		case Token_Lpar: PrecedenceCheck(&token, input_stack, output_stack);
-						 if (expression(NULL, &token, input_stack, output_stack, synt_tree)) exit(SYNTAX_ERROR);
-						 if(token.type!=Token_Rpar) exit(SYNTAX_ERROR);
-						 PrecedenceCheck(&token, input_stack, output_stack);
-						 break;
+		case Token_Float:
+			PrecedenceCheck(&token, input_stack, output_stack);
+			break;
+		case Token_Lpar: 
+			PrecedenceCheck(&token, input_stack, output_stack);			 
+			if (expression(NULL, &token, input_stack, output_stack, synt_tree)) exit(SYNTAX_ERROR);
+			if(token.type!=Token_Rpar) exit(SYNTAX_ERROR);
+			PrecedenceCheck(&token, input_stack, output_stack);
+			break;
 		default: exit(SYNTAX_ERROR);
 	}
     return 0;
@@ -704,8 +733,8 @@ int program(void){ //the whole program
 	tBstNode *func_tree;
 	BstInit(&func_tree);
 	prolog(); 
-	statement(&synt_tree, NULL, &current_p);
-	next_statement(current_p);
+	statement(&synt_tree, NULL, &current_p, &func_tree);
+	next_statement(current_p, &func_tree);
 
     return 0;
 }

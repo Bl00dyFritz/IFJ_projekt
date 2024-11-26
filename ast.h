@@ -60,6 +60,7 @@ typedef struct func_def{
 	tToken ret_type_token; //token obsahujici navratovy typ funkci
 	tBstNode *internal_symtable; //ukazatel na tabulka symbolu dane funkce
 	tAstNode *code; //ukazatel na uzel kodu dane funkce
+	tBstNode *loc_symtree; //ukazatel na korene lokalniho vyhledavaciho stromu
 }tFuncDef;
 
 /**
@@ -130,6 +131,8 @@ typedef struct bin_op{
 typedef struct if_block{
 	tAstNode *nn_id; //ukazatel na uzel nenulove promenne
 	tAstNode *expr; //ukazatel na pravdivostni vyraz
+	tBstNode *if_symtree; //ukazatel na lokalni strom symbolu pro if blok
+	tBstNode *else_symtree; //ukazatel an lokalni strom symbolu pro else blok
 	tAstNode *if_code; //ukazatel na vykonavany kod v pripade splneni pravdivostniho vyrazu
 	tBstNode *if_symtable; //ukazatel na tabulka symbolu if bloku
 	tBstNode *else_symtable; //ukazatel na tabulka symbolu else bloku
@@ -142,7 +145,7 @@ typedef struct if_block{
 typedef struct while_loop{
 	tAstNode *nn_id; //ukazatel na uzel nenulove promenne
 	tAstNode *expr; //ukazatel na pravdivostni vyraz
-	tBstNode *while_symtable; //ukazatel na tabulka symbolu while bloku
+	tBstNode *loc_symtree; //ukazatel na lokalni strom symbolu
 	tAstNode *code; //ukazatel na kod cyklu
 }tWhileLoop;
 
