@@ -144,7 +144,7 @@ void ReplaceByLeftmost(tBstNode *target, tBstNode **tree);
  * @param first_break Ukazatel na nejnizi uzel kde vyvazenost je narusena, pokud neni narusena hodnota ukazatele se nemeni
  * @return vyska stromu jako cele cislo int; pokud je narisena vyskova vyvazenost vraci -1
  */
-int CheckHeight(tBstNode *tree, tBstNode **first_break);
+int CheckHeight(tBstNode **tree, tBstNode ***first_break);
 
 /**
  * @brief Pomocna funkce na uvolneni naalokovanou pamet v datech daneho uzlu

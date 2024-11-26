@@ -26,6 +26,10 @@ int GetToken(tToken *token) {
         switch (token->state) {
             case State_Start:
                 switch (c) {
+                    case '@':
+                            token->state = State_AtImport;
+                            String_Add(&str, c);
+                        break;
                     case '/':
                             token->state = State_Slash;
                         break;
@@ -88,6 +92,10 @@ int GetToken(tToken *token) {
                             token->state = State_Check_TypeID;
                             String_Add(&str, c);
                         break;
+                    case '_':
+                            token->state = State_Underscore;
+                            String_Add(&str, c);
+                        break;
                     case EOF:
                             token->state = State_EOF;
                         break;
@@ -95,7 +103,7 @@ int GetToken(tToken *token) {
                         if (c == 'i') {
                             token->state = State_IFJ_1;
                             String_Add(&str, c);
-                        } else if (isalpha(c) || c == '_') {
+                        } else if (isalpha(c)) {
                             token->state = State_FuncID;
                             token->type = Token_FuncID;
                             String_Add(&str, c);
@@ -110,6 +118,20 @@ int GetToken(tToken *token) {
                             return LEXICAL_ERROR;
                         }
                         break;
+                }
+                break;
+            case State_AtImport:
+                if (isalpha(c)) {
+                    String_Add(&str, c);
+                } else {
+                    ungetc(c, file);
+                    if (strcmp(str.string, "@import") == 0) {
+                        token->type = Token_AtImport;
+                        Completed = true;
+                    } else {
+                        String_Free(&str);
+                        return LEXICAL_ERROR;
+                    }
                 }
                 break;
             case State_IFJ_1:
@@ -164,6 +186,7 @@ int GetToken(tToken *token) {
                         String_Free(&str);
                         return LEXICAL_ERROR;
                     } 
+                    token->type = Token_BuildIn_Func;
                     ungetc(c, file);
                     Completed = true;
                 }
@@ -498,6 +521,17 @@ int GetToken(tToken *token) {
                 Completed = true;
                 ungetc(c, file);
                 break;
+            case State_Underscore:
+                if (isspace(c) || c == '=') {
+                    token->type = Token_Underscore;
+                    Completed = true;
+                    ungetc(c, file);
+                } else {
+                    token->state = State_FuncID;
+                    token->type = Token_FuncID;
+                    ungetc(c, file);
+                }
+                break;
             case State_Assign_or_Equal:
                 if (c != '=') {
                     token->type = Token_Assign;
@@ -639,28 +673,6 @@ int CheckBuildInFunc(tToken *token, sStr *str) {
         token->value.BuiltInFunc = BF_strcmp;
         return 1;
     } else return 0;
-}
-
-int PrologueScan(void) {
-    sStr str;
-    int c;
-    if (String_Init(&str)) return INTERNAL_COMP_ERROR;
-
-    c = getc(file);
-    while (c != ';') {
-        String_Add(&str, c);
-        c = getc(file);
-    }
-    String_Add(&str, c);
-    
-    if (strcmp(str.string, "const ifj = @import(\"ifj24.zig\");")) {
-        String_Free(&str);
-        fprintf(stderr, "Error: The program has to start with a Prologue\n");
-        return LEXICAL_ERROR;
-    }
-
-    String_Free(&str);
-    return 0;
 }
 
 int String_Init(sStr *str) {
