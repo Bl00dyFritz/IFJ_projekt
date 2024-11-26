@@ -6,13 +6,45 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "parser.h"
 #include "error.h"
 #include "scanner.h"
 #include "ast.h"
 #include "symtable.h"
+#include "stack.h"
 
-int statement(tToken *in_t){
+int prolog(void){
+	tToken token;
+	int lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_const) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_IFJ) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_Assign) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_AtImport) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_Lpar) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_string) exit(SYNTAX_ERROR);
+	if (strcmp(token.value.string, "ifj24.zig")) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
+	lex_ret = GetToken(&token);
+	if (lex_ret) exit(lex_ret);
+	if (token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
+	return 0;
+}//OK
+
+int statement(tAstNode **synt_tree, tToken *in_t,tAstNode **next_synt_tree){
 	tToken token;
 	int lex_ret=0;
 	if (in_t) token = *in_t;
@@ -20,26 +52,31 @@ int statement(tToken *in_t){
 		lex_ret=GetToken(&token);
 		if(lex_ret) exit(lex_ret);
 	}
-	function(&token);
+	function(&token, &(*synt_tree)->structure.statement.function);
+	*next_synt_tree = (*synt_tree)->structure.statement.next_statement;
 	return 0;
-}
+}//OK
 
-int next_statement(void){
+int next_statement(tAstNode **synt_tree){
 	tToken token;
 	int lex_ret = GetToken(&token);
 	if (lex_ret) exit(lex_ret);
 	switch(token.type){
-		case Token_pub: statement(&token);
-						next_statement();
+		case Token_pub: statement(synt_tree, &token, synt_tree);
+						next_statement(synt_tree);
 		case Token_EOF: break;
 		default: exit(SYNTAX_ERROR);
 	}
 	return 0;
-}
+}//OK
 
-int function(tToken *in_t){
+int function(tToken *in_t, tAstNode **synt_tree){
     tToken token;
 	int lex_ret;
+	tTokenStack stack;
+	tTokenStack arg_stack;
+	InitTStack(&stack);
+	InitTStack(&arg_stack);
 	tTokenType cmp_type = Token_pub;
 	if (in_t) token = *in_t;
 	else {
@@ -57,21 +94,25 @@ int function(tToken *in_t){
 		switch (cmp_type){
 			case Token_pub: cmp_type=Token_fn; break;
 			case Token_fn: cmp_type=Token_FuncID; break;
-			case Token_FuncID: cmp_type=Token_Lpar; break;
+			case Token_FuncID: 
+						   cmp_type=Token_Lpar;
+						   PushTStack(&stack, token);
+						   break;
 			default: exit(99);
 		}
 	}
 	if (err_found) exit(SYNTAX_ERROR);
-	argument_list_def(&token);
+	argument_list_def(&token, &arg_stack);
 	if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
-	type();
+	type(&stack);
+	AddFuncDefNode(synt_tree, &stack, &arg_stack);
 	lex_ret = GetToken(&token);
 	if (lex_ret) exit(lex_ret);
 	if(token.type!=Token_Lbrack) exit(SYNTAX_ERROR);
-	function_body(&token);
+	function_body(&token, &(*synt_tree)->structure.func_def.code);
 	if(token.type!=Token_Rbrack) exit(SYNTAX_ERROR);
 	return 0;
-}
+}//OK
 
 int const_init(tToken *in_t){
 	tToken token = *in_t;
@@ -137,13 +178,14 @@ int non_null_type(tToken *in_t){
     return 0;
 }
 
-int type(void){
+int type(tTokenStack *stack){
 	tToken token;
 	int lex_ret = GetToken(&token);
 	if (lex_ret) exit(lex_ret);
 	if(non_null_type(&token) && null_type(&token)) exit(SYNTAX_ERROR);
+	PushTStack(stack, token);
     return 0;
-}
+}//OK
 
 int const_decl(tToken *in_t){
 	tToken token = *in_t;
@@ -165,19 +207,19 @@ int var_decl(tToken *in_t){
     return 0;
 }
 
-int argument_list_def(tToken *ret_t){
+int argument_list_def(tToken *ret_t, tTokenStack *arg_stack){
 	tToken token;
 	int lex_ret = GetToken(&token);
 	if (lex_ret) exit(lex_ret);
 	if (token.type==Token_FuncID){
-		argument_def(&token);
-		next_argument_def(&token);
+		argument_def(&token, arg_stack);
+		next_argument_def(&token, arg_stack);
 	}
 	*ret_t = token;
     return 0;
-}
+}//OK
 
-int argument_def(tToken *in_t){
+int argument_def(tToken *in_t, tTokenStack *arg_stack){
 	tToken token;
 	int lex_ret;
 	if(in_t) token = *in_t;
@@ -186,26 +228,27 @@ int argument_def(tToken *in_t){
 		if (lex_ret) exit(lex_ret);
 	}
 	if(token.type!=Token_FuncID) exit(SYNTAX_ERROR);
+	PushTStack(arg_stack, token);
 	lex_ret = GetToken(&token);
 	if(lex_ret) exit(lex_ret);
 	if(token.type!=Token_Colon) exit(SYNTAX_ERROR);
-	type();
+	type(arg_stack);
     return 0;
-}
+}//OK
 
-int next_argument_def(tToken *ret_t){
+int next_argument_def(tToken *ret_t, tTokenStack *arg_stack){
 	tToken token;
 	int lex_ret = GetToken(&token);
 	if (lex_ret) exit(lex_ret);
-	if(token.type==Token_Comma) argument_list_def(&token);
+	if(token.type==Token_Comma) argument_list_def(&token, arg_stack);
 	*ret_t = token;
     return 0;
-}
+}//OK
 
-int function_body(tToken *ret_t){
-	body(ret_t);
+int function_body(tToken *ret_t, tAstNode **synt_tree){
+	body(ret_t, synt_tree);
     return 0;
-}
+}//OK
 
 int return_(tToken *in_t){
 	tToken token = *in_t;
@@ -232,14 +275,14 @@ int return_expression(tToken *ret_t){
     return 0;
 }
 
-int body(tToken *ret_t){
+int body(tToken *ret_t, tAstNode **synt_tree){
 	tToken token;
-	body_statement(NULL, &token);
-	next_body_statement(&token, ret_t);
+	body_statement(NULL, &token, synt_tree, synt_tree);
+	next_body_statement(&token, ret_t, synt_tree);
     return 0;
-}
+}//OK
 
-int next_body_statement(tToken *in_t, tToken *ret_t){
+int next_body_statement(tToken *in_t, tToken *ret_t, tAstNode **synt_tree){
 	tToken token;
 	if (in_t) token = *in_t;
 	else {
@@ -253,15 +296,15 @@ int next_body_statement(tToken *in_t, tToken *ret_t){
 		case Token_FuncID:
 		case Token_BuildIn_Func:
 		case Token_if: 
-			body_statement(&token, &token);
-			next_body_statement(&token, &token);
+			body_statement(&token, &token, synt_tree, synt_tree);
+			next_body_statement(&token, &token, synt_tree);
 		default:break;
 	}
 	*ret_t = token;
     return 0;
-}
+}//OK
 
-int body_statement(tToken *in_t, tToken *ret_t){
+int body_statement(tToken *in_t, tToken *ret_t, tAstNode **synt_tree, tAstNode **next_synt_tree){
 	tToken token;
 	int lex_ret = 0;
 	if (in_t) token = *in_t;
@@ -269,29 +312,31 @@ int body_statement(tToken *in_t, tToken *ret_t){
 		lex_ret = GetToken(&token);
 		if (lex_ret) exit(lex_ret);
 	}
+	AddCodeNode(synt_tree);
+	tAstNode **code_tree = &(*synt_tree)->structure.code.operation;
 	switch(token.type){
-		case Token_if: if_block(&token, &token); break;
+		case Token_if: if_block(&token, &token, code_tree); break;
 		case Token_while: 
-					   while_loop(&token); 
+					   while_loop(&token, code_tree); 
 					   lex_ret = GetToken(&token);
 					   break;
 		case Token_var: 
-					   var_init(&token);
+					   var_init(&token, code_tree);
 					   lex_ret = GetToken(&token);
 					   break;
 		case Token_const: 
-					   const_init(&token);
+					   const_init(&token, code_tree);
 					   lex_ret = GetToken(&token);
 					   break;
 		case Token_FuncID: 
-					   check_var_or_func(&token);
+					   check_var_or_func(&token, code_tree);
 					   break;
 		case Token_return: 
-					   return_(&token);
+					   return_(&token, code_tree);
 					   lex_ret = GetToken(&token);
 					   break;
 		case Token_BuildIn_Func: 
-						   function_call(&token);
+						   function_call(&token, code_tree);
 						   lex_ret = GetToken(&token);
 						   if (lex_ret) exit(lex_ret);
 						   if(token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
@@ -300,11 +345,12 @@ int body_statement(tToken *in_t, tToken *ret_t){
 		default: exit(SYNTAX_ERROR);
 	}
 	if(lex_ret) exit(lex_ret);
+	*next_synt_tree = (*synt_tree)->structure.code.next_code;
 	*ret_t = token;
     return 0;
-}
+}//OK
 
-int check_var_or_func(tToken *in_t){
+int check_var_or_func(tToken *in_t, tAstNode **synt_tree){
 	tToken token = *in_t;
 	if (token.type!=Token_FuncID) exit(SYNTAX_ERROR);
 	int lex_ret = GetToken(&token);
@@ -338,7 +384,7 @@ int assign_value(void){
     return 0;
 }
 
-int if_block(tToken *in_t, tToken *ret_t){
+int if_block(tToken *in_t, tToken *ret_t, tAstNode **synt_tree){
 	if_(in_t);
 	else_(ret_t);
     return 0;
@@ -395,7 +441,7 @@ int non_null_ID(tToken *ret_t){
     return 0;
 }
 
-int while_loop(tToken *in_t){
+int while_loop(tToken *in_t, tAstNode **synt_tree){
 	tToken token;
 	token = *in_t;
 	if (token.type!=Token_while) exit(SYNTAX_ERROR);
@@ -411,7 +457,7 @@ int while_loop(tToken *in_t){
     return 0;
 }
 
-int function_call(tToken *in_t){
+int function_call(tToken *in_t, tAstNode **synt_tree){
 	tToken token = *in_t;
 	if (token.type!=Token_FuncID && token.type!=Token_BuildIn_Func) exit(SYNTAX_ERROR);
 	int lex_ret = GetToken(&token);
@@ -536,13 +582,12 @@ int operator_(tToken *in_t){
 }
 
 int program(void){ //the whole program
-    
-    int prologue = PrologueScan();
-    if(prologue != 0){
-        return prologue;
-    }
-	statement(NULL);
-	next_statement();
+   	tAstNode *synt_tree = NULL;
+	tBstNode *func_tree;
+	BstInit(&func_tree);
+	prolog(); 
+	statement(&synt_tree, NULL, &synt_tree);
+	next_statement(&synt_tree);
 
     return 0;
-}
+}//OK

@@ -10,6 +10,7 @@
 #include "stack.h"
 #include "scanner.h"
 #include "error.h"
+#include "symtable.h"
 
 /**
  * @brief Funkce na ukladani uzlu typu Statement do ast
@@ -149,7 +150,6 @@ void AddFuncDefNode (tAstNode **node_dest, tTokenStack *stack,
 		tmp->next = (*node_dest)->structure.func_def.args;
 		(*node_dest)->structure.func_def.args = tmp;
 	}
-
 }
 
 /**
