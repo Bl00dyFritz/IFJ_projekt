@@ -12,7 +12,6 @@
 void GenInitial(void) {
     GenHead();
     GenBuiltInFuncs();
-    GenMainHead();
 }
 
 void GenHead(void) {
@@ -31,21 +30,35 @@ void GenMainHead(void) {
 }
 
 void GenPushIntFloat(tAstNode *node) {
-    switch (node->structure.val.token.type) {
-        case Token_Integer:
-            printf("PUSHS int@%lld", (long long int)node->structure.bin_op.op1->structure.val.token.value.integer);
-            if (node->structure.bin_op.token.type == Token_Divide) {
-                printf("INT2FLOATS\n");
+    if (node->type == VAL) {
+        switch (node->structure.val.token.type) {
+            case Token_Integer:
+                printf("PUSHS int@%lld\n", (long long int)node->structure.val.token.value.integer);
+                if (node->structure.bin_op.token.type == Token_Divide) {
+                    printf("INT2FLOATS\n");
+                }
+                break;
+            case Token_Float:
+                printf("PUSHS float@%a\n", node->structure.val.token.value.decimal);
+                if (node->structure.bin_op.token.type == Token_Divide) {
+                    printf("FLOAT2INTS\n");
+                }
+                break;
+            default:
+                break;
+        }
+    } else if (node->type == VAR) {
+        printf("PUSHS LF@%s\n", node->structure.var.token.value.string);
+        if (node->structure.bin_op.token.type == Token_Divide) {
+            switch (node->structure.var.type) {
+                case I32: case NI32:
+                    printf("INT2FLOATS\n");
+                    break;
+	            case F64: case NF64:
+                    printf("FLOAT2INTS\n");
+                    break;
             }
-            break;
-        case Token_Float:
-            printf("PUSHS float@%a", node->structure.bin_op.op1->structure.val.token.value.decimal);
-            if (node->structure.bin_op.token.type == Token_Divide) {
-                printf("FLOAT2INTS\n");
-            }
-            break;
-        default:
-            break;
+        }
     }
 }
 
@@ -95,7 +108,7 @@ void GenStackOp(tAstNode *node) {
             break;
         case Token_Not_Equal:
             printf("EQS\n");
-            printf("NOT\n");
+            printf("NOTS\n");
             break;
         case Token_Lesser_Equal:
             printf("LTS\n");
@@ -127,7 +140,7 @@ void GenWhileHead(void) {
 }
 
 void GenWhile(void) {
-    printf("POPS GF@tmp2");
+    printf("POPS GF@tmp2\n");
     printf("JUMPIFEQ $EndWhile$ GF@tmp2 bool@false\n");
 }
 
@@ -359,6 +372,11 @@ void GenBuiltInFuncs(void) {
 }       
 
 void GenCallFunc(tAstNode *node) {
+    tArgs *TmpCF = node->structure.func_call.args;
+    while (TmpCF) {
+        printf("PUSHS LF@%s\n", TmpCF->token.value.string);
+        TmpCF = TmpCF->next;
+    }
     if (node->structure.func_call.name_token.type = Token_BuildIn_Func) {
         switch (node->structure.func_call.name_token.value.BuiltInFunc) {
             case BF_write: printf("CALL $$ifj_write\n"); break;
@@ -401,7 +419,6 @@ void GenFuncEnd(tAstNode *node) {
 }
 
 void GenAssign(tAstNode *node) {
-    printf("DEFVAR LF@%s\n", node->structure.assign.dst->structure.var.token.value.string);
     switch (node->structure.assign.src->structure.var.type) {
         case I32: case NI32:
             printf("MOVE LF@%s int@%lld\n", node->structure.assign.dst->structure.var.token.value.string, 
@@ -421,7 +438,6 @@ void GenAssign(tAstNode *node) {
         default:
             break;
     }
-    printf("PUSHS LF@%s\n", node->structure.assign.dst->structure.var.token.value.string);
 }
 
 void GenIfStart(void) {
@@ -491,13 +507,17 @@ void GenerateOutput(tAstNode *node) {
                     exit(56);
                     break;
             }
-            printf("PUSHS LF@%s\n", node->structure.var_decl.token.value.string);
             break;
 	    case WHILE:
             GenWhileHead();
             GenerateOutput(node->structure.while_loop.expr);
             GenWhile();
             GenerateOutput(node->structure.while_loop.code);
+            if (node->structure.while_loop.expr->structure.bin_op.op1->type == VAR) {
+                printf("POPS LF@%s\n", node->structure.while_loop.expr->structure.bin_op.op1->structure.var.token.value.string);
+            } else if (node->structure.while_loop.expr->structure.bin_op.op2->type == VAR) {
+                printf("POPS LF@%s\n", node->structure.while_loop.expr->structure.bin_op.op2->structure.var.token.value.string);
+            }
             GenWhileEnd();
             break;
 	    case IF:
@@ -505,8 +525,10 @@ void GenerateOutput(tAstNode *node) {
             GenIfStart();
             GenerateOutput(node->structure.if_block.if_code);
             GenIfEnd();
-            GenElseStart();
-            GenerateOutput(node->structure.if_block.else_code);
+            if (node->structure.if_block.else_code) {
+                GenElseStart();
+                GenerateOutput(node->structure.if_block.else_code);
+            }
             GenElseEnd();
             break;
 	    case BIN_OP:
@@ -523,9 +545,14 @@ void GenerateOutput(tAstNode *node) {
             GenCallFunc(node);
             break;
 	    case FUNC_DEF:
-            GenDefFunc(node);
-            GenerateOutput(node->structure.func_def.code);
-            GenFuncEnd(node);
+            if (!strcmp(node->structure.func_def.token.value.string, "main")) {
+                GenMainHead();
+                GenerateOutput(node->structure.func_def.code);
+            } else {
+                GenDefFunc(node);
+                GenerateOutput(node->structure.func_def.code);
+                GenFuncEnd(node);
+            }
             break;
         default:
             break;
