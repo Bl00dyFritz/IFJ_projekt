@@ -6,8 +6,8 @@
  *          Alexander Žikla, xziklaa00
  */
 
-#ifndef STACK_H
-#define STACK_H
+#ifndef GENSTACK_H
+#define GENSTACK_H
 
 #include "ast.h"
 #include <stdlib.h>
