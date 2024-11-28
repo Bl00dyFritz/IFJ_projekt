@@ -199,12 +199,12 @@ void GenBuiltInFuncs(void) {
     printf("PUSHFRAME\n");
     printf("DEFVAR LF@l1\n");
     printf("DEFVAR LF@l2\n");
-    printf("POPS LF@l2\n");
     printf("POPS LF@l1\n");
+    printf("POPS LF@l2\n");
     printf("DEFVAR LF@result\n");
 	printf("CONCAT LF@result LF@l1 LF@l2\n");
 	printf("PUSHS LF@result\n");
-    printf("POPS GF@func_result");
+    printf("POPS GF@func_result\n");
     printf("POPFRAME\n");
     printf("RETURN\n\n");
     //ifj.length
@@ -244,14 +244,15 @@ void GenBuiltInFuncs(void) {
     printf("DEFVAR LF@string\n");
     printf("DEFVAR LF@StartIndex\n");
     printf("DEFVAR LF@EndIndex\n");
-    printf("POPS LF@EndIndex\n");
-    printf("POPS LF@StartIndex\n");
     printf("POPS LF@string\n");
+    printf("POPS LF@StartIndex\n");
+    printf("POPS LF@EndIndex\n");
     printf("DEFVAR LF@StringLength\n");
     printf("STRLEN LF@StringLength LF@string\n");
     printf("DEFVAR LF@BOOLresultSUBSTRING\n");
     printf("DEFVAR LF@SubStringResult\n");
     printf("DEFVAR LF@TempString\n");
+    printf("MOVE LF@SubStringResult string@\n");
 
     printf("LT LF@BOOLresultSUBSTRING LF@StartIndex int@0\n");
     printf("JUMPIFEQ $ReturnNULL$ LF@BOOLresultSUBSTRING bool@true\n");
@@ -266,7 +267,7 @@ void GenBuiltInFuncs(void) {
     printf("JUMPIFEQ $ReturnNULL$ LF@BOOLresultSUBSTRING bool@true\n");
 
     printf("LABEL $SubStringLOOP$\n");
-    printf("JUMPIFEQ $ENDofSUBloop$ LF@StartIndex LF@index2\n");
+    printf("JUMPIFEQ $ENDofSUBloop$ LF@StartIndex LF@EndIndex\n");
     printf("GETCHAR LF@TempString LF@string LF@StartIndex\n");
     printf("CONCAT LF@SubStringResult LF@SubStringResult LF@TempString\n");
     printf("ADD LF@StartIndex LF@StartIndex int@1\n");
@@ -280,7 +281,7 @@ void GenBuiltInFuncs(void) {
     printf("PUSHS nil@nil\n");
 
     printf("LABEL $ENDofSUBSTRINGfunc$\n");
-    printf("POPS GF@func_resul\n");
+    printf("POPS GF@func_result\n");
     printf("POPFRAME\n");
     printf("RETURN\n\n");
     //ifj.ord
@@ -326,6 +327,7 @@ void GenBuiltInFuncs(void) {
     printf("DEFVAR LF@s2\n");
     printf("POPS LF@s1\n");
     printf("POPS LF@s2\n");
+    printf("MOVE LF@counter int@0\n");
     printf("DEFVAR LF@lenS1\n");
     printf("DEFVAR LF@lenS2\n");
     printf("STRLEN LF@lenS1 LF@s1\n");
@@ -373,6 +375,15 @@ void GenBuiltInFuncs(void) {
 
 void GenCallFunc(tAstNode *node) {
     tArgs *TmpCF = node->structure.func_call.args;
+    tArgs *Prev = NULL;
+    tArgs *Next = NULL;
+    while (TmpCF) {
+        Next = TmpCF->next;
+        TmpCF->next = Prev;
+        Prev = TmpCF;
+        TmpCF = Next;
+    }
+    TmpCF = Prev;
     while (TmpCF) {
         printf("PUSHS LF@%s\n", TmpCF->token.value.string);
         TmpCF = TmpCF->next;
@@ -419,24 +430,32 @@ void GenFuncEnd(tAstNode *node) {
 }
 
 void GenAssign(tAstNode *node) {
-    switch (node->structure.assign.src->structure.var.type) {
-        case I32: case NI32:
-            printf("MOVE LF@%s int@%lld\n", node->structure.assign.dst->structure.var.token.value.string, 
-                                            (long long int)node->structure.assign.src->structure.var.val.i);
-            break;
-        case F64: case NF64:
-            printf("MOVE LF@%s float@%a\n", node->structure.assign.dst->structure.var.token.value.string,
-                                            node->structure.assign.src->structure.var.val.f);
-            break;
-        case U8: case NU8:
-            printf("MOVE LF@%s string@%s\n", node->structure.assign.dst->structure.var.token.value.string,
-                                            node->structure.assign.src->structure.var.val.str);
-            break;
-        case VOID:
-            printf("MOVE LF@%s nil@nil\n", node->structure.assign.dst->structure.var.token.value.string);
-            break;    
-        default:
-            break;
+    if (node->structure.assign.src->type == VAR) {
+        switch (node->structure.assign.src->structure.var.type) {
+            case I32: case NI32:
+                printf("MOVE LF@%s int@%lld\n", node->structure.assign.dst->structure.var.token.value.string, 
+                                                (long long int)node->structure.assign.src->structure.var.val.i);
+                break;
+            case F64: case NF64:
+                printf("MOVE LF@%s float@%a\n", node->structure.assign.dst->structure.var.token.value.string,
+                                                node->structure.assign.src->structure.var.val.f);
+                break;
+            case U8: case NU8:
+                printf("MOVE LF@%s string@%s\n", node->structure.assign.dst->structure.var.token.value.string,
+                                                node->structure.assign.src->structure.var.val.str);
+                break;
+            case VOID: case UNDEF:
+                printf("MOVE LF@%s nil@nil\n", node->structure.assign.dst->structure.var.token.value.string);
+                break;    
+            default:
+                break;
+        }
+    } else if (node->structure.assign.src->type == FUNC_CALL) {
+        GenerateOutput(node->structure.assign.src);
+        printf("MOVE LF@%s GF@func_result\n", node->structure.assign.dst->structure.var.token.value.string);
+    } else if (node->structure.assign.src->type == BIN_OP) {
+        GenerateOutput(node->structure.assign.src);
+        printf("POPS LF@%s\n", node->structure.assign.dst->structure.var.token.value.string);
     }
 }
 
@@ -491,17 +510,17 @@ void GenerateOutput(tAstNode *node) {
             break;
 	    case VAR:
             switch (node->structure.var.type) {
-                case VOID:
-                    printf("MOVE LF@%s nil@nil\n", node->structure.var_decl.token.value.string);
+                case VOID: case UNDEF:
+                    printf("MOVE LF@%s nil@nil\n", node->structure.var.token.value.string);
                     break;
 	            case I32: case NI32: 
-                    printf("MOVE LF@%s int@%lld\n", node->structure.var_decl.token.value.string, (long long int)node->structure.var.val.i);
+                    printf("MOVE LF@%s int@%lld\n", node->structure.var.token.value.string, (long long int)node->structure.var.val.i);
                     break;
 	            case F64: case NF64:
-                    printf("MOVE LF@%s float@%a\n", node->structure.var_decl.token.value.string, node->structure.var.val.f);
+                    printf("MOVE LF@%s float@%a\n", node->structure.var.token.value.string, node->structure.var.val.f);
                     break;
 	            case U8: case NU8:
-                    printf("MOVE LF@%s string@%s\n", node->structure.var_decl.token.value.string, node->structure.var.val.str);
+                    printf("MOVE LF@%s string@%s\n", node->structure.var.token.value.string, node->structure.var.val.str);
                     break;
                 default:
                     exit(56);
