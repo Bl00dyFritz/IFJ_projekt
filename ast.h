@@ -12,6 +12,7 @@
 #include "error.h"
 #include "scanner.h"
 #include "stack.h"
+#include "symtable.h"
 
 /**
  * @brief Uzel AST
@@ -37,6 +38,7 @@ typedef enum type{
 	NI32,
 	NF64,
 	NU8,
+	UNDEF
 }tType;
 
 /**
@@ -50,22 +52,15 @@ typedef union ret_val{
 }tRetVal;
 
 /**
- * @brief Struktura pro zadavani argumenty do definice funkci
- */
-typedef struct arg_def{
-	tToken name_token; //token obsahujici nazvu argumentu
-	tToken type_token; //token obsahujici ocekavany typ argumentu
-	struct arg_def *next; //ukazatel na dalsi argument
-}tArgDef;
-
-/**
  * @brief Struktura uzlu definice funkci
  */
 typedef struct func_def{
 	tToken token; //token obsahujici nazev funkci
 	tArgDef *args; //seznam argumentu
 	tToken ret_type_token; //token obsahujici navratovy typ funkci
+	tBstNode *internal_symtable; //ukazatel na tabulka symbolu dane funkce
 	tAstNode *code; //ukazatel na uzel kodu dane funkce
+	tBstNode *loc_symtree; //ukazatel na korene lokalniho vyhledavaciho stromu
 }tFuncDef;
 
 /**
@@ -100,6 +95,7 @@ typedef struct args{
 typedef struct func_call{
 	tToken name_token; //nazev funkce
 	tArgs *args; //seznam argumentu
+	int arg_cnt;
 }tFuncCall;
 
 /**
@@ -107,7 +103,7 @@ typedef struct func_call{
  */
 typedef struct decl_var{
 	tToken token; //token obsahujici nazev promenne
-	tType type; //token obsahujici typ promenne
+	tType type; //typ promenne
 }tVarDecl;
 
 /**
@@ -135,7 +131,11 @@ typedef struct bin_op{
 typedef struct if_block{
 	tAstNode *nn_id; //ukazatel na uzel nenulove promenne
 	tAstNode *expr; //ukazatel na pravdivostni vyraz
+	tBstNode *if_symtree; //ukazatel na lokalni strom symbolu pro if blok
+	tBstNode *else_symtree; //ukazatel an lokalni strom symbolu pro else blok
 	tAstNode *if_code; //ukazatel na vykonavany kod v pripade splneni pravdivostniho vyrazu
+	tBstNode *if_symtable; //ukazatel na tabulka symbolu if bloku
+	tBstNode *else_symtable; //ukazatel na tabulka symbolu else bloku
 	tAstNode *else_code; //ukazatel na vykonavany kod v opacnem pripadu
 }tIfBlock;
 
@@ -145,15 +145,18 @@ typedef struct if_block{
 typedef struct while_loop{
 	tAstNode *nn_id; //ukazatel na uzel nenulove promenne
 	tAstNode *expr; //ukazatel na pravdivostni vyraz
+	tBstNode *loc_symtree; //ukazatel na lokalni strom symbolu
 	tAstNode *code; //ukazatel na kod cyklu
 }tWhileLoop;
 
 /**
- * @brief Struktura uzlu cisla
+ * @brief Struktura uzlu hodnoty
  */
 typedef struct Num_val{
-	tToken token; //token obsahujici hodnotu ciselneho uzlu
+	tToken token; //token obsahujici hodnotu ciselneho uzlu nebo stringovy term
 }tNumVal;
+
+
 
 /**
  * @brief Struktura uzlu promenne

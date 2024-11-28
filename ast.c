@@ -51,6 +51,8 @@ void AddIfBlockNode (tAstNode **node_dest){
 	(*node_dest)->structure.if_block.if_code = NULL;
 	(*node_dest)->structure.if_block.expr = NULL;
 	(*node_dest)->structure.if_block.nn_id = NULL;
+	(*node_dest)->structure.if_block.if_symtree = NULL;
+	(*node_dest)->structure.if_block.else_symtree = NULL;
 }
 
 /**
@@ -65,6 +67,7 @@ void AddWhileNode (tAstNode **node_dest){
 	(*node_dest)->structure.while_loop.code = NULL;
 	(*node_dest)->structure.while_loop.expr = NULL;
 	(*node_dest)->structure.while_loop.nn_id = NULL;
+	(*node_dest)->structure.while_loop.loc_symtree = NULL;
 }
 
 /**
@@ -92,6 +95,8 @@ void AddDeclNode (tAstNode **node_dest, tTokenStack *stack){
 	tToken token = TopTStack(stack);
 	PopTStack(stack);
 	switch (token.type){
+		case Token_Dollar:
+			(*node_dest)->structure.var_decl.type =UNDEF; break;
 		case Token_void:
 			(*node_dest)->structure.var_decl.type = VOID; break;
 		case Token_i32:
@@ -138,6 +143,7 @@ void AddFuncDefNode (tAstNode **node_dest, tTokenStack *stack,
 	token = TopTStack(stack);
 	PopTStack(stack);
 	(*node_dest)->structure.func_def.token = token;
+	(*node_dest)->structure.func_def.internal_symtable = NULL;
 	while(!StackIsEmpty(arg_stack)){
 		tArgDef *tmp = (tArgDef *) malloc(sizeof(tArgDef));
 		if(!tmp) exit(99);
@@ -150,6 +156,7 @@ void AddFuncDefNode (tAstNode **node_dest, tTokenStack *stack,
 		tmp->next = (*node_dest)->structure.func_def.args;
 		(*node_dest)->structure.func_def.args = tmp;
 	}
+	(*node_dest)->structure.func_def.loc_symtree = NULL;
 }
 
 /**
@@ -164,6 +171,7 @@ void AddFuncCallNode (tAstNode **node_dest, tToken id_t,
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
 	if(!(*node_dest)) exit(99);
 	(*node_dest)->type = FUNC_CALL;
+	(*node_dest)->structure.func_call.arg_cnt = 0;
 	(*node_dest)->structure.func_call.name_token = id_t;
 	while(arg_stack->top){
 		tArgs *tmp = (tArgs *) malloc(sizeof(tArgs));
@@ -173,6 +181,7 @@ void AddFuncCallNode (tAstNode **node_dest, tToken id_t,
 		tmp->token = token;
 		tmp->next = (*node_dest)->structure.func_call.args;
 		(*node_dest)->structure.func_call.args = tmp;
+		(*node_dest)->structure.func_call.arg_cnt++;
 	}
 }
 
@@ -336,6 +345,15 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 	}
 }
 
+void AddRetNode(tAstNode **node_dest){
+	if (!node_dest) exit(99);
+	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
+	if(!(*node_dest)) exit(99);
+	(*node_dest)->type = RET;
+	(*node_dest)->structure.ret.ret_expr = NULL;
+	(*node_dest)->structure.ret.type = VOID;
+}
+
 /**
  * @brief Funkce ktera sklada podstrom z vyrazu do ast
  * @param node_dest Pozice kde se ma ulozit vyrazovy podstrom
@@ -433,6 +451,8 @@ void AstDispose (tAstNode **tree){
 			}
 			AstDispose(&(*tree)->structure.func_def.code);
 			break;
+		case RET:
+			AstDispose(&(*tree)->structure.ret.ret_expr);
 	}
 	free(*tree);
 }
