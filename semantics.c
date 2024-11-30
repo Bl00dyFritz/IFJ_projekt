@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "semantics.h"
 #include "ast.h"
 #include "symtable.h"
@@ -46,7 +47,66 @@ void SymtableListRemove (tSymtableList *list){
 }
 
 
-void ExamineVar (tAstNode *node, tSymtableList *symlist){
+void AssignVals (tVarVals **vals, void *in_val, tType in_type){
+	if (!(*vals)->value || !(*vals)->is_constant){
+		switch((*vals)->type){
+			case Token_i32:
+				if (in_type != I32) exit(SEMANTIC_COMP_ERROR);
+				AssignInt(vals, in_val);
+				break;
+			case Token_f64:
+				if (in_type != F64) exit(SEMANTIC_COMP_ERROR);
+				AssignDouble(vals, in_val);
+				break;
+			case Token_u8:
+				if (in_type != U8) exit(SEMANTIC_COMP_ERROR);
+				(*vals)->value = in_val;
+				break;
+			case Token_Ni32:
+				if (in_type != NI32) exit(SEMANTIC_COMP_ERROR);
+				AssignInt(vals, in_val);
+				break;
+			case Token_Nf64:
+				if (in_type != NF64) exit(SEMANTIC_COMP_ERROR);
+				AssignDouble(vals, in_val);
+				break;
+			case Token_Nu8:
+				if (in_type != NU8) exit(SEMANTIC_COMP_ERROR);
+				(*vals)->value = in_val;
+			case Token_Empty:
+				switch (in_type){
+					case I32:case NI32:
+						AssignInt(vals, in_val);
+						break;
+					case F64:case NF64:
+						AssignDouble(vals, in_val);
+						break;
+					case U8:case NU8:
+						(*vals)->value = in_val;
+						break;
+					default:exit(INTERNAL_COMP_ERROR);
+				}
+			default:break;
+		}
+	}
+	else exit(SEMANTIC_REDEF_ERROR);
+}
+
+void AssignInt (tVarVals **vals, void *in_val){
+	(*vals)->value = (int *) malloc(sizeof(int));
+	if(!(*vals)->value) exit(INTERNAL_COMP_ERROR);
+	int *int_val = (int *) (*vals)->value;
+	*int_val = *((int *)in_val);
+}
+
+void AssignDouble (tVarVals **vals, void *in_val){
+	(*vals)->value = (double *) malloc(sizeof(double));
+	if(!(*vals)->value) exit(INTERNAL_COMP_ERROR);
+	double *d_val = (double *) (*vals)->value;
+	*d_val = *((double *)in_val);
+}
+
+void ExamineVar (tAstNode *node, tSymtableList *symlist, void *in_val, tType in_type, void **out_val, tType *out_type){
 	tBstNodeContent *content = NULL;
 	tSymtableListElem *tree = symlist->first;
 	while (tree){
@@ -54,7 +114,99 @@ void ExamineVar (tAstNode *node, tSymtableList *symlist){
 		tree = tree->next;
 	}
 	exit(SEMANTIC_UNDEF_ERROR);
-}
+
+	void **vals = &content->value;
+	tVarVals **v = (tVarVals**) vals;
+	if (in_val){
+		AssignVals(v, in_val, in_type);
+		return;
+	}
+
+	(*v)->is_used = true;
+	*out_val = (*v)->value;
+	switch ((*v)->type){
+		case Token_u8:
+			*out_type = U8;
+			break;
+		case Token_i32:
+			*out_type = I32;
+			break;
+		case Token_f64:
+			*out_type = F64;
+			break;
+		case Token_Nu8:
+			*out_type = NU8;
+			break;
+		case Token_Ni32:
+			*out_type = NI32;
+			break;
+		case Token_Nf64:
+			*out_type = NF64;
+			break;
+		default:exit(INTERNAL_COMP_ERROR);
+	}
+}//OK
+
+void ExamineVal (tAstNode *node, void **out_val, tType *out_type){
+	switch (node->structure.val.token.type){
+		case Token_Integer:
+			*out_type = I32;
+			*out_val = (int *) malloc(sizeof(int));
+			int *i_ptr = (int *)(*out_val);
+			*i_ptr = node->structure.val.token.value.integer;
+			break;
+		case Token_Float:
+			*out_type = F64;
+			*out_val = (double *) malloc(sizeof(double));
+			double *d_ptr = (double *)(*out_val);
+			*d_ptr = node->structure.val.token.value.decimal;
+			break;
+			break;
+		case Token_string:
+			exit(SEMANTIC_OTHER_ERROR);
+			break;
+		default:exit(INTERNAL_COMP_ERROR);
+	}
+}//OK
+
+void ExamineDecl (tAstNode *node, tSymtableList *symlist){
+	tSymtableListElem *tree = symlist->first;
+	tBstNodeContent *tmp = NULL;
+	while(tree){
+		if(BstSearch(tree->root_ptr, node->structure.var_decl.token.value.string, &tmp)) exit(SEMANTIC_REDEF_ERROR);
+		tree = tree->next;
+	}
+	tBstNodeContent content;
+	content.type = VARIABLE;
+	content.value = (tVarVals *) malloc(sizeof(tVarVals));
+	tVarVals *vals = (tVarVals *) content.value;
+	vals->is_used = false;
+	if (node->type == CONST_DECL) vals->is_constant = true;
+	else if(node->type == VAR_DECL) vals->is_constant = false;
+	else exit(99);
+	tTokenType type;
+	switch (node->structure.var_decl.type){
+		case VOID: type = Token_void;
+				   break;
+		case I32:  type = Token_i32;
+				   break;
+		case F64:  type = Token_f64;
+				   break;
+		case U8:   type = Token_u8;
+				   break;
+		case NI32: type = Token_Ni32;
+				   break;
+		case NF64: type = Token_Nf64;
+				   break;
+		case NU8:  type = Token_Nu8;
+				   break;
+		case UNDEF:type = Token_Empty;
+				   break;
+	}
+	vals->type = type;
+	vals->value = NULL; 
+	BstInsert(&symlist->first->root_ptr, node->structure.var_decl.token.value.string, content);
+}//OK
 
 void ExamineFunctionCall (tAstNode *node, tSymtableList *symlist){
 	tBstNodeContent *content = NULL;
@@ -91,40 +243,6 @@ void ExamineFunctionCall (tAstNode *node, tSymtableList *symlist){
 	}
 }
 
-void ExamineFunctionDef (tAstNode *node, tSymtableList *symlist){
-	tBstNodeContent *content = NULL;
-	tSymtableListElem *tree = symlist->first;
-	tArgDef *args = node->structure.func_def.args;
-	while(tree){
- 		if (BstSearch(tree->root_ptr, node->structure.func_def.token.value.string, &content)) exit(SEMANTIC_REDEF_ERROR);
-		tree = tree->next;
-	}
-	content = (tBstNodeContent *) malloc(sizeof(tBstNodeContent));
-	if (!content) exit (99);
-	content->type = FUNCTION;
-	content->value = (tFunctionVals *) malloc(sizeof(tFunctionVals));
-	if (!content->value) exit (99);
-	((tFunctionVals *)content->value)->loc_bst = node->structure.func_def.internal_symtable;
-	((tFunctionVals *)content->value)->is_used = false;
-	((tFunctionVals *)content->value)->ret_type = node->structure.func_def.ret_type_token.type;
-	while(args){
-		((tFunctionVals *)content->value)->paramCnt++;
-		tBstNodeContent *arg = (tBstNodeContent *) malloc(sizeof(tBstNodeContent));
-		if(!arg) exit(99);
-		arg->type = VARIABLE;
-		tVarVals *vals = (tVarVals *)arg->value;
-		vals->is_constant = false;
-		vals->is_used = false;
-		vals->type = args->type_token.type;
-		vals->value = NULL;
-		BstInsert(&node->structure.func_def.internal_symtable, args->name_token.value.string, *arg);
-		args = args->next;
-	}
-	((tFunctionVals *)content->value)->params = args;
-	BstInsert(&symlist->first->root_ptr, node->structure.func_def.token.value.string, *content);
-	SymtableListAdd(symlist, node->structure.func_def.internal_symtable);
-	ExamineSemantics(node->structure.func_def.code, symlist);
-}
 
 void ExamineSemantics (tAstNode *node, tSymtableList *symlist){
 	if(!node) return;
@@ -138,7 +256,7 @@ void ExamineSemantics (tAstNode *node, tSymtableList *symlist){
 			ExamineSemantics(node->structure.code.next_code, symlist);
 			break;
 		case VAR:
-			ExamineVar (node, symlist);
+			//ExamineVar (node, symlist);
 			break;
 		case VAL:
 			break;
@@ -163,12 +281,19 @@ void ExamineSemantics (tAstNode *node, tSymtableList *symlist){
 			break;
 		case CONST_DECL:
 		case VAR_DECL:
+			ExamineDecl(node, symlist);
 			break;
 		case FUNC_CALL:
 			ExamineFunctionCall(node, symlist);
 			break;
 		case FUNC_DEF:
-			ExamineFunctionDef(node, symlist);
+			SymtableListAdd(symlist, node->structure.func_def.internal_symtable);
+			ExamineSemantics(node->structure.func_def.code, symlist);
+			SymtableListRemove(symlist);
+			BstDispose(&node->structure.func_def.loc_symtree);
+			node->structure.func_def.loc_symtree = NULL;
+			break;
+		case RET:
 			break;
 	}
 }

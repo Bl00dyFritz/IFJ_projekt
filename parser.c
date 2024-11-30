@@ -107,7 +107,9 @@ int function(tToken *in_t, tAstNode **synt_tree, tBstNode **func_tree){
 	argument_list_def(&token, &arg_stack);
 	if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
 	type(&stack);
+	tBstNodeContent *tmp = NULL;
 	AddFuncDefNode(synt_tree, &stack, &arg_stack);
+	if (BstSearch(*func_tree, (*synt_tree)->structure.func_def.token.value.string, &tmp)) exit(SEMANTIC_REDEF_ERROR);
 	tBstNodeContent content;
 	content.type = FUNCTION;
 	content.value = (tFunctionVals *) malloc(sizeof(tFunctionVals));

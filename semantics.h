@@ -45,11 +45,15 @@ void SymtableListAdd (tSymtableList *list, tBstNode *symtree);
  */
 void SymtableListRemove (tSymtableList *list);
 
+void AssignVals(tVarVals **vals, void *in_val, tType in_type);
+void AssignInt(tVarVals **vals, void *in_val);
+void AssignDouble(tVarVals **vals, void *in_val);
+
 
 void ExamineFunctionDef (tAstNode *node, tSymtableList *symlist);
 void ExamineFunctionCall (tAstNode *node, tSymtableList *symlist);
-void ExamineVar (tAstNode *node, tSymtableList *symlist);
-void ExamineVal (tAstNode *node, tSymtableList *symlist);
+void ExamineVar (tAstNode *node, tSymtableList *symlist, void *in_val, tType in_type, void **out_val, tType *out_type);
+void ExamineVal (tAstNode *node, void **out_val, tType *out_type);
 void ExamineDecl (tAstNode *node, tSymtableList *symlist);
 void ExamineWhile (tAstNode *node, tSymtableList *symlist);
 void ExamineIf (tAstNode *node, tSymtableList *symlist);
