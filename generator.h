@@ -38,6 +38,8 @@ void GenStackOp(tAstNode *node);
 
 void GenIfStart(void);
 
+void GenIfStartNN(void);
+
 void GenIfEnd(void);
 
 void GenElseStart(void);
@@ -47,6 +49,8 @@ void GenElseEnd(void);
 void GenWhileHead(void);
 
 void GenWhile(void);
+
+void GenWhileNN(void);
 
 void GenWhileEnd(void);
 

@@ -144,6 +144,11 @@ void GenWhile(void) {
     printf("JUMPIFEQ $EndWhile$ GF@tmp2 bool@false\n");
 }
 
+void GenWhileNN(void) {
+    printf("POPS GF@tmp2\n");
+    printf("JUMPIFEQ $EndWhile$ GF@tmp2 nil@nil\n");
+}
+
 void GenWhileEnd(void) {
     printf("JUMP $while$\n");
     printf("LABEL $EndWhile$\n");
@@ -464,6 +469,11 @@ void GenIfStart(void) {
     printf("JUMPIFNEQ $$else_label GF@tmp1 bool@true\n");
 }
 
+void GenIfStartNN(void) {
+    printf("POPS GF@tmp1\n");
+    printf("JUMPIFEQ $$else_label GF@tmp1 nil@nil\n");
+}
+
 void GenIfEnd(void) {
     printf("JUMPIFNEQ $$endif_label GF@tmp1 bool@false\n");
 }
@@ -529,10 +539,17 @@ void GenerateOutput(tAstNode *node) {
             break;
 	    case WHILE:
             GenWhileHead();
-            GenerateOutput(node->structure.while_loop.expr);
-            GenWhile();
+            if (node->structure.while_loop.nn_id != NULL) {
+                printf("PUSHS LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string);
+                GenWhileNN();
+            } else {
+                GenerateOutput(node->structure.while_loop.expr);
+                GenWhile();
+            }
             GenerateOutput(node->structure.while_loop.code);
-            if (node->structure.while_loop.expr->structure.bin_op.op1->type == VAR) {
+            if (node->structure.while_loop.nn_id != NULL) {
+                printf("PUSHS LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string);
+            } else if (node->structure.while_loop.expr->structure.bin_op.op1->type == VAR) {
                 printf("POPS LF@%s\n", node->structure.while_loop.expr->structure.bin_op.op1->structure.var.token.value.string);
             } else if (node->structure.while_loop.expr->structure.bin_op.op2->type == VAR) {
                 printf("POPS LF@%s\n", node->structure.while_loop.expr->structure.bin_op.op2->structure.var.token.value.string);
@@ -540,8 +557,13 @@ void GenerateOutput(tAstNode *node) {
             GenWhileEnd();
             break;
 	    case IF:
-            GenerateOutput(node->structure.if_block.expr);
-            GenIfStart();
+            if (node->structure.if_block.nn_id != NULL) {
+                printf("PUSHS LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string);
+                GenIfStartNN();
+            } else {
+                GenerateOutput(node->structure.if_block.expr);
+                GenIfStart();
+            }
             GenerateOutput(node->structure.if_block.if_code);
             GenIfEnd();
             if (node->structure.if_block.else_code) {
