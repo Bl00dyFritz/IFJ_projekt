@@ -1,7 +1,7 @@
 /**
- * Implementace překladače imperativního jazyka IFJ24
+ * Implementation of the IFJ24 imperative language compiler
  * @file scanner.c
- * @brief Scanner - Implementácia lexikálneho analyzátora
+ * @brief Scanner - Implementation of a lexical analyzer
  * @author Alexander Žikla, xziklaa00
  */
 #include "scanner.h"
@@ -229,7 +229,7 @@ int GetToken(tToken *token) {
             case State_Array_2:
                 if (c == '8') {
                     String_Add(&str, c);
-                    if (!CheckToken(token, &str)) {
+                    if (!CheckVarType(token, &str)) {
                         token->type = Token_u8;
                     }
                     Completed = true;
@@ -245,7 +245,7 @@ int GetToken(tToken *token) {
                 } else if (c == '[') {
                     String_Add(&str, c);
                     token->state = State_Array;
-                } else if (CheckToken(token, &str)) {
+                } else if (CheckVarType(token, &str)) {
                     ungetc(c, file);
                     Completed = true;
                 } else { 
@@ -440,7 +440,7 @@ int GetToken(tToken *token) {
                 }
                 break;
             case State_StringEnd:
-                token->type = Token_String;
+                token->type = Token_string;
                 Completed = true;
                 ungetc(c, file);
                 break;
@@ -582,7 +582,7 @@ int GetToken(tToken *token) {
         }
     }
 
-    if (token->type == Token_String || token->type == Token_FuncID || token->type == Token_BuildIn_Func) {
+    if (token->type == Token_string || token->type == Token_FuncID || token->type == Token_BuildIn_Func) {
         token->value.string = str.string;
     } else {
         String_Free(&str);
@@ -619,7 +619,7 @@ void CheckKW(tToken *token, sStr *str) {
     }
 }
 
-int CheckToken(tToken *token, sStr *str) {
+int CheckVarType(tToken *token, sStr *str) {
     if (strcmp(str->string, "?i32") == 0) {
         token->type = Token_Ni32;
         return 1;

@@ -10,7 +10,11 @@ IMPORTED_ID ::= token_readstr | token_readi32 | token_readf64 | token_write | to
 
 CONST_INIT ::= CONST_DECL CONST_DEF token_;
 VAR_INIT ::= VAR_DECL VAR_DEF token_;
+CONST_INIT ::= CONST_DECL CONST_DEF token_;
+VAR_INIT ::= VAR_DECL VAR_DEF token_;
 
+CONST_DEF ::= token_= EXPR | ε
+VAR_DEF ::= token_= EXPR | ε
 CONST_DEF ::= token_= EXPR | ε
 VAR_DEF ::= token_= EXPR | ε
 TYPE_DECL ::= token_: TYP | ε
@@ -35,6 +39,7 @@ BODY_STATEMENT ::= IF_BLOCK | WHILE_LOOP | VAR_INIT | CONST_INIT | ASSIGN_VAL | 
 DISPOSE ::= token_underscore token_= EXPR
 
 ASSIGN_VAL ::= token_id token_= EXPR token_;
+ASSIGN_VAL ::= token_id token_= EXPR token_;
 
 IF_BLOCK ::= IF ELSE
 IF ::= token_if token_( EXPR token_) NON_NULL_ID token_{ BODY token_}
@@ -44,6 +49,7 @@ NON_NULL_ID ::= token_| token_id token_| | ε
 
 WHILE_LOOP ::= token_while token_( EXPR token_) NON_NULL_ID token_{ BODY token_}
 
+FCE_CALL ::= FCE_ID token_( ARGS token_)
 FCE_CALL ::= FCE_ID token_( ARGS token_)
 ARGS ::= ARG NEXT_ARG | ε
 ARG ::= token_id | EXPR
