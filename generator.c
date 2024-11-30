@@ -9,6 +9,8 @@
 #include "generator.h"
 #include "ast.h"
 
+static int GlobalCounter = 1;
+
 void GenInitial(void) {
     GenHead();
     GenBuiltInFuncs();
@@ -136,22 +138,22 @@ void GenStackOp(tAstNode *node) {
 }
 
 void GenWhileHead(void) {
-    printf("LABEL $while$\n");
+    printf("LABEL $while%d$\n", GlobalCounter);
 }
 
 void GenWhile(void) {
     printf("POPS GF@tmp2\n");
-    printf("JUMPIFEQ $EndWhile$ GF@tmp2 bool@false\n");
+    printf("JUMPIFEQ $EndWhile%d$ GF@tmp2 bool@false\n", GlobalCounter);
 }
 
 void GenWhileNN(void) {
     printf("POPS GF@tmp2\n");
-    printf("JUMPIFEQ $EndWhile$ GF@tmp2 nil@nil\n");
+    printf("JUMPIFEQ $EndWhile%d$ GF@tmp2 nil@nil\n", GlobalCounter);
 }
 
 void GenWhileEnd(void) {
-    printf("JUMP $while$\n");
-    printf("LABEL $EndWhile$\n");
+    printf("JUMP $while%d$\n", GlobalCounter);
+    printf("LABEL $EndWhile%d$\n", GlobalCounter);
 }
 
 void GenBuiltInFuncs(void) {
@@ -466,24 +468,24 @@ void GenAssign(tAstNode *node) {
 
 void GenIfStart(void) {
     printf("POPS GF@tmp1\n");
-    printf("JUMPIFNEQ $$else_label GF@tmp1 bool@true\n");
+    printf("JUMPIFNEQ $else_label%d$ GF@tmp1 bool@true\n", GlobalCounter);
 }
 
 void GenIfStartNN(void) {
     printf("POPS GF@tmp1\n");
-    printf("JUMPIFEQ $$else_label GF@tmp1 nil@nil\n");
+    printf("JUMPIFEQ $else_label$%d$ GF@tmp1 nil@nil\n", GlobalCounter);
 }
 
 void GenIfEnd(void) {
-    printf("JUMPIFNEQ $$endif_label GF@tmp1 bool@false\n");
+    printf("JUMPIFNEQ $endif_label%d$ GF@tmp1 bool@false\n", GlobalCounter);
 }
 
 void GenElseStart(void) {
-    printf("LABEL $$else_label\n");
+    printf("LABEL $else_label%d$\n", GlobalCounter);
 }
 
 void GenElseEnd(void) {
-    printf("LABEL $$endif_label\n");
+    printf("LABEL $endif_label%d$\n", GlobalCounter);
 }
 
 void generate3AK(sStackGen *stack, tAstNode *tree) {
@@ -555,6 +557,7 @@ void GenerateOutput(tAstNode *node) {
                 printf("POPS LF@%s\n", node->structure.while_loop.expr->structure.bin_op.op2->structure.var.token.value.string);
             }
             GenWhileEnd();
+            GlobalCounter++;
             break;
 	    case IF:
             if (node->structure.if_block.nn_id != NULL) {
@@ -571,6 +574,7 @@ void GenerateOutput(tAstNode *node) {
                 GenerateOutput(node->structure.if_block.else_code);
             }
             GenElseEnd();
+            GlobalCounter++;
             break;
 	    case BIN_OP:
             GenStackOp(node);
