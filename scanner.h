@@ -1,19 +1,8 @@
 /**
- * Implementace překladače imperativního jazyka IFJ24
+ * Implementation of the IFJ24 imperative language compiler
  * @file scanner.h
- * @brief Hlavičkový súbor pre lexikálny analyzátor
+ * @brief Header file for the lexical analyzer
  * @author Alexander Žikla, xziklaa00
- * 
- * TODO: V FSM prepísať Intiger na Integer
- *       Pridať v FSM State_Array z Start -> Typeid a z FuncID -> TypeId
- *       Pridať v FSM State_Array z Typeid -> State_FuncID_1
- *       Pridat v FSM State_Check_Float z Integer -> Float 
- *       Pridat v FSM State_Check_Exp z Float -> Exp, ten pojde do Exp a Signed/Unsigned
- *       Potom Signed/Unsigned pojde do Exp (Signed/Unsigned -> Exp)
- *       Odstrániť State_Quote z FSM
- *       Pridať v FSM states State_IFJ_n
- * 
- *       Okomentovať I guess
  */
 
 
@@ -29,8 +18,13 @@
 
 #define MAX_LENGTH 128
 
+/**
+ * @brief Enum for states of the FSM
+ */
 typedef enum {
     State_Start,
+    State_AtImport,
+    State_Underscore,
     State_FuncID,
     State_Check_TypeID,
     State_TypeID,
@@ -58,6 +52,7 @@ typedef enum {
     State_Hex_1,
     State_StringEnd,
 
+    State_Pipe,
     State_Slash,
     State_Comment,
     State_Lpar,
@@ -80,8 +75,13 @@ typedef enum {
     State_EOF,
 } sState;
 
+/**
+ * @brief Enum for types of Token
+ */
 typedef enum {
     Token_Empty,
+    Token_AtImport,
+    Token_Underscore,
 
     Token_Plus,
     Token_Minus,
@@ -90,7 +90,7 @@ typedef enum {
 
     Token_Integer,
     Token_Float,
-    Token_String,
+    Token_string,
 
     Token_FuncID,
     
@@ -107,6 +107,9 @@ typedef enum {
     Token_i32,
     Token_f64,
     Token_u8,
+    Token_Ni32,
+    Token_Nf64,
+    Token_Nu8,
 
     Token_Assign,
     Token_Equal,
@@ -116,7 +119,6 @@ typedef enum {
     Token_Greater_Equal,
     Token_Greater,
 
-    Token_Quote,
     Token_Esc_Seq,
 
     Token_Lpar,
@@ -127,59 +129,117 @@ typedef enum {
     Token_Semicolon,
     Token_Dot,
     Token_Comma,
+    Token_Pipe,
 
     Token_EOF,
     Token_BuildIn_Func,
-    Token_IFJ
+    Token_IFJ,
+
+	Token_Dollar         //Auxiliary type for precedent analysis
 } tTokenType;
 
+/**
+ * @brief Enum for Built-in functions
+ */
 typedef enum {
-    KW_const,
-    KW_else,
-    KW_if,
-    KW_return,
-    KW_var,
-    KW_void,
-    KW_while,
-    KW_fn,
-    KW_i32,
-    KW_f64,
-    KW_u8,
-    KW_pub,
-    KW_null
-} kKeyword;
+    BF_write,
+    BF_readstr,
+    BF_readi32,
+    BF_readf64,
+    BF_string,
+    BF_concat,
+    BF_length,
+    BF_i2f,
+    BF_f2i,
+    BF_substring,
+    BF_ord,
+    BF_chr,
+    BF_strcmp
+} bBuiltinFuncs;
 
+/**
+ * @brief Union for token values
+ */
 typedef union {
     char *string;
     int integer;
     double decimal;
-    kKeyword keyword;
+    bBuiltinFuncs BuiltInFunc;
 } tTokenVal;
 
+/**
+ * @brief Structure for token
+ */
 typedef struct {
     tTokenVal value;
     tTokenType type;
     sState state;
 } tToken;
 
+/**
+ * @brief Structure for dynamic string 
+ */
 typedef struct {
     char *string;
     int length;
     int max_length;
 } sStr;
 
+/**
+ * @brief Set file with source code 
+ * @param f Pointer to the source file 
+ */
 void SetSourceFile(FILE *f);
 
-int PrologueScan();
-
+/**
+ * @brief Checks if the string matches with one of the keywords and sets token->type accordingly
+ * @param token Pointer to the token structure 
+ * @param string Pointer to the string structure containing the input text
+ */
 void CheckKW(tToken *token, sStr *string);
 
-int GetToken(tToken *token, int c);
+/**
+ * @brief Checks if the string matches with one of the var types and sets token->type accordingly
+ * @param token Pointer to the token structure 
+ * @param string Pointer to the string structure containing the input text
+ * @return 1 - if string matches with some type
+ */
+int CheckVarType(tToken *token, sStr *string);
 
+/**
+ * @brief Checks if the string matches with one of the Built-in functions and set token->value.BuiltInFunc accordingly
+ * @param token Pointer to the token structure 
+ * @param string Pointer to the string structure containing the input text
+ * @return 1 - if string matches with some function
+ */
+int CheckBuildInFunc(tToken *token, sStr *string);
+
+/**
+ * @brief Reads the next token from the input   
+ * @param token Pointer to the token structure, where the needed values will be stored
+ * @return 0 - if reading token was done without error
+ */
+int GetToken(tToken *token);
+
+/**
+ * @brief Inicialization of the dynamic string structure
+ * @param str Pointer to the string structure
+ * @return 1 - Allocation failed
+ */
 int String_Init(sStr *str);
 
+/**
+ * @brief Frees the memory allocated for the dynamic string
+ * @param str Pointer to the string structure
+ */
 void String_Free(sStr *str);
 
+/**
+ * @brief Adds a character to the end of the string
+ * @param str Pointer to the string structure
+ * @param character Char to add to the string 
+ * @return 1 - Allocation failed
+ */
 int String_Add(sStr *str, char character);
 
 #endif /** SCANNER_H **/

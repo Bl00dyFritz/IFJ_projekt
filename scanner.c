@@ -1,7 +1,7 @@
 /**
- * Implementace překladače imperativního jazyka IFJ24
+ * Implementation of the IFJ24 imperative language compiler
  * @file scanner.c
- * @brief Scanner - Implementácia lexikálneho analyzátora
+ * @brief Scanner - Implementation of a lexical analyzer
  * @author Alexander Žikla, xziklaa00
  */
 #include "scanner.h"
@@ -12,8 +12,9 @@ void SetSourceFile(FILE *f) {
     file = f;
 }
 
-int GetToken(tToken *token, int c) {
-    sStr str;
+int GetToken(tToken *token) {
+    int c;
+	sStr str;
     if (String_Init(&str)) return INTERNAL_COMP_ERROR;
     token->state = State_Start;
     token->type = Token_Empty;
@@ -25,6 +26,10 @@ int GetToken(tToken *token, int c) {
         switch (token->state) {
             case State_Start:
                 switch (c) {
+                    case '@':
+                            token->state = State_AtImport;
+                            String_Add(&str, c);
+                        break;
                     case '/':
                             token->state = State_Slash;
                         break;
@@ -76,12 +81,20 @@ int GetToken(tToken *token, int c) {
                     case '"':
                             token->state = State_String;
                         break;
+                    case '|':
+                            token->state = State_Pipe;
+                        break;
                     case '[':
                             token->state = State_Array;
                             String_Add(&str, c);
                         break;
                     case '?':
                             token->state = State_Check_TypeID;
+                            String_Add(&str, c);
+                        break;
+                    case '_':
+                            token->state = State_Underscore;
+                            String_Add(&str, c);
                         break;
                     case EOF:
                             token->state = State_EOF;
@@ -90,7 +103,7 @@ int GetToken(tToken *token, int c) {
                         if (c == 'i') {
                             token->state = State_IFJ_1;
                             String_Add(&str, c);
-                        } else if (isalpha(c) || c == '_') {
+                        } else if (isalpha(c)) {
                             token->state = State_FuncID;
                             token->type = Token_FuncID;
                             String_Add(&str, c);
@@ -105,6 +118,20 @@ int GetToken(tToken *token, int c) {
                             return LEXICAL_ERROR;
                         }
                         break;
+                }
+                break;
+            case State_AtImport:
+                if (isalpha(c)) {
+                    String_Add(&str, c);
+                } else {
+                    ungetc(c, file);
+                    if (strcmp(str.string, "@import") == 0) {
+                        token->type = Token_AtImport;
+                        Completed = true;
+                    } else {
+                        String_Free(&str);
+                        return LEXICAL_ERROR;
+                    }
                 }
                 break;
             case State_IFJ_1:
@@ -155,6 +182,10 @@ int GetToken(tToken *token, int c) {
                 if (isalnum(c)) {
                     String_Add(&str, c);
                 } else {
+                    if (!CheckBuildInFunc(token, &str)) {
+                        String_Free(&str);
+                        return LEXICAL_ERROR;
+                    } 
                     token->type = Token_BuildIn_Func;
                     ungetc(c, file);
                     Completed = true;
@@ -198,8 +229,9 @@ int GetToken(tToken *token, int c) {
             case State_Array_2:
                 if (c == '8') {
                     String_Add(&str, c);
-                    token->type = Token_u8;
-                    token->value.keyword = KW_u8;
+                    if (!CheckVarType(token, &str)) {
+                        token->type = Token_u8;
+                    }
                     Completed = true;
                 } else {
                     String_Free(&str);
@@ -207,13 +239,15 @@ int GetToken(tToken *token, int c) {
                 }
                 break;
             case State_Check_TypeID:
-                if (c == 'f' || c == 'i') {
+                if (isalnum(c)) {
                     String_Add(&str, c);
-                    token->state = State_TypeID;
-                    token->type = Token_FuncID;
+                    token->state = State_Check_TypeID;
                 } else if (c == '[') {
                     String_Add(&str, c);
                     token->state = State_Array;
+                } else if (CheckVarType(token, &str)) {
+                    ungetc(c, file);
+                    Completed = true;
                 } else { 
                     String_Free(&str);
                     return LEXICAL_ERROR;
@@ -406,7 +440,7 @@ int GetToken(tToken *token, int c) {
                 }
                 break;
             case State_StringEnd:
-                token->type = Token_String;
+                token->type = Token_string;
                 Completed = true;
                 ungetc(c, file);
                 break;
@@ -482,6 +516,22 @@ int GetToken(tToken *token, int c) {
                 Completed = true;
                 ungetc(c, file);
                 break;
+            case State_Pipe:
+                token->type = Token_Pipe;
+                Completed = true;
+                ungetc(c, file);
+                break;
+            case State_Underscore:
+                if (isspace(c) || c == '=') {
+                    token->type = Token_Underscore;
+                    Completed = true;
+                    ungetc(c, file);
+                } else {
+                    token->state = State_FuncID;
+                    token->type = Token_FuncID;
+                    ungetc(c, file);
+                }
+                break;
             case State_Assign_or_Equal:
                 if (c != '=') {
                     token->type = Token_Assign;
@@ -532,7 +582,7 @@ int GetToken(tToken *token, int c) {
         }
     }
 
-    if (token->type == Token_String || token->type == Token_FuncID || token->type == Token_BuildIn_Func) {
+    if (token->type == Token_string || token->type == Token_FuncID || token->type == Token_BuildIn_Func) {
         token->value.string = str.string;
     } else {
         String_Free(&str);
@@ -544,63 +594,85 @@ int GetToken(tToken *token, int c) {
 void CheckKW(tToken *token, sStr *str) {
     if (strcmp(str->string, "const") == 0) {
         token->type = Token_const;
-        token->value.keyword = KW_const;
     } else if (strcmp(str->string, "else") == 0) {
         token->type = Token_else;
-        token->value.keyword = KW_else;
     } else if (strcmp(str->string, "fn") == 0) {
         token->type = Token_fn;
-        token->value.keyword = KW_fn;
     } else if (strcmp(str->string, "if") == 0) {
         token->type = Token_if;
-        token->value.keyword = KW_if;
     } else if (strcmp(str->string, "i32") == 0) {
         token->type = Token_i32;
-        token->value.keyword = KW_i32;
     } else if (strcmp(str->string, "f64") == 0) {
         token->type = Token_f64;
-        token->value.keyword = KW_f64;
     } else if (strcmp(str->string, "null") == 0) {
         token->type = Token_null;
-        token->value.keyword = KW_null;
     } else if (strcmp(str->string, "pub") == 0) {
         token->type = Token_pub;
-        token->value.keyword = KW_pub;
     } else if (strcmp(str->string, "return") == 0) {
         token->type = Token_return;
-        token->value.keyword = KW_return;
     } else if (strcmp(str->string, "var") == 0) {
         token->type = Token_var;
-        token->value.keyword = KW_var;
     } else if (strcmp(str->string, "void") == 0) {
         token->type = Token_void;
-        token->value.keyword = KW_void;
     } else if (strcmp(str->string, "while") == 0) {
         token->type = Token_while;
-        token->value.keyword = KW_while;
     }
 }
 
-int PrologueScan() {
-    sStr str;
-    int c;
-    if (String_Init(&str)) return INTERNAL_COMP_ERROR;
+int CheckVarType(tToken *token, sStr *str) {
+    if (strcmp(str->string, "?i32") == 0) {
+        token->type = Token_Ni32;
+        return 1;
+    } else if (strcmp(str->string, "?f64") == 0) {
+        token->type = Token_Nf64;
+        return 1;
+    } else if (strcmp(str->string, "?[]u8") == 0) {
+        token->type = Token_Nu8;
+        return 1;
+    } else return 0;
+}
 
-    c = getc(file);
-    while (c != ';') {
-        String_Add(&str, c);
-        c = getc(file);
-    }
-    String_Add(&str, c);
-    
-    if (strcmp(str.string, "const ifj = @import(\"ifj24.zig\");")) {
-        String_Free(&str);
-        fprintf(stderr, "Error: The program has to start with a Prologue\n");
-        return LEXICAL_ERROR;
-    }
-
-    String_Free(&str);
-    return 0;
+int CheckBuildInFunc(tToken *token, sStr *str) {
+    if (strcmp(str->string, "ifj.write") == 0) {
+        token->value.BuiltInFunc = BF_write;
+        return 1;
+    } else if (strcmp(str->string, "ifj.readstr") == 0) {
+        token->value.BuiltInFunc = BF_readstr;
+        return 1;
+    } else if (strcmp(str->string, "ifj.readi32") == 0) {
+        token->value.BuiltInFunc = BF_readi32;
+        return 1;
+    } else if (strcmp(str->string, "ifj.readf64") == 0) {
+        token->value.BuiltInFunc = BF_readf64;
+        return 1;
+    } else if (strcmp(str->string, "ifj.string") == 0) {
+        token->value.BuiltInFunc = BF_string;
+        return 1;
+    } else if (strcmp(str->string, "ifj.concat") == 0) {
+        token->value.BuiltInFunc = BF_concat;
+        return 1;
+    } else if (strcmp(str->string, "ifj.length") == 0) {
+        token->value.BuiltInFunc = BF_length;
+        return 1;
+    } else if (strcmp(str->string, "ifj.i2f") == 0) {
+        token->value.BuiltInFunc = BF_i2f;
+        return 1;
+    } else if (strcmp(str->string, "ifj.f2i") == 0) {
+        token->value.BuiltInFunc = BF_f2i;
+        return 1;
+    } else if (strcmp(str->string, "ifj.substring") == 0) {
+        token->value.BuiltInFunc = BF_substring;
+        return 1;
+    } else if (strcmp(str->string, "ifj.ord") == 0) {
+        token->value.BuiltInFunc = BF_ord;
+        return 1;
+    } else if (strcmp(str->string, "ifj.chr") == 0) {
+        token->value.BuiltInFunc = BF_chr;
+        return 1;
+    } else if (strcmp(str->string, "ifj.strcmp") == 0) {
+        token->value.BuiltInFunc = BF_strcmp;
+        return 1;
+    } else return 0;
 }
 
 int String_Init(sStr *str) {
