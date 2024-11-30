@@ -12,7 +12,6 @@
 #include "scanner.h"
 #include "ast.h"
 #include "symtable.h"
-#include "symtable.c"
 #include "stack.h"
 
 int prolog(void){

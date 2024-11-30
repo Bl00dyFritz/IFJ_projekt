@@ -208,11 +208,143 @@ void ExamineDecl (tAstNode *node, tSymtableList *symlist){
 	BstInsert(&symlist->first->root_ptr, node->structure.var_decl.token.value.string, content);
 }//OK
 
-void ExamineFunctionCall (tAstNode *node, tSymtableList *symlist){
+void ExamineBuiltInFunc(tAstNode *node, tType *out_type){
+	bBuiltinFuncs func_type = node->structure.func_call.name_token.value.BuiltInFunc;
+	tArgs *args = node->structure.func_call.args;
+	int arg_cnt = node->structure.func_call.arg_cnt;
+	switch (func_type) {
+		case BF_write:
+			if (arg_cnt!=1) 
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			*out_type = VOID;
+			break;
+		case BF_readstr:
+			if (arg_cnt!=0) 
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			*out_type = NU8;
+			break;
+		case BF_readi32:
+			if (arg_cnt!=0) 
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			*out_type = NI32;
+			break;
+		case BF_readf64:
+			if (arg_cnt!=0) 
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			*out_type = NF64;
+			break;
+		case BF_string:
+			if (arg_cnt!=1) 
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (args->token.type!=Token_u8 && args->token.type!=Token_string)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			*out_type = U8;
+			break;
+		case BF_concat:
+			if (arg_cnt!=2) 
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (args->token.type!=Token_u8)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			args = args->next;
+			if (args->token.type!=Token_u8)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			*out_type = U8;
+			break;
+		case BF_length:
+			if (arg_cnt!=1) 
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (args->token.type!=Token_u8)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			*out_type = I32;
+			break;
+		case BF_i2f:
+			if (arg_cnt!=1) 
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (args->token.type!=Token_i32 && args->token.type!=Token_Integer)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			*out_type = F64;
+			break;
+		case BF_f2i:
+			if (arg_cnt!=1) 
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (args->token.type!=Token_f64 && args->token.type!=Token_Float)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			*out_type = I32;
+			break;
+		case BF_substring:
+			if (arg_cnt!=3) 
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (args->token.type!=Token_u8)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			args = args->next;
+			if (args->token.type!=Token_i32 && args->token.type!=Token_Integer)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			args = args->next;
+			if (args->token.type!=Token_i32 && args->token.type!=Token_Integer)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			*out_type = NU8;
+			break;
+		case BF_ord:
+			if (arg_cnt!=2) 
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (args->token.type!=Token_u8)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			args = args->next;
+			if (args->token.type!=Token_i32 && args->token.type!=Token_Integer)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			*out_type = I32;
+			break;
+		case BF_chr:
+			if (arg_cnt!=1) 
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (args->token.type!=Token_i32 && args->token.type!=Token_Integer)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			*out_type = U8;
+			break;
+		case BF_strcmp:
+			if (arg_cnt!=2) 
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (args->token.type!=Token_u8)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			args = args->next;
+			if (args->token.type!=Token_u8)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			*out_type = I32;
+			break;
+	}
+}//OK
+
+tType FuncType(tTokenType tok_type){
+	switch (tok_type){
+		case Token_u8:
+			return U8;
+		case Token_i32:
+			return I32;
+		case Token_f64:
+			return F64;
+		case Token_Nu8:
+			return NU8;
+		case Token_Ni32:
+			return NI32;
+		case Token_Nf64:
+			return NF64;
+		case Token_void:
+			return VOID;
+		default:exit(INTERNAL_COMP_ERROR);
+	}
+}//OK
+
+void ExamineFunctionCall (tAstNode *node, tSymtableList *symlist, tType *out_type){
 	tBstNodeContent *content = NULL;
 	tSymtableListElem *tree = symlist->first;
 	tArgDef *symtable_data = NULL;
 	tArgs *arg_data = NULL;
+
+	if (node->structure.func_call.name_token.type == Token_BuildIn_Func){
+		ExamineBuiltInFunc(node, out_type);
+		return;
+	}
+
 	while(tree){
 		if (BstSearch(tree->root_ptr, node->structure.func_call.name_token.value.string, &content)) break;
 		tree = tree->next;
@@ -229,6 +361,8 @@ void ExamineFunctionCall (tAstNode *node, tSymtableList *symlist){
 		if (arg_data->token.type == Token_Float && symtable_data->type_token.type != Token_f64 
 				&& symtable_data->type_token.type != Token_Nf64) 
 			exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+		if (arg_data->token.type == Token_string)
+			exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
 		if (arg_data->token.type == Token_FuncID){
 			tree = symlist->first;
 			while (tree){
@@ -237,11 +371,24 @@ void ExamineFunctionCall (tAstNode *node, tSymtableList *symlist){
 			}
 			if (!tree) exit(SEMANTIC_UNDEF_ERROR);
 			if (content->type != VARIABLE) exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (((tVarVals*)content->value)->type == Token_u8 && symtable_data->type_token.type != Token_u8)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (((tVarVals*)content->value)->type == Token_i32 && symtable_data->type_token.type != Token_i32)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (((tVarVals*)content->value)->type == Token_f64 && symtable_data->type_token.type != Token_f64)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (((tVarVals*)content->value)->type == Token_Nu8 && symtable_data->type_token.type != Token_Nu8)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (((tVarVals*)content->value)->type == Token_Ni32 && symtable_data->type_token.type != Token_Ni32)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+			if (((tVarVals*)content->value)->type == Token_Nf64 && symtable_data->type_token.type != Token_Nf64)
+				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
 		}
 		arg_data = arg_data->next;
 		symtable_data = symtable_data->next;
 	}
-}
+	*out_type = FuncType(symtable_data->type_token.type);
+}//OK
 
 
 void ExamineSemantics (tAstNode *node, tSymtableList *symlist){
@@ -284,7 +431,7 @@ void ExamineSemantics (tAstNode *node, tSymtableList *symlist){
 			ExamineDecl(node, symlist);
 			break;
 		case FUNC_CALL:
-			ExamineFunctionCall(node, symlist);
+			//ExamineFunctionCall(node, symlist);
 			break;
 		case FUNC_DEF:
 			SymtableListAdd(symlist, node->structure.func_def.internal_symtable);
