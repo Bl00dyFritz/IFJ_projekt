@@ -119,7 +119,6 @@ typedef enum {
     Token_Greater_Equal,
     Token_Greater,
 
-    Token_Quote,
     Token_Esc_Seq,
 
     Token_Lpar,
