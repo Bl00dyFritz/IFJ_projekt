@@ -195,9 +195,53 @@ void GenBuiltInFuncs(void) {
     //ifj.string
     printf("LABEL $$ifj_string\n");
     printf("PUSHFRAME\n");
-    printf("DEFVAR LF@StrTerm\n");
-    printf("POPS LF@StrTerm\n");
-    printf("PUSHS LF@StrTerm\n");
+    printf("DEFVAR LF@StrTermIn\n");
+    printf("DEFVAR LF@StrTermOut\n");
+    printf("DEFVAR LF@StrChar\n");
+    printf("DEFVAR LF@StrCharASCII\n");
+    printf("DEFVAR LF@StringIndex\n");
+    printf("DEFVAR LF@StringLenght\n");
+    printf("POPS LF@StrTermIn\n");
+    printf("MOVE LF@StrTermOut string@\n");
+    printf("MOVE LF@StringIndex int@0\n");
+    printf("STRLEN LF@StringLenght LF@StrTermIn\n");
+
+    printf("LABEL $StringLoop$\n");
+    printf("JUMPIFEQ $StringEnd$ LF@StringIndex LF@StringLenght\n");
+    printf("GETCHAR LF@StrChar LF@StrTermIn LF@StringIndex\n");
+    printf("STRI2INT LF@StrCharASCII LF@StrTermIn LF@StringIndex\n");
+    printf("JUMPIFEQ $EscapeSpace$ LF@StrCharASCII int@32\n");          //Space " "
+    printf("JUMPIFEQ $EscapeBackslash$ LF@StrCharASCII int@92\n");      //Backslash "\"
+    printf("JUMPIFEQ $EscapeNewline$ LF@StrCharASCII int@10\n");        //Newline "\n"
+    printf("JUMPIFEQ $EscapeHashtag$ LF@StrCharASCII int@35\n");        //Hashtag "#""
+    printf("JUMPIFEQ $EscapeTab$ LF@StrCharASCII int@9\n");             //Tab "\t"
+
+    printf("LABEL $StringNextChar$\n");
+    printf("ADD LF@StringIndex LF@StringIndex int@1\n");
+    printf("JUMP $StringLoop$\n");
+    
+    printf("LABEL $EscapeSpace$\n");
+    printf("CONCAT LF@StrTermOut LF@StrTermOut string@\\032\n");
+    printf("JUMP $StringNextChar$\n");
+
+    printf("LABEL $EscapeBackslash$\n");
+    printf("CONCAT LF@StrTermOut LF@StrTermOut string@\\092\n");
+    printf("JUMP $StringNextChar$\n");
+
+    printf("LABEL $EscapeNewline$\n");
+    printf("CONCAT LF@StrTermOut LF@StrTermOut string@\\010\n");
+    printf("JUMP $StringNextChar$\n");
+
+    printf("LABEL $EscapeHashtag$\n");
+    printf("CONCAT LF@StrTermOut LF@StrTermOut string@\\035\n");
+    printf("JUMP $StringNextChar$\n");
+
+    printf("LABEL $EscapeTab$\n");
+    printf("CONCAT LF@StrTermOut LF@StrTermOut string@\\009\n");
+    printf("JUMP $StringNextChar$\n");    
+
+    printf("LABEL $StringEnd$\n");
+    printf("PUSHS LF@StrTermOut\n");
     printf("POPS GF@func_result\n");
     printf("POPFRAME\n");
     printf("RETURN\n\n");
@@ -384,6 +428,7 @@ void GenCallFunc(tAstNode *node) {
     tArgs *TmpCF = node->structure.func_call.args;
     tArgs *Prev = NULL;
     tArgs *Next = NULL;
+    //Changing order of Args
     while (TmpCF) {
         Next = TmpCF->next;
         TmpCF->next = Prev;
@@ -446,10 +491,6 @@ void GenAssign(tAstNode *node) {
             case F64: case NF64:
                 printf("MOVE LF@%s float@%a\n", node->structure.assign.dst->structure.var.token.value.string,
                                                 node->structure.assign.src->structure.var.val.f);
-                break;
-            case U8: case NU8:
-                printf("MOVE LF@%s string@%s\n", node->structure.assign.dst->structure.var.token.value.string,
-                                                node->structure.assign.src->structure.var.val.str);
                 break;
             case VOID: case UNDEF:
                 printf("MOVE LF@%s nil@nil\n", node->structure.assign.dst->structure.var.token.value.string);
@@ -530,9 +571,6 @@ void GenerateOutput(tAstNode *node) {
                     break;
 	            case F64: case NF64:
                     printf("MOVE LF@%s float@%a\n", node->structure.var.token.value.string, node->structure.var.val.f);
-                    break;
-	            case U8: case NU8:
-                    printf("MOVE LF@%s string@%s\n", node->structure.var.token.value.string, node->structure.var.val.str);
                     break;
                 default:
                     exit(56);
