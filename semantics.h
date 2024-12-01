@@ -27,6 +27,15 @@ typedef struct symtable_list{
 }tSymtableList;
 
 /**
+ * @brief pomocna struktura na posilani dat mezi funkcema
+ */
+typedef struct com_link{
+	void *val; //Ukazatel na hodnoty, urcena k zdileni
+	tType type; //Typ dane hodndoty
+	bool is_var; //true pokud jde o promenne nebo vyraz, false pokud jde o literal nebo konstanta se znamou hodnotu
+}tComData;
+
+/**
  * @brief Funkce inicializujici seznam vyhledavacich tabulek
  * @param list Ukazatel na seznam ktery se ma nainicializovat
  */
@@ -45,18 +54,23 @@ void SymtableListAdd (tSymtableList *list, tBstNode *symtree);
  */
 void SymtableListRemove (tSymtableList *list);
 
-void AssignVals(tVarVals **vals, void *in_val, tType in_type);
+void AssignVals(tVarVals **vals, tComData in_data);
 void AssignInt(tVarVals **vals, void *in_val);
 void AssignDouble(tVarVals **vals, void *in_val);
 void ExamineBuiltInFunc(tAstNode *node, tType *out_type);
+void AssignType(tVarVals **vals, tType in_type);
+void CmpVars (tComData op1_data, tComData op2_data, tComData *out_data);
+void CmpVarLit (tComData op1_data, tComData op2_data, tComData *out_data, bool is_div);
+void BstCheckUse(tBstNode *tree);
 
 void ExamineFunctionDef (tAstNode *node, tSymtableList *symlist);
 void ExamineFunctionCall (tAstNode *node, tSymtableList *symlist, tType *out_type);
-void ExamineVar (tAstNode *node, tSymtableList *symlist, void *in_val, tType in_type, void **out_val, tType *out_type);
-void ExamineVal (tAstNode *node, void **out_val, tType *out_type);
+void ExamineVar (tAstNode *node, tSymtableList *symlist, tComData *in_data, tComData *out_data);
+void ExamineVal (tAstNode *node, tComData *out_data);
 void ExamineDecl (tAstNode *node, tSymtableList *symlist);
-void ExamineWhile (tAstNode *node, tSymtableList *symlist);
-void ExamineIf (tAstNode *node, tSymtableList *symlist);
-void ExamineBinOp (tAstNode *node, tSymtableList *symlist);
+void ExamineWhile (tAstNode *node, tSymtableList *symlist, tTokenType *ret_type);
+void ExamineIf (tAstNode *node, tSymtableList *symlist, tTokenType *ret_type);
+void ExamineBinOp (tAstNode *node, tSymtableList *symlist, tComData *out_data);
 void ExamineAssign (tAstNode *node, tSymtableList *symlist);
-void ExamineSemantics (tAstNode *node, tSymtableList *symlist);
+void ExamineRet (tAstNode *node, tSymtableList *symlist, tTokenType *ret_type);
+void ExamineSemantics (tAstNode *node, tSymtableList *symlist, tComData *in_data, tComData *out_data, tTokenType *ret_type);

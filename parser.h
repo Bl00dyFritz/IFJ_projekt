@@ -9,6 +9,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "semantics.h"
+#include "generator.h"
 #include "scanner.h"
 #include "error.h"
 #include "ast.h"

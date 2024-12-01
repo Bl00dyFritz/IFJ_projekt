@@ -38,6 +38,7 @@ typedef enum type{
 	NI32,
 	NF64,
 	NU8,
+	BIN,
 	UNDEF
 }tType;
 
@@ -121,7 +122,7 @@ typedef struct bin_op{
 	tToken token; //token obsahujici typ operatora
 	tAstNode *op1; //ukazatel na uzel leveho oeranda
 	tAstNode *op2; //ukazatel na uzel praveho operanda
-	tValue res_val; //vysledan hodnota vyrazu
+	tValue res_val; //vysledna hodnota vyrazu
 	tIdOrValType ret_type; //typ vysledne hodnoty
 }tBinOp;
 

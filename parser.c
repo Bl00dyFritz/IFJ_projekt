@@ -13,6 +13,8 @@
 #include "ast.h"
 #include "symtable.h"
 #include "stack.h"
+#include "semantics.h"
+#include "generator.h"
 
 int prolog(void){
 	tToken token;
@@ -124,14 +126,14 @@ int function(tToken *in_t, tAstNode **synt_tree, tBstNode **func_tree){
 		if(!arg) exit(99);
 		arg->type = VARIABLE;
 		tVarVals *vals = (tVarVals *) arg->value;
-		vals->is_constant = false;
+		vals->is_constant = true;
 		vals->is_used = false;
 		vals->value = NULL;
 		vals->type = args->type_token.type;
-		BstInsert(&(*synt_tree)->structure.func_def.loc_symtree, args->name_token.value.string, *arg);
+		BstInsAndReal(&(*synt_tree)->structure.func_def.loc_symtree, args->name_token.value.string, *arg);
 		args = args->next;
 	}
-	BstInsert(func_tree, (*synt_tree)->structure.func_def.token.value.string, content);
+	BstInsAndReal(func_tree, (*synt_tree)->structure.func_def.token.value.string, content);
 	lex_ret = GetToken(&token);
 	if (lex_ret) exit(lex_ret);
 	if(token.type!=Token_Lbrack) exit(SYNTAX_ERROR);
@@ -737,6 +739,10 @@ int program(void){ //the whole program
 	prolog(); 
 	statement(&synt_tree, NULL, &current_p, &func_tree);
 	next_statement(current_p, &func_tree);
-
+	tSymtableList symlist;
+	InitSymtableList(&symlist);
+	tComData data;
+	ExamineSemantics(synt_tree, &symlist, NULL, &data, NULL);
+	GenerateOutput(synt_tree);
     return 0;
 }
