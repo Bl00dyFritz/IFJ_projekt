@@ -653,6 +653,7 @@ void ExamineBinOp(tAstNode *node, tSymtableList *symlist, tComData *out_data){
 							int *i_val = (int*) out_data->val;
 							*i_val = *(int*)op1_data.val - *(int*)op2_data.val;
 						}
+						break;
 					case NF64: case NI32: case BIN:
 						exit(SEMANTIC_COMP_ERROR);
 					default:exit(INTERNAL_COMP_ERROR);
