@@ -440,7 +440,7 @@ void GenCallFunc(tAstNode *node) {
         printf("PUSHS LF@%s\n", TmpCF->token.value.string);
         TmpCF = TmpCF->next;
     }
-    if (node->structure.func_call.name_token.type = Token_BuildIn_Func) {
+    if (node->structure.func_call.name_token.type == Token_BuildIn_Func) {
         switch (node->structure.func_call.name_token.value.BuiltInFunc) {
             case BF_write: printf("CALL $$ifj_write\n"); break;
             case BF_readstr: printf("CALL $$ifj_readstr\n"); break;
