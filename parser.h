@@ -95,4 +95,5 @@ int next_expression(tToken *ret_t, tTokenStack *input_stack, tTokenStack *output
 
 int operator_(tToken *in_t);
 
+int program(void);
 #endif /** PARSER_H **/

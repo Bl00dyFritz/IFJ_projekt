@@ -5,6 +5,9 @@
  * @author Nikola Jordanov xjordan00
  */
 
+#ifndef SEMANTICS_H
+#define SEMANTICS_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "ast.h"
@@ -74,3 +77,5 @@ void ExamineBinOp (tAstNode *node, tSymtableList *symlist, tComData *out_data);
 void ExamineAssign (tAstNode *node, tSymtableList *symlist);
 void ExamineRet (tAstNode *node, tSymtableList *symlist, tTokenType *ret_type);
 void ExamineSemantics (tAstNode *node, tSymtableList *symlist, tComData *in_data, tComData *out_data, tTokenType *ret_type);
+
+#endif /** SEMANTICS_H **/

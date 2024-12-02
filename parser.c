@@ -746,3 +746,4 @@ int program(void){ //the whole program
 	GenerateOutput(synt_tree);
     return 0;
 }
+
