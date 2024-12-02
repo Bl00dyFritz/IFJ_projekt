@@ -1,6 +1,6 @@
 /**
  * @file ast.h
- * @brief Hlavickovy soubor pro datovu strukturu abstraktniho syntaktickeho stromu
+ * @brief Header file for the data structure of the abstract syntax tree
  * @author Nikola Jordanov xjordan00
  */
 
@@ -15,12 +15,12 @@
 #include "symtable.h"
 
 /**
- * @brief Uzel AST
+ * @brief AST node
  */
 typedef struct ast_node tAstNode;
 
 /**
- * @brief Union na ukladani ciselnou hodnotu
+ * @brief Union to store a numeric value
  */
 typedef union value{
 	int i;
@@ -28,7 +28,7 @@ typedef union value{
 }tValue;
 
 /**
- * @brief Enum na rozeznavani typu hodnot
+ * @brief Enum for vlaue type recognizion
  */
 typedef enum type{
 	VOID,
@@ -43,7 +43,7 @@ typedef enum type{
 }tType;
 
 /**
- * @brief Union na ukladani navratove hodnoty
+ * @brief Union to store return value
  */
 typedef union ret_val{
 	int i;
@@ -53,19 +53,19 @@ typedef union ret_val{
 }tRetVal;
 
 /**
- * @brief Struktura uzlu definice funkci
+ * @brief Function definition node structure
  */
 typedef struct func_def{
-	tToken token; //token obsahujici nazev funkci
-	tArgDef *args; //seznam argumentu
-	tToken ret_type_token; //token obsahujici navratovy typ funkci
-	tBstNode *internal_symtable; //ukazatel na tabulka symbolu dane funkce
-	tAstNode *code; //ukazatel na uzel kodu dane funkce
-	tBstNode *loc_symtree; //ukazatel na korene lokalniho vyhledavaciho stromu
+	tToken token;					//token containing the function name
+	tArgDef *args;					//argument list
+	tToken ret_type_token;			//token containing the function's return type
+	tBstNode *internal_symtable;	//pointer to the symbol table of the given function
+	tAstNode *code; 				//pointer to the code node of the given function
+	tBstNode *loc_symtree; 			//pointer to the root of the local search tree
 }tFuncDef;
 
 /**
- * @brief Union na ukladani hodnot cisel nebo nazvy promen
+ * @brief Union for storing number values ​​or variable names
  */
 typedef union id_or_val{
 	char *name;
@@ -74,7 +74,7 @@ typedef union id_or_val{
 }tIdOrVal;
 
 /**
- * @brief Enum pro vyber z tIdOrVal
+ * @brief Enum to select from tIdOrVal
  */
 typedef enum id_or_val_type{
 	ID,
@@ -83,106 +83,104 @@ typedef enum id_or_val_type{
 }tIdOrValType;
 
 /**
- * @brief Struktura pro ukladani argumenty volanych funkci
+ * @brief Structure for storing arguments of function calls
  */
 typedef struct args{
-	tToken token; //nazev argumentu
-	struct args *next; //ukazatel na dalsi argument
+	tToken token;		//argument name
+	struct args *next; 	//pointer to next argument
 }tArgs;
 
 /**
- * @brief Struktura uzlu pro volani funkce
+ * @brief Node structure for function calls
  */
 typedef struct func_call{
-	tToken name_token; //nazev funkce
-	tArgs *args; //seznam argumentu
+	tToken name_token;	//function name
+	tArgs *args; 		//argument list
 	int arg_cnt;
 }tFuncCall;
 
 /**
- * @brief Struktura uzlu pro deklaraci promenne
+ * @brief Node structure for variable declaration
  */
 typedef struct decl_var{
-	tToken token; //token obsahujici nazev promenne
-	tType type; //typ promenne
+	tToken token;	//token containing variable name
+	tType type;		//variable type
 }tVarDecl;
 
 /**
  * @brief Struktura uzlu pro ukladani hodnoty do promenne
  */
 typedef struct assign{
-	tAstNode *dst; //ukazatel na uzel cilove promenne
-	tAstNode *src; //ukazatel na uzel vyrazu prirazovane hodnoty
+	tAstNode *dst; //pointer to target variable node
+	tAstNode *src; //pointer to the expression node of the assigned value
 }tAssign;
 
 /**
- * @brief Struktura uzlu pro binarni operace
+ * @brief Node structure for binary operations
  */
 typedef struct bin_op{
-	tToken token; //token obsahujici typ operatora
-	tAstNode *op1; //ukazatel na uzel leveho oeranda
-	tAstNode *op2; //ukazatel na uzel praveho operanda
-	tValue res_val; //vysledna hodnota vyrazu
-	tIdOrValType ret_type; //typ vysledne hodnoty
+	tToken token;			//token containing operator type
+	tAstNode *op1;			//pointer to left oerand node
+	tAstNode *op2;			//pointer to node of right operand
+	tValue res_val; 		//found the value of the expression
+	tIdOrValType ret_type; 	//result value type
 }tBinOp;
 
 /**
- * @brief Struktura uzlu pro if block
+ * @brief Node structure for if block
  */
 typedef struct if_block{
-	tAstNode *nn_id; //ukazatel na uzel nenulove promenne
-	tAstNode *expr; //ukazatel na pravdivostni vyraz
-	tBstNode *if_symtree; //ukazatel na lokalni strom symbolu pro if blok
-	tBstNode *else_symtree; //ukazatel an lokalni strom symbolu pro else blok
-	tAstNode *if_code; //ukazatel na vykonavany kod v pripade splneni pravdivostniho vyrazu
-	tBstNode *if_symtable; //ukazatel na tabulka symbolu if bloku
-	tBstNode *else_symtable; //ukazatel na tabulka symbolu else bloku
-	tAstNode *else_code; //ukazatel na vykonavany kod v opacnem pripadu
+	tAstNode *nn_id; 			//node pointer to nonzero variable
+	tAstNode *expr; 			//pointer to truth expression
+	tBstNode *if_symtree; 		//pointer to local symbol tree for if block
+	tBstNode *else_symtree; 	//pointer to a local symbol tree for the else block
+	tAstNode *if_code; 			//pointer to the executed code in case of true expression
+	tBstNode *if_symtable; 		//pointer to the if block symbol table
+	tBstNode *else_symtable; 	//pointer to the else block's symbol table
+	tAstNode *else_code; 		//pointer to executed code in the opposite case
 }tIfBlock;
 
 /**
- * @brief Struktura uzlu pro while loop
+ * @brief Node structure for while loop
  */
 typedef struct while_loop{
-	tAstNode *nn_id; //ukazatel na uzel nenulove promenne
-	tAstNode *expr; //ukazatel na pravdivostni vyraz
-	tBstNode *loc_symtree; //ukazatel na lokalni strom symbolu
-	tAstNode *code; //ukazatel na kod cyklu
+	tAstNode *nn_id; 		//node pointer to nonzero variable
+	tAstNode *expr; 		//pointer to truth expression
+	tBstNode *loc_symtree;	//pointer to local symbol tree
+	tAstNode *code; 		//pointer to cycle code
 }tWhileLoop;
 
 /**
- * @brief Struktura uzlu hodnoty
+ * @brief Value node structure
  */
 typedef struct Num_val{
-	tToken token; //token obsahujici hodnotu ciselneho uzlu nebo stringovy term
+	tToken token;	//token containing the value of a numeric node or a string term
 }tNumVal;
 
-
-
 /**
- * @brief Struktura uzlu promenne
+ * @brief Node structure for variables
  */
 typedef struct var{
-	tToken token; //token obsahujici jmeno promenne
-	bool is_const; //pokud true jde o const, jinak var
-	tRetVal val; //hodnota ulozena v promenne
-	tType type;	 //typ hodnoty
+	tToken token;	//token containing variable name
+	bool is_const; 	//if true it's const, otherwise var
+	tRetVal val; 	//value stored in variable
+	tType type;	 	//value type
 }tVar;
 
 /**
- * @brief Struktura uzlu statement
+ * @brief Node structure for statement
  */
 typedef struct statement{
-	tAstNode *next_statement; //ukazatel na dalsi statement uzel
-	tAstNode *function; //ukazatel na uzel definice funkci
+	tAstNode *next_statement;	//pointer to next statement node
+	tAstNode *function; 		//pointer to function definition node
 }tStatement;
 
 /**
- * @brief Struktura uzlu kodu
+ * @brief Node structure for code
  */
 typedef struct code{
-	tAstNode *next_code; //ukazatel na dalsi kod
-	tAstNode *operation; //ukazatel na zpracovavany vyraz kodu
+	tAstNode *next_code; //pointer to next code
+	tAstNode *operation; //pointer to processed code expression
 }tCode;
 
 typedef struct ret{
@@ -192,7 +190,7 @@ typedef struct ret{
 }tRet;
 
 /**
- * @brief Union pro struktury uzlu
+ * @brief Union for node structures
  */
 typedef union ast_node_structure{
 	tStatement statement;
@@ -210,7 +208,7 @@ typedef union ast_node_structure{
 }tStructure;
 
 /**
- * @brief Enum na pamatovani jaka je struktura uzlu
+ * @brief Enum to remember what the structure of the node is
  */
 typedef enum ast_node_type{
 	STATEMENT,
@@ -228,89 +226,89 @@ typedef enum ast_node_type{
 	RET
 }tAstNodeType;
 
-//definice uzlu stromu
+//tree node definition
 struct ast_node{
-	tStructure structure; //struktura data uzlu
-	tAstNodeType type; //typ struktury dat
+	tStructure structure; 	//node data structure
+	tAstNodeType type; 		//data structure type
 };
 
 /**
- * @brief Funkce na ukladani uzlu typu FuncCall do ast
- * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
- * @param id_t Token obsahujici nazev funkce
- * @param arg_stack Zasobnik obsahujuci tokeny nazvu nebo hodnoty argumentu
+ * @brief Function for storing a node of type FuncCall in ast
+ * @param node_dest Pointer to the position in the tree where the node should be added
+ * @param id_t Token containing the name of the function
+ * @param arg_stack A stack containing name or value tokens of the argument
  */
 void AddFuncCallNode(tAstNode **node_dest, tToken id_t, tTokenStack *arg_stack);
 
 /**
- * @brief Funkce na ukladani uzlu typu Assign do ast
- * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ * @brief Function for storing a node of type Assign in ast
+ * @param node_dest Pointer to the position in the tree where the node should be added
  */
 void AddAssignNode(tAstNode **node_dest);
 
 /**
- * @brief Funkce na ukladani uzlu typu VarDecl do ast
- * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
- * @param stack Zasobnik ve kterem se nachazy informace uzlu: Typ, nazev
+ * @brief Function to store node of type VarDecl in ast
+ * @param node_dest Pointer to the position in the tree where the node should be added
+ * @param stack Stack containing node information: Type, name
  */
 void AddDeclNode(tAstNode **node_dest, tTokenStack *stack);
 
 /**
- * @brief Funkce na ukladani uzlu typu WhileLoop do ast
- * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ * @brief Function to save a WhileLoop type node to ast
+ * @param node_dest Pointer to the position in the tree where the node should be added
  */
 void AddWhileNode(tAstNode **node_dest);
 
 /**
- * @brief Funkce na ukladani uzlu typu IfBlock do ast
- * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ * @brief Function to save a node of type IfBlock to ast
+ * @param node_dest Pointer to the position in the tree where the node should be added
  */
 void AddIfBlockNode(tAstNode **node_dest);
 
 /**
- * @brief Funkce na ukladani uzlu typu FuncDef do ast
- * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
- * @param stack Zasobnik ve kterem se nahazi informace uzlu: typ, nazev
- * @param arg_stack Zasobnik ve kterem se nazhazi informace definovanych argumentu funkce: typ, nazev (ceka se ze je vzdy dostane ve dvojicich v tomto poradi n-krat, kde n je pocet parametru
+ * @brief Function for storing a node of type FuncDef in ast
+ * @param node_dest Pointer to the position in the tree where the node should be added
+ * @param stack Stack in which node information is placed: type, name
+ * @param arg_stack The stack in which the information of the defined argument of the function is placed: type, name (it is expected that it will always be received in pairs in this order n times, where n is the number of parameters)
  */
 void AddFuncDefNode(tAstNode **node_dest, tTokenStack *stack, tTokenStack *arg_stack);
 
 /**
- * @brief Funkce na ukladani uzlu typu Statement do ast
- * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ * @brief Function for storing a node of type Statement in ast
+ * @param node_dest Pointer to the position in the tree where the node should be added
  */
 void AddStatmentNode(tAstNode **node_dest);
 
 /**
- * @brief Funkce na ukladani uzlu typu Code do ast
- * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ * @brief Function for saving a node of type Code to ast
+ * @param node_dest Pointer to the position in the tree where the node should be added
  */
 void AddCodeNode(tAstNode **node_dest);
 
 /**
- * @brief Funkce na ukladani uzlu typu Ret do ast
- * @param node_dest Odkaz na pozice v stromu kde se uzel ma pridat
+ * @brief Function to save node type Ret to ast
+ * @param node_dest Pointer to the position in the tree where the node should be added
  */
 void AddRetNode(tAstNode **node_dest);
 
 /**
- * @brief Funkce ktera sklada podstrom z vyrazu do ast
- * @param node_dest Pozice kde se ma ulozit vyrazovy podstrom
- * @param stack Precedencne usporadany zasobnik
+ * @brief A function that composes a subtree from the start to ast
+ * @param node_dest The position where the expression subtree should be stored
+ * @param stack Precedentially arranged stack
  */
 void AddExpNodes(tAstNode **node_dest, tTokenStack *stack);
 
 /**
- * @brief Funkce, ktera provadi precedencni analyzu a dle ni sklada zasobnik vystupnich tokenu, ktery se pak pouzije na skladani vyrazovy podstrom v ast
- * @param in_t Vstupni token, jeho hodnota se precedencne porovnava s hodnotu vrcholu vstupoveho zasobniku
- * @param input_stack Vstupovy zasobnik, dle vysledku precedencniho provovnani se do bud do toho uklada hodnotu in_t nebo jeho vrchol se posouva do vrcholu vystupoveho zasobniku
- * @param output_stack Vystupovy zasobnik do ktereho se podle precedence ukladaji operace/operandy
+ * @brief A function that performs a precedent analysis and builds a stack of output tokens according to it, which is then used to build an expression subtree in ast
+ * @param in_t Input token, its value is precedentially compared with the value of the top of the input stack
+ * @param input_stack The input stack, depending on the result of the precedent processing, either the in_t value is stored in it or its top is moved to the top of the output stack
+ * @param output_stack Output stack into which operations/operands are stored according to precedent
  */
 void PrecedenceCheck(tToken *in_t, tTokenStack *input_stack, tTokenStack *output_stack);
 
 /**
- * @brief Funkce, ktera vymaze ast a uvolni pamet kterou zabira
- * @param tree Ukazatel na zacatek stromu
+ * @brief A function that deletes an array and frees the memory it occupies
+ * @param tree Pointer to the beginning of the tree
  */
 void AstDispose(tAstNode **tree);
 

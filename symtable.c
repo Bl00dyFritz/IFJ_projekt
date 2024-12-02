@@ -1,7 +1,7 @@
 /**
- * Implementace tabulky symbolu imperativniho jazyka IFJ24
+ * Implementation of IFJ24 imperative language symbol table
  * @file symtable.c
- * @brief Implementace tabulky symbolu
+ * @brief Symbol table implementation
  * @author Nikola Jordanov, xjordan00
  */
 
@@ -11,10 +11,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-/**
- * @brief Pomocna funkce na uvolneni naalokovanou pamet v datech daneho uzlu
- * @param tree Odkaz na Uzel ze ktereho se bude uvolnovat pamet
- */
 void FreeNodeContent(tBstNode **tree){
 	if (!tree) exit(99);
 	if ((*tree)->content.type==VARIABLE)
@@ -28,19 +24,11 @@ void FreeNodeContent(tBstNode **tree){
 	}
 }
 
-/**
- * @brief Inicializace stromu
- * @param tree Odkaz an ukazatel, ukazujici na koren (pod)stromu
- */
 void BstInit(tBstNode **tree){
 	if (!tree) exit(99);
 	(*tree) = NULL;
 }
 
-/**
- * @brief Pomocna funkce na rotace stromu o jeden uzel doleva pri vnejsi nevyvazenost
- * @param tree Odkaz na strom k rotaci
- */
 void RotLeft(tBstNode **tree){
 	if (!tree) exit(99);
 	if(!(*tree)) return;
@@ -50,11 +38,6 @@ void RotLeft(tBstNode **tree){
 	(*tree) = tmp;
 }
 
-
-/**
- * @brief Pomocna funkce na rotace stromu o jeden uzel doprava pri vnejsi nevyvazenost
- * @param tree Odkaz na strom k rotaci
- */
 void RotRight(tBstNode **tree){
 	if (!tree) exit(99);
 	if (!(*tree)) return;
@@ -64,10 +47,6 @@ void RotRight(tBstNode **tree){
 	(*tree) = tmp;
 }
 
-/**
- * @brief Pomocna funkce na rotace stromu o jeden uzel doleva pri vnitrni nevyvazenost
- * @param tree Odkaz na strom k rotaci
- */
 void RotRLeft(tBstNode **tree){
 	if (!tree) exit (99);
 	if (!(*tree)) return;
@@ -80,10 +59,6 @@ void RotRLeft(tBstNode **tree){
 	(*tree)->right = tmpB;
 }
 
-/**
- * @brief Pomocna funkce na rotace stromu o jeden uzel doprava pri vnitrni nevyvazenost
- * @param tree Odkaz na strom k rotaci
- */
 void RotLRight(tBstNode **tree){
 	if (!tree) exit(99);
 	if (!(*tree)) return;
@@ -96,13 +71,6 @@ void RotLRight(tBstNode **tree){
 	(*tree)->right = tmpA;
 }
 
-/**
- * @brief Vyhledavani prvku v stromu
- * @param tree Odkaz na strom ve kterem se vyhledava
- * @param key Vyhledavany klic (nazev promenne ci funkce)
- * @param content Odkaz kde se ma vratit hodnota nalezeneho uzlu v pripade uspechu
- * @return True pokud je uzel nalezen, jinak false
- */
 bool BstSearch(tBstNode *tree, char *key, tBstNodeContent **content){
 	if (!tree) return false;	//pri prazdnem stromu vraci false
 	else{
@@ -120,12 +88,6 @@ bool BstSearch(tBstNode *tree, char *key, tBstNodeContent **content){
 	}
 }
 
-/**
- * @brief Pridani novy prvek do stromu
- * @param tree Odkaz na (pod)strom do kteryho se bude ukladat
- * @param key Klic ukladaneho prvku
- * @param content Data ukladaneho prvku
- */
 void BstInsert(tBstNode **tree, char *key, tBstNodeContent content){
 	if (!tree) exit(99);
 	if (!(*tree)){
@@ -150,11 +112,6 @@ void BstInsert(tBstNode **tree, char *key, tBstNodeContent content){
 	}
 }
 
-/**
- * @brief Pomocna funkce ktera vymeni zadany uzel za nejpravjejsi uzel v zadanem (pod)stromu
- * @param target Cilovy uzel, ktery se ma vymenit
- * @param tree Odkaz na strom ve ktereho se hleda novy uzel
- */
 void ReplaceByRightmost(tBstNode *target, tBstNode **tree){
 	if (!tree || !target) exit(99);
 	if (!(*tree)->right){
@@ -179,11 +136,6 @@ void ReplaceByRightmost(tBstNode *target, tBstNode **tree){
 	else ReplaceByRightmost(target, &(*tree)->right);
 }
 
-/**
- * @brief Pomocna funkce ktera vymeni zadany usel za nejlevjesi ulzel v zadanem (pod)stromu
- * @param target Cilovy uzel, ktery se ma zmenit
- * @param tree Odkaz na strom ve ktereho se hleda novy uzel
- */
 void ReplaceByLeftmost(tBstNode *target, tBstNode **tree){
 	if (!tree || !target) exit(99);
 	if (!(*tree)->left){
@@ -206,14 +158,8 @@ void ReplaceByLeftmost(tBstNode *target, tBstNode **tree){
 		}
 	}
 	else ReplaceByLeftmost(target, &(*tree)->left);
-} //nepouziva se atm
+} //not used atm
 
-/**
- * @brief Pomocne funkce ktera vraci velikost (pod)stromu
- * @param tree Mereny strom
- * @param first_break Ukazatel na nejnizi uzel kde vyvazenost je narusena, pokud neni narusena hodnota ukazatele se nemeni
- * @return vyska stromu jako cele cislo int; pokud je narisena vyskova vyvazenost vraci -1
- */
 int CheckHeight(tBstNode **tree, tBstNode ***first_break){
 	int hl, hr;
 	if (*tree!=NULL){
@@ -239,10 +185,6 @@ int CheckHeight(tBstNode **tree, tBstNode ***first_break){
 	else return 0;
 }
 
-/**
- * @brief Funkce ktera kontroluje poruseni vyskove vyvazenosti a opravuje ji
- * @param tree (Pod)strom ktery je kontrolovan
- */
 void Realign (tBstNode **tree){
 	if(!tree) exit(99);
 	tBstNode **br = NULL;
@@ -275,11 +217,6 @@ void Realign (tBstNode **tree){
 	}
 }
 
-/**
- * @brief Odstraneni jednoho uzlu se stromu
- * @param tree Odkaz na strom ve ktereho se ma odstranit prvek
- * @param key Klic heldaneho uzlu
- */
 void BstDelete(tBstNode **tree, char *key){
 	if (!tree || !key) exit(99);
 	if (!(*tree)) return;
@@ -312,33 +249,18 @@ void BstDelete(tBstNode **tree, char *key){
 	}
 }
 
-/**
- * @brief Funkce ktera prida prvek do stromu a pak ho vyrovna
- * @param tree Odkaz na vypracovavany strom
- * @param key Klic noveho prvku
- * @param content Data noveho prvku
- */
 void BstInsAndReal(tBstNode **tree, char *key, tBstNodeContent content){
 	if (!tree || !key) exit(99);
 	BstInsert(tree, key, content);
 	Realign(tree);
 }
 
-/**
- * @brief Funkce ktera odstrani prvek ze stromu a pak vyrovna strom
- * @param tree Cilovy strom
- * @param key Klic prvku ktery se ma odstranit
- */
 void BstDelAndReal(tBstNode **tree, char *key){
 	if (!tree || !key) exit(99);
 	BstDelete(tree, key);
 	Realign(tree);
 }
 
-/**
- * @brief Vycisteni stromu, a vraceni do inicializovaneho stavu
- * @param tree Odkaz na cilovy strom
- */
 void BstDispose(tBstNode **tree){
 	if (!tree) exit(99);
 	if ((*tree)==NULL) return;

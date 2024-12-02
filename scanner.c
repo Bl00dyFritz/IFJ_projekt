@@ -161,7 +161,7 @@ int GetToken(tToken *token) {
                     String_Add(&str, c);
                     WhiteSpaceCount = 0;
                     token->state = State_IFJ_4; 
-                } else if (WhiteSpaceCount == 0) {              //Mozu byt funkcie alebo premenne menom ifjnnnnn  
+                } else if (WhiteSpaceCount == 0) {              //Can be a function or variable named ifjname
                     ungetc(c, file);
                     token->state = State_FuncID;
                 } else {

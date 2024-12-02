@@ -1,6 +1,6 @@
 /**
  * @file stack.h
- * @brief hlavickovy soubor na definovani ADT zasobnik pro prace s AST a precedencni analyzou
+ * @brief Header file for defining ADT stack for working with AST and precedent analysis
  * @author Nikola Jordanov xjordan00
  */
 
@@ -13,50 +13,51 @@
 #include "error.h"
 
 /**
- * @brief Struktura prvku zasobniku tokenu
+ * @brief The token stack element structure
  */
 typedef struct token_stack_elem{
-	tToken token;	//token obsahujici data prvku
-	struct token_stack_elem *next;	//Ukazatel na dalsi prvek zasobniku
+	tToken token;					//Token containing element data
+	struct token_stack_elem *next;	//Pointer to the next stack element
 }tTokenStackElem;
 
 /**
- * @brief Struktura zasobniku tokenu
+ * @brief Token stack structure
  */
 typedef struct token_stack{
-	tTokenStackElem *top;	//Ukazatel na vrchol zasobniku
+	tTokenStackElem *top;	//Pointer to the top of the stack
 }tTokenStack;
 
 /**
- * @brief Funkce, ktera inicializuje zasobnik
- * @param stack Ukazatel na inicializovany zasobnik
+ * @brief A function that initializes the stack
+ * @param stack A pointer to the initialized stack
  */
 void InitTStack (tTokenStack *stack);
 
 /**
- * @brief Funkce na pridavani element na vrchol zasobniku
- * @param stack Zasobnik do ktereho se uklada prvek
- * @param token Token ktery se ulzi do noveho prvku
+ * @brief Function to add an element to the top of the stack
+ * @param stack The stack in which the element is stored
+ * @param token Token to be added to the new element
  */
 void PushTStack (tTokenStack *stack, tToken token);
 
 /**
- * @brief Funkce na odstraneni prvku z vrcholu zasobniku
- * @param stack Zasobnik ze kteryho se ma odstranit prvek
+ * @brief Function to remove an element from the top of the stack
+ * @param stack The stack from which to remove the element
  */
 void PopTStack (tTokenStack *stack);
 
 /**
- * @brief Funkce, ktera vraci hodnotu prvku z vrcholu zasobniku
- * @param stack Zasobnik ze kteryho se ma vratit hodnota vrcholu
- * @return Vraci hodnotu ulozenou na vrcholu
+ * @brief A function that returns the value of the element from the top of the stack
+ * @param stack The stack from which to return the vertex value
+ * @return Returns the value stored at the top
  */
 tToken TopTStack (tTokenStack *stack);
 
 /**
- * @brief Funkce ktera kontroluje zda je zasobnik prazdny
- * @param stack Kontrolovany zasobnik
- * @return True pokud je zasobnik prazdny, jinka false
+ * @brief Function that checks if the stack is empty
+ * @param stack The stack to check
+ * @return True if the stack is empty, false otherwise
  */
 bool StackIsEmpty (tTokenStack *stack);
+
 #endif /** STACK_H **/

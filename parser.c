@@ -1,6 +1,6 @@
 /**
 * @file parser.c
-* @brief implementace parseru (syntaktické analýzy) překladače jayzka IFJ24
+* @brief implementation of the parser (syntax analysis) of the IFJ24 language translator
 * @author Lucie Pojslová (xpojsll00)
 */
 

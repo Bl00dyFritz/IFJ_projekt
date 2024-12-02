@@ -1,7 +1,7 @@
 /**
- * Implementace tabulky symbolu imperativniho jazyka IFJ24
+ * Implementation of IFJ24 imperative language symbol table
  * @file symtable.h
- * @brief Hlavickovy soubor pro tabulka symbolu
+ * @brief Header file for the symbol table
  * @author Nikola Jordanov, xjordan00
  */
 
@@ -13,40 +13,40 @@
 #include "scanner.h"
 
 /**
- * @brief Typ uzel binarnih vyhledavaciho stromu
+ * @brief The node type of the binary search tree
  */
 typedef struct bst_node tBstNode;
 
 /**
- * @brief Struktura pro zadavani argumenty do definice funkci
+ * @brief A structure for entering arguments into a function definition
  */
 typedef struct arg_def{
-	tToken name_token; //token obsahujici nazvu argumentu
-	tToken type_token; //token obsahujici ocekavany typ argumentu
-	struct arg_def *next; //ukazatel na dalsi argument
+	tToken name_token;		//token containing the name of the argument
+	tToken type_token;		//token containing expected argument type
+	struct arg_def *next; 	//pointer to next argument
 }tArgDef;
 
 /**
- * @brief Data uzlu pro f-ce
+ * @brief Node data for f-ce
  */
 typedef struct function_vals{
-	tArgDef *params;		//seznam parametru
-	int paramCnt;		//velikost pole parametru
-	tTokenType ret_type;//navratovy typ
+	tArgDef *params;		//parameter list
+	int paramCnt;			//parameter array size
+	tTokenType ret_type;	//return type
 }tFunctionVals;
 
 /**
- * @brief Data uzlu pro promenou
+ * @brief Node data for the variable
  */
 typedef struct var_vals{
-	void *value;		//odkaz na hodnota promenne
-	tTokenType type;	//datovy typ promenne
-	bool is_constant;	//odlisovani const od var
-	bool is_used;		//kontrola zda promena se pouziva v scope
+	void *value;		//reference to variable value
+	tTokenType type;	//data type of the variable
+	bool is_constant;	//stamping const from var
+	bool is_used;		//check whether the change is used in scope
 }tVarVals;
 
 /**
- * @brief Typ parametru v uzlu
+ * @brief The type of the parameter in the node
  */
 typedef enum{
 	FUNCTION,
@@ -54,129 +54,129 @@ typedef enum{
 }tBstNodeContentType;
 
 /**
- * @brief Struktura na ukladani data do uzlu
+ * @brief A structure for storing data in a node
  */
 typedef struct node_content{
-	void *value;				//ukazatel na misto v pameti kde je hodnota
-	tBstNodeContentType type;	//typ hodnoty, potrebne pro zmena ukazatele z void na prislusny typ
+	void *value;				//pointer to the place in memory where the value is
+	tBstNodeContentType type;	//type of the value needed to change the pointer from void to the appropriate type
 }tBstNodeContent;
 
 /**
- * @brief Struktura uzlu bvs
+ * @brief The structure of the node bvs
  */
 struct bst_node{
-	char *key;					//klic == nazev promenne ci funkce
-	tBstNodeContent content;	//data uzlu
-	struct bst_node *left;		//odkaz na levy potomek
-	struct bst_node *right;		//odkaz na pravy potomek
+	char *key;					//key == variable or function name
+	tBstNodeContent content;	//node data
+	struct bst_node *left;		//reference to lion's child
+	struct bst_node *right;		//reference to right child
 };
 
 /**
- * @brief Inicializace stromu
- * @param tree Odkaz an ukazatel, ukazujici na koren (pod)stromu
+ * @brief Tree initialization
+ * @param tree Reference and pointer pointing to the root of the (sub)tree
  */
 void BstInit(tBstNode **tree);
 
 /**
- * @brief Pridani novy prvek do stromu
- * @param tree Odkaz na (pod)strom do kteryho se bude ukladat
- * @param key Klic ukladaneho prvku
- * @param content Data ukladaneho prvku
+ * @brief Added a new element to the tree
+ * @param tree Reference to the (sub)tree in which it will be stored
+ * @param key The key of the stored element
+ * @param content The data of the stored element
  */
 void BstInsert(tBstNode **tree, char *key, tBstNodeContent content);
 
 /**
- * @brief Funkce ktera prida prvek do stromu a pak ho vyrovna
- * @param tree Odkaz na vypracovavany strom
- * @param key Klic noveho prvku
- * @param content Data noveho prvku
+ * @brief A function that adds an element to the tree and then aligns it
+ * @param tree Link to the tree being processed
+ * @param key The key of the new element
+ * @param content The data of the new element
  */
 void BstInsAndReal(tBstNode **tree, char *key, tBstNodeContent content);
 
 /**
- * @brief Vyhledavani prvku v stromu
- * @param tree Odkaz na strom ve kterem se vyhledava
- * @param key Vyhledavany klic (nazev promenne ci funkce)
- * @param content Odkaz kde se ma vratit hodnota nalezeneho uzlu v pripade uspechu
- * @return True pokud je uzel nalezen, jinak false
+ * @brief Search for an element in a tree
+ * @param tree Reference to the tree in which to search
+ * @param key Searched key (variable or function name)
+ * @param content Link where the value of the found node should be returned in case of success
+ * @return True if the node is found, false otherwise
  */
 bool BstSearch(tBstNode *tree, char *key, tBstNodeContent **content);
 
 /**
- * @brief Odstraneni jednoho uzlu se stromu
- * @param tree Odkaz na strom ve ktereho se ma odstranit prvek
- * @param key Klic heldaneho uzlu
+ * @brief Remove one node from the tree
+ * @param tree Reference to the tree in which the element is to be removed
+ * @param key The key of the held node
  */
 void BstDelete(tBstNode **tree, char *key);
 
 /**
- * @brief Funkce ktera odstrani prvek ze stromu a pak vyrovna strom
- * @param tree Cilovy strom
- * @param key Klic prvku ktery se ma odstranit
+ * @brief A function that removes an element from a tree and then evens the tree
+ * @param tree Target tree
+ * @param key The key of the element to be removed
  */
 void BstDelAndReal(tBstNode **tree, char *key);
 
 /**
- * @brief Vycisteni stromu, a vraceni do inicializovaneho stavu
- * @param tree Odkaz na cilovy strom
+ * @brief Clearing the tree, and returning to the initialized state
+ * @param tree Reference to target tree
  */
 void BstDispose(tBstNode **tree);
 
 /**
- * @brief Pomocna funkce ktera vymeni zadany uzel za nejpravjejsi uzel v zadanem (pod)stromu
- * @param target Cilovy uzel, ktery se ma vymenit
- * @param tree Odkaz na strom ve ktereho se hleda novy uzel
+ * @brief Helper function that replaces the specified node with the rightmost node in the specified (sub)tree
+ * @param target The target node to replace
+ * @param tree Link to the tree in which the new node is searched
  */
 void ReplaceByRightmost(tBstNode *target, tBstNode **tree);
 
 /**
- * @brief Pomocna funkce ktera vymeni zadany usel za nejlevjesi ulzel v zadanem (pod)stromu
- * @param target Cilovy uzel, ktery se ma zmenit
- * @param tree Odkaz na strom ve ktereho se hleda novy uzel
+ * @brief Helper function that replaces the specified node with the leftmost node in the specified (sub)tree
+ * @param target Target node to change
+ * @param tree Link to the tree in which the new node is searched
  */
 void ReplaceByLeftmost(tBstNode *target, tBstNode **tree);
 
 /**
- * @brief Pomocne funkce ktera vraci velikost (pod)stromu
- * @param tree Mereny strom
- * @param first_break Ukazatel na nejnizi uzel kde vyvazenost je narusena, pokud neni narusena hodnota ukazatele se nemeni
- * @return vyska stromu jako cele cislo int; pokud je narisena vyskova vyvazenost vraci -1
+ * @brief Helpful function that returns the size of the (sub)tree
+ * @param tree Measured tree
+ * @param first_break Pointer to the lowest node where the balance is broken, if not broken the value of the pointer does not change
+ * @return tree height as integer int; if high-level balance is drawn, it returns -1
  */
 int CheckHeight(tBstNode **tree, tBstNode ***first_break);
 
 /**
- * @brief Pomocna funkce na uvolneni naalokovanou pamet v datech daneho uzlu
- * @param tree Odkaz na Uzel ze ktereho se bude uvolnovat pamet
+ * @brief Helper function to free the allocated memory in the data of the given node
+ * @param tree Reference to the Node from which the memory will be freed
  */
 void FreeNodeContent(tBstNode **tree);
 
 /**
- * @brief Pomocna funkce na rotace stromu o jeden uzel doleva pri vnejsi nevyvazenost
- * @param tree Odkaz na strom k rotaci
+ * @brief Helper function to rotate the tree by one node to the left in case of external imbalance
+ * @param tree A reference to the tree to rotate
  */
 void RotLeft(tBstNode **tree);
 
 /**
- * @brief Pomocna funkce na rotace stromu o jeden uzel doprava pri vnejsi nevyvazenost
- * @param tree Odkaz na strom k rotaci
+ * @brief Helper function to rotate the tree by one node to the right in case of external imbalance
+ * @param tree A reference to the tree to rotate
  */
 void RotRight(tBstNode **tree);
 
 /**
- * @brief Pomocna funkce na rotace stromu o jeden uzel doleva pri vnitrni nevyvazenost
- * @param tree Odkaz na strom k rotaci
+ * @brief Helper function to rotate the tree by one node to the left in case of internal imbalance
+ * @param tree A reference to the tree to rotate
  */
 void RotRLeft(tBstNode **tree);
 
 /**
- * @brief Pomocna funkce na rotace stromu o jeden uzel doprava pri vnitrni nevyvazenost
- * @param tree Odkaz na strom k rotaci
+ * @brief Helper function to rotate the tree by one node to the right in case of internal imbalance
+ * @param tree A reference to the tree to rotate
  */
 void RotLRight(tBstNode **tree);
 
 /**
- * @brief Funkce ktera kontroluje poruseni vyskove vyvazenosti a opravuje ji
- * @param tree (Pod)strom ktery je kontrolovan
+ * @brief A function that checks for high-level balance violations and corrects them
+ * @param tree (Sub)tree that is checked
  */
 void Realign(tBstNode **tree);
 

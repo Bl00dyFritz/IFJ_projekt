@@ -1,7 +1,7 @@
 /**
- * Implementace překladače imperativního jazyka IFJ24
+ * Implementation of IFJ24 imperative language translator
  * @file generator.c
- * @brief Implementácia generátoru kódu
+ * @brief Implementation for the code generator
  * @authors Alexander Žikla, xziklaa00
  *          Jakub Turek, xturekj00
 */
