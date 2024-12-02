@@ -743,6 +743,7 @@ int program(void){ //the whole program
 	InitSymtableList(&symlist);
 	tComData data;
 	ExamineSemantics(synt_tree, &symlist, NULL, &data, NULL);
+	GenInitial();
 	GenerateOutput(synt_tree);
     return 0;
 }

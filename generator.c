@@ -9,7 +9,8 @@
 #include "generator.h"
 #include "ast.h"
 
-static int GlobalCounter = 1;
+static int GlobalIfCounter = 1;
+static int GlobalWhileCounter = 1;
 
 void GenInitial(void) {
     GenHead();
@@ -138,22 +139,22 @@ void GenStackOp(tAstNode *node) {
 }
 
 void GenWhileHead(void) {
-    printf("LABEL $while%d$\n", GlobalCounter);
+    printf("LABEL $while%d$\n", GlobalWhileCounter);
 }
 
 void GenWhile(void) {
     printf("POPS GF@tmp2\n");
-    printf("JUMPIFEQ $EndWhile%d$ GF@tmp2 bool@false\n", GlobalCounter);
+    printf("JUMPIFEQ $EndWhile%d$ GF@tmp2 bool@false\n", GlobalWhileCounter);
 }
 
 void GenWhileNN(void) {
     printf("POPS GF@tmp2\n");
-    printf("JUMPIFEQ $EndWhile%d$ GF@tmp2 nil@nil\n", GlobalCounter);
+    printf("JUMPIFEQ $EndWhile%d$ GF@tmp2 nil@nil\n", GlobalWhileCounter);
 }
 
 void GenWhileEnd(void) {
-    printf("JUMP $while%d$\n", GlobalCounter);
-    printf("LABEL $EndWhile%d$\n", GlobalCounter);
+    printf("JUMP $while%d$\n", GlobalWhileCounter);
+    printf("LABEL $EndWhile%d$\n", GlobalWhileCounter);
 }
 
 void GenBuiltInFuncs(void) {
@@ -195,53 +196,6 @@ void GenBuiltInFuncs(void) {
     //ifj.string
     printf("LABEL $$ifj_string\n");
     printf("PUSHFRAME\n");
-    printf("DEFVAR LF@StrTermIn\n");
-    printf("DEFVAR LF@StrTermOut\n");
-    printf("DEFVAR LF@StrChar\n");
-    printf("DEFVAR LF@StrCharASCII\n");
-    printf("DEFVAR LF@StringIndex\n");
-    printf("DEFVAR LF@StringLenght\n");
-    printf("POPS LF@StrTermIn\n");
-    printf("MOVE LF@StrTermOut string@\n");
-    printf("MOVE LF@StringIndex int@0\n");
-    printf("STRLEN LF@StringLenght LF@StrTermIn\n");
-
-    printf("LABEL $StringLoop$\n");
-    printf("JUMPIFEQ $StringEnd$ LF@StringIndex LF@StringLenght\n");
-    printf("GETCHAR LF@StrChar LF@StrTermIn LF@StringIndex\n");
-    printf("STRI2INT LF@StrCharASCII LF@StrTermIn LF@StringIndex\n");
-    printf("JUMPIFEQ $EscapeSpace$ LF@StrCharASCII int@32\n");          //Space " "
-    printf("JUMPIFEQ $EscapeBackslash$ LF@StrCharASCII int@92\n");      //Backslash "\"
-    printf("JUMPIFEQ $EscapeNewline$ LF@StrCharASCII int@10\n");        //Newline "\n"
-    printf("JUMPIFEQ $EscapeHashtag$ LF@StrCharASCII int@35\n");        //Hashtag "#""
-    printf("JUMPIFEQ $EscapeTab$ LF@StrCharASCII int@9\n");             //Tab "\t"
-
-    printf("LABEL $StringNextChar$\n");
-    printf("ADD LF@StringIndex LF@StringIndex int@1\n");
-    printf("JUMP $StringLoop$\n");
-    
-    printf("LABEL $EscapeSpace$\n");
-    printf("CONCAT LF@StrTermOut LF@StrTermOut string@\\032\n");
-    printf("JUMP $StringNextChar$\n");
-
-    printf("LABEL $EscapeBackslash$\n");
-    printf("CONCAT LF@StrTermOut LF@StrTermOut string@\\092\n");
-    printf("JUMP $StringNextChar$\n");
-
-    printf("LABEL $EscapeNewline$\n");
-    printf("CONCAT LF@StrTermOut LF@StrTermOut string@\\010\n");
-    printf("JUMP $StringNextChar$\n");
-
-    printf("LABEL $EscapeHashtag$\n");
-    printf("CONCAT LF@StrTermOut LF@StrTermOut string@\\035\n");
-    printf("JUMP $StringNextChar$\n");
-
-    printf("LABEL $EscapeTab$\n");
-    printf("CONCAT LF@StrTermOut LF@StrTermOut string@\\009\n");
-    printf("JUMP $StringNextChar$\n");    
-
-    printf("LABEL $StringEnd$\n");
-    printf("PUSHS LF@StrTermOut\n");
     printf("POPS GF@func_result\n");
     printf("POPFRAME\n");
     printf("RETURN\n\n");
@@ -422,7 +376,28 @@ void GenBuiltInFuncs(void) {
     printf("POPS GF@func_result\n");
     printf("POPFRAME\n");
     printf("RETURN\n\n");
-}       
+}
+
+void StringToIFJ24string(tAstNode *node) {
+    int i = 0;
+    int j = 0;
+    char *TmpStrIn =  node->structure.func_call.args->token.value.string;
+    char *TmpStrOut = (char *)malloc(strlen(TmpStrIn) * 4);
+    if (TmpStrOut == NULL) {
+        fprintf(stderr, "Error: Allocation failed\n");
+        exit(99);
+    }
+    while (TmpStrIn[i]) {
+        if (TmpStrIn[i] <= 32 || TmpStrIn[i] == '#' || TmpStrIn[i] == '"') {
+            j += sprintf(&TmpStrOut[j], "\\%03d", (unsigned char)TmpStrIn[i]);
+        } else {
+            TmpStrOut[j++] = TmpStrIn[i];
+        }
+        i++;
+    }
+    free(TmpStrIn);
+    node->structure.func_call.args->token.value.string = TmpStrOut;
+}
 
 void GenCallFunc(tAstNode *node) {
     tArgs *TmpCF = node->structure.func_call.args;
@@ -436,8 +411,25 @@ void GenCallFunc(tAstNode *node) {
         TmpCF = Next;
     }
     TmpCF = Prev;
+    if (node->structure.func_call.name_token.value.BuiltInFunc == BF_string) {
+        StringToIFJ24string(node);
+    }
     while (TmpCF) {
-        printf("PUSHS LF@%s\n", TmpCF->token.value.string);
+        switch (TmpCF->token.type) {
+            case Token_FuncID:
+                printf("PUSHS LF@%s\n", TmpCF->token.value.string);
+                break;
+            case Token_Integer:
+                printf("PUSHS int@%lld\n", (long long int)TmpCF->token.value.integer);
+                break; 
+            case Token_Float:
+                printf("PUSHS float@%a\n", TmpCF->token.value.decimal);
+                break;
+            case Token_string:
+                printf("PUSHS string@%s\n", TmpCF->token.value.string);
+                break;
+            default: break;
+        }
         TmpCF = TmpCF->next;
     }
     if (node->structure.func_call.name_token.type == Token_BuildIn_Func) {
@@ -509,38 +501,24 @@ void GenAssign(tAstNode *node) {
 
 void GenIfStart(void) {
     printf("POPS GF@tmp1\n");
-    printf("JUMPIFNEQ $else_label%d$ GF@tmp1 bool@true\n", GlobalCounter);
+    printf("JUMPIFNEQ $else_label%d$ GF@tmp1 bool@true\n", GlobalIfCounter);
 }
 
 void GenIfStartNN(void) {
     printf("POPS GF@tmp1\n");
-    printf("JUMPIFEQ $else_label$%d$ GF@tmp1 nil@nil\n", GlobalCounter);
+    printf("JUMPIFEQ $else_label$%d$ GF@tmp1 nil@nil\n", GlobalIfCounter);
 }
 
 void GenIfEnd(void) {
-    printf("JUMPIFNEQ $endif_label%d$ GF@tmp1 bool@false\n", GlobalCounter);
+    printf("JUMPIFNEQ $endif_label%d$ GF@tmp1 bool@false\n", GlobalIfCounter);
 }
 
 void GenElseStart(void) {
-    printf("LABEL $else_label%d$\n", GlobalCounter);
+    printf("LABEL $else_label%d$\n", GlobalIfCounter);
 }
 
 void GenElseEnd(void) {
-    printf("LABEL $endif_label%d$\n", GlobalCounter);
-}
-
-void generate3AK(sStackGen *stack, tAstNode *tree) {
-    if (tree == NULL) return;
-    StackGen_Push(stack, tree);
-}
-
-void Generate(sStackGen *stack) {
-    GenInitial();
-    tAstNode val;
-    while (!StackGen_IsEmpty(stack)) {
-        StackGen_Pop(stack, &val);
-        GenerateOutput(&val);
-    }
+    printf("LABEL $endif_label%d$\n", GlobalIfCounter);
 }
 
 void GenerateOutput(tAstNode *node) {
@@ -572,6 +550,9 @@ void GenerateOutput(tAstNode *node) {
 	            case F64: case NF64:
                     printf("MOVE LF@%s float@%a\n", node->structure.var.token.value.string, node->structure.var.val.f);
                     break;
+                case U8: case NU8:
+                    printf("MOVE LF@%s string@%s\n", node->structure.var.token.value.string, node->structure.var.val.str);
+                    break;
                 default:
                     exit(56);
                     break;
@@ -595,7 +576,7 @@ void GenerateOutput(tAstNode *node) {
                 printf("POPS LF@%s\n", node->structure.while_loop.expr->structure.bin_op.op2->structure.var.token.value.string);
             }
             GenWhileEnd();
-            GlobalCounter++;
+            GlobalWhileCounter++;
             break;
 	    case IF:
             if (node->structure.if_block.nn_id != NULL) {
@@ -612,7 +593,7 @@ void GenerateOutput(tAstNode *node) {
                 GenerateOutput(node->structure.if_block.else_code);
             }
             GenElseEnd();
-            GlobalCounter++;
+            GlobalIfCounter++;
             break;
 	    case BIN_OP:
             GenStackOp(node);

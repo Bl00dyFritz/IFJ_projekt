@@ -12,7 +12,6 @@
 #include "parser.h"
 #include "symtable.h"
 #include "scanner.h"
-#include "GenStack.h"
 
 void GenInitial(void);
 
@@ -53,10 +52,6 @@ void GenWhile(void);
 void GenWhileNN(void);
 
 void GenWhileEnd(void);
-
-void Generate(sStackGen *stack);
-
-void generate3AK(sStackGen *stack, tAstNode *tree);
 
 void GenerateOutput(tAstNode *node);
 
