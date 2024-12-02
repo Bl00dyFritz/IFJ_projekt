@@ -60,6 +60,8 @@ void GenPushIntFloat(tAstNode *node) {
 	            case F64: case NF64:
                     printf("FLOAT2INTS\n");
                     break;
+                default:
+                    break;
             }
         }
     }
@@ -385,7 +387,7 @@ void StringToIFJ24string(tAstNode *node) {
     char *TmpStrOut = (char *)malloc(strlen(TmpStrIn) * 4);
     if (TmpStrOut == NULL) {
         fprintf(stderr, "Error: Allocation failed\n");
-        exit(99);
+        exit(INTERNAL_COMP_ERROR);
     }
     while (TmpStrIn[i]) {
         if (TmpStrIn[i] <= 32 || TmpStrIn[i] == '#' || TmpStrIn[i] == '"') {
@@ -411,7 +413,7 @@ void GenCallFunc(tAstNode *node) {
         TmpCF = Next;
     }
     TmpCF = Prev;
-    if (node->structure.func_call.name_token.value.BuiltInFunc == BF_string) {
+    if (node->structure.func_call.name_token.value.BuiltInFunc == BF_string || node->structure.func_call.name_token.value.BuiltInFunc == BF_write) {
         StringToIFJ24string(node);
     }
     while (TmpCF) {

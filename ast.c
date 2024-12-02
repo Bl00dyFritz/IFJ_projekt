@@ -156,7 +156,7 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 		tToken token_top;
 		if(!StackIsEmpty(input_stack)) token_top = TopTStack(input_stack);
 		else {
-			token_top.state = 0;
+			token_top.state = (sState)0;
 			token_top.type = Token_Dollar;
 			token_top.value.integer = '$';
 		}

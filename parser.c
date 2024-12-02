@@ -735,6 +735,7 @@ int program(void){ //the whole program
    	tAstNode *synt_tree = NULL;
 	tAstNode **current_p = &synt_tree;
 	tBstNode *func_tree;
+	SetSourceFile(stdin);
 	BstInit(&func_tree);
 	prolog(); 
 	statement(&synt_tree, NULL, &current_p, &func_tree);

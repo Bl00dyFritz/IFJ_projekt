@@ -158,9 +158,9 @@ typedef enum {
 } bBuiltinFuncs;
 
 /**
- * @brief Union for token values
+ * @brief Structure for token values
  */
-typedef union {
+typedef struct {
     char *string;
     int integer;
     double decimal;

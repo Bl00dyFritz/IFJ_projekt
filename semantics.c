@@ -135,6 +135,7 @@ void AssignType(tVarVals **vals,tType in_type){
 					break;
 				case NU8:
 					(*vals)->type = Token_Nu8;
+					break;
 				case I32:
 					(*vals)->type = Token_i32;
 					break;
@@ -149,6 +150,7 @@ void AssignType(tVarVals **vals,tType in_type){
 					break;
 				default:exit(SEMANTIC_COMP_ERROR);
 			}
+			break;
 		default: exit(INTERNAL_COMP_ERROR);
 	}
 }
@@ -494,7 +496,8 @@ void CmpVarLit (tComData op1_data, tComData op2_data, tComData *out_data, bool i
 			break;
 		case NF64: case NI32: case BIN:
 				exit(SEMANTIC_COMP_ERROR);
-		default:(INTERNAL_COMP_ERROR);
+			break;
+		default: exit(INTERNAL_COMP_ERROR);
 	}
 }
 
@@ -579,6 +582,7 @@ void ExamineBinOp(tAstNode *node, tSymtableList *symlist, tComData *out_data){
 				}
 				else CmpVarLit(op2_data, op1_data, out_data, false);
 			}
+			break;
 		case Token_Minus:
 			if(op1_data.is_var && op2_data.is_var)
 				CmpVars(op1_data, op2_data, out_data);
@@ -652,6 +656,7 @@ void ExamineBinOp(tAstNode *node, tSymtableList *symlist, tComData *out_data){
 				}
 				else CmpVarLit(op2_data, op1_data, out_data, false);
 			}
+			break;
 		case Token_Multiply:
 			if(op1_data.is_var && op2_data.is_var)
 				CmpVars(op1_data, op2_data, out_data);
@@ -726,6 +731,7 @@ void ExamineBinOp(tAstNode *node, tSymtableList *symlist, tComData *out_data){
 				}
 				else CmpVarLit(op2_data, op1_data, out_data, false);
 			}
+			break;
 		case Token_Divide:
 			if(op1_data.is_var && op2_data.is_var)
 				CmpVars(op1_data, op2_data, out_data);
@@ -781,6 +787,7 @@ void ExamineBinOp(tAstNode *node, tSymtableList *symlist, tComData *out_data){
 				}
 				else CmpVarLit(op2_data, op1_data, out_data, true);
 			}
+			break;
 		case Token_Equal:
 		case Token_Not_Equal:
 		case Token_Lesser:
