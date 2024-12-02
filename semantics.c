@@ -73,6 +73,7 @@ void AssignVals (tVarVals **vals, tComData in_data){
 			case Token_Nu8:
 				if (in_data.type != NU8 && in_data.type != U8) exit(SEMANTIC_COMP_ERROR);
 				(*vals)->value = in_data.val;
+				break;
 			case Token_Empty:
 				switch (in_data.type){
 					case I32:
@@ -727,6 +728,7 @@ void ExamineBinOp(tAstNode *node, tSymtableList *symlist, tComData *out_data){
 							int *i_val = (int*) out_data->val;
 							*i_val = *(int*)op1_data.val * *(int*)op2_data.val;
 						}
+						break;
 					case NF64: case NI32: case BIN:
 						exit(SEMANTIC_COMP_ERROR);
 					default:exit(INTERNAL_COMP_ERROR);
@@ -819,6 +821,7 @@ void ExamineBinOp(tAstNode *node, tSymtableList *symlist, tComData *out_data){
 				else CmpVarLit(op2_data, op1_data, out_data, false);
 				out_data->type = BIN;
 			}
+			break;
 		default:exit(INTERNAL_COMP_ERROR);
 	}
 }
