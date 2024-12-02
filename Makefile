@@ -10,7 +10,7 @@ DEPS = $(SRCS:.c=.d)
 
 .PHONY: clean all
 
-$(EXEC):compiler.c ast.c parser.c generator.c GenStack.c scanner.c semantics.c stack.c symtable.c
+$(EXEC):compiler.c ast.c parser.c generator.c scanner.c semantics.c stack.c symtable.c
 
 -include $(DEPS)
 
