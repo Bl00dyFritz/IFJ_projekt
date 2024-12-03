@@ -100,6 +100,12 @@ void GenIfStartNN(int LocalIfCounter);
 void GenIfEnd(int LocalIfCounter);
 
 /**
+ * @brief Generates code for the end of an if statement with a non-nil check.
+ * @param LocalIfCounter Counter to distinguish from different IF's
+ */
+void GenIfEndNN(int LocalIfCounter);
+
+/**
  * @brief Generates code for the start of an else statement.
  * @param LocalIfCounter Counter to distinguish from different IF's
  */

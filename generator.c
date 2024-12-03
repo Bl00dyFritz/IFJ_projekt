@@ -141,13 +141,13 @@ void GenStackOp(tAstNode *node) {
 }
 
 void GenWhile(int LocalWhileCounter) {
-    printf("POPS GF@tmp2\n");
-    printf("JUMPIFEQ $EndWhile%d$ GF@tmp2 bool@false\n", LocalWhileCounter);
+    printf("POPS GF@WhileTmp%d\n", LocalWhileCounter);
+    printf("JUMPIFEQ $EndWhile%d$ GF@WhileTmp%d bool@false\n", LocalWhileCounter,LocalWhileCounter);
 }
 
 void GenWhileNN(int LocalWhileCounter) {
-    printf("POPS GF@tmp2\n");
-    printf("JUMPIFEQ $EndWhile%d$ GF@tmp2 nil@nil\n", LocalWhileCounter);
+    printf("POPS GF@WhileTmp%d\n", LocalWhileCounter);
+    printf("JUMPIFEQ $EndWhile%d$ GF@WhileTmp%d nil@nil\n", LocalWhileCounter, LocalWhileCounter);
 }
 
 void GenWhileEnd(int LocalWhileCounter) {
@@ -513,17 +513,21 @@ void GenAssign(tAstNode *node) {
 }
 
 void GenIfStart(int LocalIfCounter) {
-    printf("POPS GF@tmp1\n");
-    printf("JUMPIFNEQ $else_label%d$ GF@tmp1 bool@true\n", LocalIfCounter);
+    printf("POPS GF@$IfTmp%d\n", LocalIfCounter);
+    printf("JUMPIFNEQ $else_label%d$ GF@$IfTmp%d bool@true\n", LocalIfCounter, LocalIfCounter);
 }
 
 void GenIfStartNN(int LocalIfCounter) {
-    printf("POPS GF@tmp1\n");
-    printf("JUMPIFEQ $else_label%d$ GF@tmp1 nil@nil\n", LocalIfCounter);
+    printf("POPS GF@$IfTmp%d\n", LocalIfCounter);
+    printf("JUMPIFEQ $else_label%d$ GF@$IfTmp%d nil@nil\n", LocalIfCounter, LocalIfCounter);
 }
 
 void GenIfEnd(int LocalIfCounter) {
-    printf("JUMPIFNEQ $endif_label%d$ GF@tmp1 bool@false\n", LocalIfCounter);
+    printf("JUMPIFNEQ $endif_label%d$ GF@$IfTmp%d bool@false\n", LocalIfCounter, LocalIfCounter);
+}
+
+void GenIfEndNN(int LocalIfCounter) {
+    printf("JUMPIFNEQ $endif_label%d$ GF@$IfTmp%d nil@nil\n", LocalIfCounter, LocalIfCounter);
 }
 
 void GenElseStart(int LocalIfCounter) {
@@ -575,6 +579,7 @@ void GenerateOutput(tAstNode *node) {
             break;
 	    case WHILE:
             LocalWhileCounter = GlobalWhileCounter++;
+            printf("DEFVAR GF@WhileTmp%d\n", LocalWhileCounter);
             if (node->structure.while_loop.nn_id != NULL) {
                 printf("DEFVAR LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string);
                 printf("LABEL $while%d$\n", LocalWhileCounter);
@@ -590,26 +595,29 @@ void GenerateOutput(tAstNode *node) {
             if (node->structure.while_loop.nn_id != NULL) {
                 printf("PUSHS LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string);
             } else if (node->structure.while_loop.expr->structure.bin_op.op1->type == VAR) {
-                printf("POPS LF@%s\n", node->structure.while_loop.expr->structure.bin_op.op1->structure.var.token.value.string);
+                printf("PUSHS LF@%s\n", node->structure.while_loop.expr->structure.bin_op.op1->structure.var.token.value.string);
             } else if (node->structure.while_loop.expr->structure.bin_op.op2->type == VAR) {
-                printf("POPS LF@%s\n", node->structure.while_loop.expr->structure.bin_op.op2->structure.var.token.value.string);
+                printf("PUSHS LF@%s\n", node->structure.while_loop.expr->structure.bin_op.op2->structure.var.token.value.string);
             }
             GenWhileEnd(LocalWhileCounter);
             GlobalWhileCounter++;
             break;
 	    case IF:
             LocalIfCounter = GlobalIfCounter++;
+            printf("DEFVAR GF@$IfTmp%d\n", LocalIfCounter);
             if (node->structure.if_block.nn_id != NULL) {
                 printf("DEFVAR LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string);
                 printf("MOVE LF@%s LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string, node->structure.if_block.expr->structure.var.token.value.string);
                 printf("PUSHS LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string);
                 GenIfStartNN(LocalIfCounter);
+                GenerateOutput(node->structure.if_block.if_code);
+                GenIfEndNN(LocalIfCounter);
             } else {
                 GenerateOutput(node->structure.if_block.expr);
                 GenIfStart(LocalIfCounter);
+                GenerateOutput(node->structure.if_block.if_code);
+                GenIfEnd(LocalIfCounter);
             }
-            GenerateOutput(node->structure.if_block.if_code);
-            GenIfEnd(LocalIfCounter);
             if (node->structure.if_block.else_code) {
                 GenElseStart(LocalIfCounter);
                 GenerateOutput(node->structure.if_block.else_code);
