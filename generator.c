@@ -140,10 +140,6 @@ void GenStackOp(tAstNode *node) {
     }
 }
 
-void GenWhileHead(int LocalWhileCounter) {
-    printf("LABEL $while%d$\n", LocalWhileCounter);
-}
-
 void GenWhile(int LocalWhileCounter) {
     printf("POPS GF@tmp2\n");
     printf("JUMPIFEQ $EndWhile%d$ GF@tmp2 bool@false\n", LocalWhileCounter);
@@ -363,7 +359,7 @@ void GenBuiltInFuncs(void) {
     printf("JUMPIFEQ $ReturnSTRCMP1$ LF@GTresult bool@true\n");
     printf("JUMP $ReturnSTRCMPNeg1$\n");
 
-    printf("LABEL ReturnSTRCMPNeg1\n");
+    printf("LABEL $ReturnSTRCMPNeg1$\n");
     printf("PUSHS int@-1\n");
     printf("JUMP $ENDofSTRCMPfunc$\n");
 
@@ -579,13 +575,14 @@ void GenerateOutput(tAstNode *node) {
             break;
 	    case WHILE:
             LocalWhileCounter = GlobalWhileCounter++;
-            GenWhileHead(LocalWhileCounter);
             if (node->structure.while_loop.nn_id != NULL) {
                 printf("DEFVAR LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string);
+                printf("LABEL $while%d$\n", LocalWhileCounter);
                 printf("MOVE LF@%s LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string, node->structure.while_loop.expr->structure.var.token.value.string);
                 printf("PUSHS LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string);
                 GenWhileNN(LocalWhileCounter);
             } else {
+                printf("LABEL $while%d$\n", LocalWhileCounter);
                 GenerateOutput(node->structure.while_loop.expr);
                 GenWhile(LocalWhileCounter);
             }
