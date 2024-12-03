@@ -143,7 +143,7 @@ int function(tToken *in_t, tAstNode **synt_tree, tBstNode **func_tree){
 	return 0;
 }
 
-int const_init(tToken *in_t, tAstNode **synt_tree){
+int const_init(tToken *in_t, tAstNode **synt_tree, tAstNode ***out_tree){
 	tToken token = *in_t;
 	tToken decl_out;
 	const_decl(&token, &decl_out, &token, synt_tree);
@@ -151,11 +151,11 @@ int const_init(tToken *in_t, tAstNode **synt_tree){
 	tAstNode **next_cnode = &(*synt_tree)->structure.code.next_code;
 	const_def(&decl_out ,&token, &token, next_cnode);
 	if (token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
-	*synt_tree = *next_cnode;
+	*out_tree = next_cnode;
     return 0;
 }
 
-int var_init(tToken *in_t, tAstNode **synt_tree){
+int var_init(tToken *in_t, tAstNode **synt_tree, tAstNode ***out_tree){
 	tToken token = *in_t;
 	tToken decl_out;
 	var_decl(&token, &decl_out, &token, synt_tree);
@@ -163,7 +163,7 @@ int var_init(tToken *in_t, tAstNode **synt_tree){
 	tAstNode **next_cnode = &(*synt_tree)->structure.code.next_code;
 	var_def(&decl_out ,&token, &token, next_cnode);
 	if (token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
-	*synt_tree = *next_cnode;
+	*out_tree = next_cnode;
     return 0;
 }
 
@@ -224,7 +224,7 @@ int type_decl(tTokenStack *stack, tToken *out_t){
 	}
 	else{
 		tToken no_type_tok;
-		no_type_tok.type = Token_void;
+		no_type_tok.type = Token_Dollar;
 		PushTStack(stack, no_type_tok);
 	}
 	*out_t = token;
@@ -424,11 +424,11 @@ int body_statement(tToken *in_t, tToken *ret_t, tAstNode **synt_tree, tAstNode *
 					   lex_ret = GetToken(&token);
 					   break;
 		case Token_var: 
-					   var_init(&token, synt_tree);
+					   var_init(&token, synt_tree, &synt_tree);
 					   lex_ret = GetToken(&token);
 					   break;
 		case Token_const: 
-					   const_init(&token, synt_tree);
+					   const_init(&token, synt_tree, &synt_tree);
 					   lex_ret = GetToken(&token);
 					   break;
 		case Token_FuncID: 
@@ -768,8 +768,8 @@ int program(void){ //the whole program
 	next_statement(current_p, &func_tree);
 	tSymtableList symlist;
 	InitSymtableList(&symlist);
-	tComData data;
-	ExamineSemantics(synt_tree, &symlist, NULL, &data, NULL);
+	//tComData data;
+	//ExamineSemantics(synt_tree, &symlist, NULL, &data, NULL);
 	GenInitial();
 	GenerateOutput(synt_tree);
     return 0;

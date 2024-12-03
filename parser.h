@@ -57,7 +57,7 @@ int function(tToken *in_t, tAstNode **synt_tree, tBstNode **func_tree);
  * @param synt_tree Pointer to the AST node representing the constant.
  * @return Returns an error code or 0 if successful.
  */
-int const_init(tToken *in_t, tAstNode **synt_tree);
+int const_init(tToken *in_t, tAstNode **synt_tree, tAstNode ***out_tree);
 
 /**
  * @brief Parses a variable initialization.
@@ -65,7 +65,7 @@ int const_init(tToken *in_t, tAstNode **synt_tree);
  * @param synt_tree Pointer to the AST node representing the variable.
  * @return Returns an error code or 0 if successful.
  */
-int var_init(tToken *in_t, tAstNode **synt_tree);
+int var_init(tToken *in_t, tAstNode **synt_tree, tAstNode ***out_tree);
 
 /**
  * @brief Parses a constant definition.
