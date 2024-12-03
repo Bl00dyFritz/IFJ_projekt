@@ -598,6 +598,18 @@ void GenerateOutput(tAstNode *node) {
                     break;
             }
             break;
+        case VAL:
+            switch (node->structure.val.token.type){
+                case Token_Integer:
+                    printf("PUSHS int@%lld\n", (long long int)node->structure.val.token.value.integer);
+                    break;
+                case Token_Float:
+                    printf("PUSHS float@%a\n", node->structure.val.token.value.decimal);
+                    break;
+                default:
+                    break;
+            }
+            break;  
 	    case WHILE:
             LocalWhileCounter = GlobalWhileCounter++;
             printf("DEFVAR LF@WhileTmp%d\n", LocalWhileCounter);
