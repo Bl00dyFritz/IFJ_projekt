@@ -125,6 +125,7 @@ int function(tToken *in_t, tAstNode **synt_tree, tBstNode **func_tree){
 		tBstNodeContent *arg = (tBstNodeContent *) malloc(sizeof(tBstNodeContent));
 		if(!arg) exit(99);
 		arg->type = VARIABLE;
+		arg->value = (tVarVals*) malloc(sizeof(tVarVals));
 		tVarVals *vals = (tVarVals *) arg->value;
 		vals->is_constant = true;
 		vals->is_used = false;
@@ -396,6 +397,7 @@ int next_body_statement(tToken *in_t, tToken *ret_t, tAstNode **synt_tree){
 		case Token_FuncID:
 		case Token_BuildIn_Func:
 		case Token_if:
+		case Token_return:
 		case Token_Underscore:
 			body_statement(&token, &token, synt_tree, &current_p);
 			next_body_statement(&token, &token, current_p);
@@ -431,6 +433,7 @@ int body_statement(tToken *in_t, tToken *ret_t, tAstNode **synt_tree, tAstNode *
 					   break;
 		case Token_FuncID: 
 					   check_assign_or_func(&token, code_tree);
+					   lex_ret = GetToken(&token);
 					   break;
 		case Token_return: 
 					   return_(&token, code_tree);
@@ -666,7 +669,7 @@ int expression(tToken *in_t, tToken *ret_t, tTokenStack *input_stack, tTokenStac
 }
 
 int check_var_or_func(tToken *in_t, tAstNode **synt_tree, tTokenStack *input_stack, tTokenStack *output_stack){
-	tToken token = *in_t;
+	tToken token;
 	int lex_ret = GetToken(&token);
 	if (lex_ret) exit(lex_ret);
 	if (token.type==Token_Lpar){
@@ -680,6 +683,7 @@ int check_var_or_func(tToken *in_t, tAstNode **synt_tree, tTokenStack *input_sta
 		*in_t = token;
 		return 1;
 	}
+	printf("%d\n%d\n", Token_Equal, token.type);
 	PrecedenceCheck(in_t, input_stack, output_stack);
 	*in_t = token;
 	return 0;

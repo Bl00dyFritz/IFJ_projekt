@@ -540,7 +540,6 @@ int GetToken(tToken *token) {
                 } else if (c == '=') {
                     token->type = Token_Equal;
                     Completed = true;
-                    ungetc(c, file);
                 }
                 break;
             case State_Ex_Mark:
