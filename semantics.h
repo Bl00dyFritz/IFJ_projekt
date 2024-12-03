@@ -83,7 +83,7 @@ void AssignDouble(tVarVals **vals, void *in_val);
  * @param node Pointer to the AST node representing the built-in function.
  * @param out_type Pointer to store the output type.
  */
-void ExamineBuiltInFunc(tAstNode *node, tType *out_type);
+void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist);
 
 /**
  * @brief Assigns a type to the variable values structure.
