@@ -20,7 +20,7 @@ void InitSymtableList (tSymtableList *list){
 
 void SymtableListAdd (tSymtableList *list, tBstNode *symtree){
 	tSymtableListElem *tmp = (tSymtableListElem *) malloc(sizeof(tSymtableListElem));
-	if (!tmp) exit (99);
+	if (!tmp) exit (INTERNAL_COMP_ERROR);
 	tmp->root_ptr = symtree;
 	tmp->next = list->first;
 	list->first = tmp;
@@ -91,7 +91,9 @@ u8:
 			default:break;
 		}
 	}
-	else exit(SEMANTIC_REDEF_ERROR);
+	else{
+		exit(SEMANTIC_REDEF_ERROR);
+	}
 }
 
 void AssignInt (tVarVals **vals, void *in_val){
@@ -240,7 +242,7 @@ void ExamineDecl (tAstNode *node, tSymtableList *symlist){
 	vals->is_used = false;
 	if (node->type == CONST_DECL) vals->is_constant = true;
 	else if(node->type == VAR_DECL) vals->is_constant = false;
-	else exit(99);
+	else exit(INTERNAL_COMP_ERROR);
 	tTokenType type;
 	switch (node->structure.var_decl.type){
 		case VOID: type = Token_void;
@@ -301,7 +303,7 @@ void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist)
 					tBstNodeContent *content;
 					tSymtableListElem *tree = symlist->first;
 					while(tree){
-						if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+						if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 						tree = tree->next;
 					}
 					if(!tree)
@@ -320,19 +322,19 @@ void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist)
 			tBstNodeContent *content;
 			tSymtableListElem *tree = symlist->first;
 			while(tree){
-				if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+				if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 				tree = tree->next;
 			}
 			if(!tree)
 				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
 			if (((tVarVals*)content->value)->type != Token_u8)
 				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
-			args = args->next;//TODO
+			args = args->next;
 			if (args->token.type!=Token_FuncID)
 				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
 			tree = symlist->first;
 			while(tree){
-				if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+				if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 				tree = tree->next;
 			}
 			if(!tree)
@@ -348,7 +350,7 @@ void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist)
 				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
 			tree = symlist->first;
 			while(tree){
-				if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+				if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 				tree = tree->next;
 			}
 			if(!tree)
@@ -367,12 +369,13 @@ void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist)
 					tBstNodeContent *content;
 					tSymtableListElem *tree = symlist->first;
 					while(tree){
-						if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+						if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 						tree = tree->next;
 					}
 					if(!tree)
 						exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
 					if(((tVarVals*)content->value)->type != Token_i32)
+						printf("%d\n", ((tVarVals*)content->value)->type);
 						exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
 				}	
 			}
@@ -388,7 +391,7 @@ void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist)
 					tBstNodeContent *content;
 					tSymtableListElem *tree = symlist->first;
 					while(tree){
-						if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+						if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 						tree = tree->next;
 					}
 					if(!tree)
@@ -406,7 +409,7 @@ void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist)
 				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
 			tree = symlist->first;
 			while(tree){
-				if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+				if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 				tree = tree->next;
 			}
 			if(!tree)
@@ -422,7 +425,7 @@ void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist)
 					tBstNodeContent *content;
 					tSymtableListElem *tree = symlist->first;
 					while(tree){
-						if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+						if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 						tree = tree->next;
 					}
 					if(!tree)
@@ -439,7 +442,7 @@ void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist)
 					tBstNodeContent *content;
 					tSymtableListElem *tree = symlist->first;
 					while(tree){
-						if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+						if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 						tree = tree->next;
 					}
 					if(!tree)
@@ -457,7 +460,7 @@ void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist)
 				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
 			tree = symlist->first;
 			while(tree){
-				if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+				if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 				tree = tree->next;
 			}
 			if(!tree)
@@ -473,7 +476,7 @@ void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist)
 					tBstNodeContent *content;
 					tSymtableListElem *tree = symlist->first;
 					while(tree){
-						if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+						if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 						tree = tree->next;
 					}
 					if(!tree)
@@ -494,7 +497,7 @@ void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist)
 					tBstNodeContent *content;
 					tSymtableListElem *tree = symlist->first;
 					while(tree){
-						if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+						if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 						tree = tree->next;
 					}
 					if(!tree)
@@ -512,7 +515,7 @@ void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist)
 				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
 			tree = symlist->first;
 			while(tree){
-				if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+				if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 				tree = tree->next;
 			}
 			if(!tree)
@@ -525,7 +528,7 @@ void ExamineBuiltInFunc(tAstNode *node, tType *out_type, tSymtableList *symlist)
 				exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
 			tree = symlist->first;
 			while(tree){
-				if(BstSearch(symlist->first->root_ptr, args->token.value.string, &content))break;
+				if(BstSearch(tree->root_ptr, args->token.value.string, &content))break;
 				tree = tree->next;
 			}
 			if(!tree)
@@ -992,7 +995,8 @@ void NNDecl(tAstNode *node, tSymtableList *symlist){
 	vals->is_used = false;
 	vals->is_constant = true;
 	vals->type = Token_Empty;
-	vals->value = node->structure.var.token.value.string;
+	vals->value = NULL;
+	printf("%s\n", node->structure.var.token.value.string);
 	BstInsAndReal(&symlist->first->root_ptr, node->structure.var.token.value.string, content);
 }
 
