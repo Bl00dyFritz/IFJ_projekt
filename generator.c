@@ -94,6 +94,12 @@ void CheckSameType(tAstNode *node) {
 }
 
 void GenStackOp(tAstNode *node) {
+    if (node->structure.bin_op.op2->type == BIN_OP) {
+        GenStackOp(node->structure.bin_op.op2);
+    }
+    if (node->structure.bin_op.op1->type == BIN_OP) {
+        GenStackOp(node->structure.bin_op.op1);
+    }
     GenPushIntFloat(node->structure.bin_op.op2);
     GenPushIntFloat(node->structure.bin_op.op1);
     CheckSameType(node);
