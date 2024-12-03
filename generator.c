@@ -397,6 +397,7 @@ void StringToIFJ24string(tAstNode *node) {
         }
         i++;
     }
+    TmpStrOut[j] = '\0';
     free(TmpStrIn);
     node->structure.func_call.args->token.value.string = TmpStrOut;
 }
@@ -413,7 +414,8 @@ void GenCallFunc(tAstNode *node) {
         TmpCF = Next;
     }
     TmpCF = Prev;
-    if (node->structure.func_call.name_token.value.BuiltInFunc == BF_string || node->structure.func_call.name_token.value.BuiltInFunc == BF_write) {
+    if (node->structure.func_call.name_token.value.BuiltInFunc == BF_string || 
+       (node->structure.func_call.name_token.value.BuiltInFunc == BF_write && TmpCF->token.type == Token_string)) {
         StringToIFJ24string(node);
     }
     while (TmpCF) {
