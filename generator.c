@@ -636,10 +636,18 @@ void GenerateOutput(tAstNode *node) {
             if (!strcmp(node->structure.func_def.token.value.string, "main")) {
                 GenMainHead();
                 GenerateOutput(node->structure.func_def.code);
+                printf("EXIT int@0\n");
             } else {
                 GenDefFunc(node);
                 GenerateOutput(node->structure.func_def.code);
                 GenFuncEnd(node);
+            }
+            break;
+        case RET:
+            if (node->structure.ret.ret_expr->type == VAR) {
+                printf("PUSHS LF@%s\n", node->structure.ret.ret_expr->structure.var.token.value.string);
+            } else {
+                GenerateOutput(node->structure.ret.ret_expr);
             }
             break;
         default:
