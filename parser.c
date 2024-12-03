@@ -144,10 +144,11 @@ int function(tToken *in_t, tAstNode **synt_tree, tBstNode **func_tree){
 
 int const_init(tToken *in_t, tAstNode **synt_tree){
 	tToken token = *in_t;
-	const_decl(&token, &token, synt_tree);
+	tToken decl_out;
+	const_decl(&token, &decl_out, &token, synt_tree);
 	AddCodeNode(&(*synt_tree)->structure.code.next_code);
 	tAstNode **next_cnode = &(*synt_tree)->structure.code.next_code;
-	const_def(&token, &token, next_cnode);
+	const_def(&decl_out ,&token, &token, next_cnode);
 	if (token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
 	*synt_tree = *next_cnode;
     return 0;
@@ -155,16 +156,17 @@ int const_init(tToken *in_t, tAstNode **synt_tree){
 
 int var_init(tToken *in_t, tAstNode **synt_tree){
 	tToken token = *in_t;
-	var_decl(&token, &token, synt_tree);
+	tToken decl_out;
+	var_decl(&token, &decl_out, &token, synt_tree);
 	AddCodeNode(&(*synt_tree)->structure.code.next_code);
 	tAstNode **next_cnode = &(*synt_tree)->structure.code.next_code;
-	var_def(&token, &token, next_cnode);
+	var_def(&decl_out ,&token, &token, next_cnode);
 	if (token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
 	*synt_tree = *next_cnode;
     return 0;
 }
 
-int const_def(tToken *id_tok, tToken *ret_t, tAstNode **synt_tree){
+int const_def(tToken *in_t ,tToken *id_tok, tToken *ret_t, tAstNode **synt_tree){
 	tToken token;
 	AddAssignNode(&(*synt_tree)->structure.code.operation);
 	tAstNode **assign_node = &(*synt_tree)->structure.code.operation;
@@ -172,8 +174,7 @@ int const_def(tToken *id_tok, tToken *ret_t, tAstNode **synt_tree){
 	InitTStack(&stack);
 	PushTStack(&stack, *id_tok);
 	AddExpNodes(&(*assign_node)->structure.assign.dst, &stack);
-	int lex_ret = GetToken(&token);
-	if (lex_ret) exit(lex_ret);
+	token = *in_t;
 	if (token.type==Token_Assign){
 		tTokenStack input_stack;
 		tTokenStack output_stack;
@@ -188,7 +189,7 @@ is_func_call:
     return 0;
 }
 
-int var_def(tToken *id_tok, tToken *ret_t, tAstNode **synt_tree){
+int var_def(tToken *in_t ,tToken *id_tok, tToken *ret_t, tAstNode **synt_tree){
 	tToken token;
 	AddAssignNode(&(*synt_tree)->structure.code.operation);
 	tAstNode **assign_node = &(*synt_tree)->structure.code.operation;
@@ -196,8 +197,7 @@ int var_def(tToken *id_tok, tToken *ret_t, tAstNode **synt_tree){
 	InitTStack(&stack);
 	PushTStack(&stack, *id_tok);
 	AddExpNodes(&(*assign_node)->structure.assign.dst, &stack);
-	int lex_ret = GetToken(&token);
-	if (lex_ret) exit(lex_ret);
+	token = *in_t;
 	if(token.type==Token_Assign){ 
 		tTokenStack input_stack;
 		tTokenStack output_stack;
@@ -212,16 +212,21 @@ is_func_call:
     return 0;
 }
 
-int type_decl(tTokenStack *stack){
+int type_decl(tTokenStack *stack, tToken *out_t){
 	tToken token;
 	int lex_ret = GetToken(&token);
 	if(lex_ret) exit(lex_ret);
-	if (token.type==Token_Colon) type(stack);
+	if (token.type==Token_Colon){
+		type(stack);
+		int lex_ret = GetToken(&token);
+		if (lex_ret) exit(lex_ret);
+	}
 	else{
 		tToken no_type_tok;
 		no_type_tok.type = Token_void;
 		PushTStack(stack, no_type_tok);
 	}
+	*out_t = token;
     return 0;
 }
 
@@ -256,7 +261,7 @@ int type(tTokenStack *stack){
     return 0;
 }
 
-int const_decl(tToken *in_t, tToken *id_tok, tAstNode **synt_tree){
+int const_decl(tToken *in_t, tToken *out_t, tToken *id_tok, tAstNode **synt_tree){
 	tToken token = *in_t;
 	tTokenStack stack;
 	InitTStack(&stack);
@@ -267,12 +272,13 @@ int const_decl(tToken *in_t, tToken *id_tok, tAstNode **synt_tree){
 	if(token.type!=Token_FuncID) exit(SYNTAX_ERROR);
 	*id_tok = token;
 	PushTStack(&stack, token);
-	type_decl(&stack);
+	type_decl(&stack, &token);
 	AddDeclNode(&(*synt_tree)->structure.code.operation, &stack);
+	*out_t = token;
     return 0;
 }
 
-int var_decl(tToken *in_t, tToken *id_tok, tAstNode **synt_tree){
+int var_decl(tToken *in_t, tToken *out_t, tToken *id_tok, tAstNode **synt_tree){
 	tToken token = *in_t;
 	tTokenStack stack;
 	InitTStack (&stack);
@@ -283,8 +289,9 @@ int var_decl(tToken *in_t, tToken *id_tok, tAstNode **synt_tree){
 	if(token.type!=Token_FuncID) exit(SYNTAX_ERROR);
 	*id_tok = token;
 	PushTStack(&stack, token);
-	type_decl(&stack);
+	type_decl(&stack, &token);
 	AddDeclNode(&(*synt_tree)->structure.code.operation, &stack);
+	*out_t = token;
     return 0;
 }
 
@@ -653,7 +660,7 @@ int expression(tToken *in_t, tToken *ret_t, tTokenStack *input_stack, tTokenStac
 		if (lex_ret) exit(lex_ret);
 	}
 	func_in_exp = operand(&token, input_stack, output_stack, synt_tree);
-	next_expression(&token, input_stack, output_stack, synt_tree);
+	next_expression(&token,&token, input_stack, output_stack, synt_tree);
 	*ret_t = token;
     return func_in_exp;
 }
@@ -668,47 +675,62 @@ int check_var_or_func(tToken *in_t, tAstNode **synt_tree, tTokenStack *input_sta
 		argument_list(&token, &arg_stack);
 		AddFuncCallNode(synt_tree, *in_t, &arg_stack);
 		if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
+		lex_ret = GetToken(&token);
+		if (lex_ret) exit(lex_ret);
+		*in_t = token;
 		return 1;
 	}
 	PrecedenceCheck(in_t, input_stack, output_stack);
+	*in_t = token;
 	return 0;
 }
 
 int operand(tToken *in_t, tTokenStack *input_stack, tTokenStack *output_stack, tAstNode **synt_tree){
 	tToken token;
 	token = *in_t;
+	int lex_ret;
 	switch(token.type){
 		case Token_FuncID: 
-			if (check_var_or_func(&token, synt_tree, input_stack, output_stack)) return 1; 
+			if (check_var_or_func(&token, synt_tree, input_stack, output_stack)){
+				*in_t = token;
+				return 1; 
+			}
 			break;
 		case Token_BuildIn_Func: 
 			function_call(&token, synt_tree); 
+			lex_ret = GetToken(&token);
+			if(lex_ret) exit(lex_ret);
+			*in_t = token;
 			return 1;
 		case Token_Integer:
 		case Token_Float:
 			PrecedenceCheck(&token, input_stack, output_stack);
+			lex_ret = GetToken(&token);
+			if(lex_ret) exit(lex_ret);
 			break;
 		case Token_Lpar: 
 			PrecedenceCheck(&token, input_stack, output_stack);			 
 			if (expression(NULL, &token, input_stack, output_stack, synt_tree)) exit(SYNTAX_ERROR);
 			if(token.type!=Token_Rpar) exit(SYNTAX_ERROR);
 			PrecedenceCheck(&token, input_stack, output_stack);
+			lex_ret = GetToken(&token);
+			if(lex_ret) exit(lex_ret);
 			break;
 		default: exit(SYNTAX_ERROR);
 	}
+	*in_t = token;
     return 0;
 }
 
-int next_expression(tToken *ret_t, tTokenStack *input_stack, tTokenStack *output_stack, tAstNode **synt_tree){
-	tToken token;
-	int lex_ret = GetToken(&token);
-	if (lex_ret) exit(lex_ret);
+int next_expression(tToken *in_t, tToken *ret_t, tTokenStack *input_stack, tTokenStack *output_stack, tAstNode **synt_tree){
+	tToken token = *in_t;
+	int lex_ret;
 	if(operator_(&token)){
 		PrecedenceCheck(&token, input_stack, output_stack);
 		lex_ret = GetToken(&token);
 		if (lex_ret) exit(lex_ret);
 		if (operand(&token, input_stack, output_stack, synt_tree)) exit(SYNTAX_ERROR);
-		next_expression(&token, input_stack, output_stack, synt_tree);
+		next_expression(&token,&token, input_stack, output_stack, synt_tree);
 	}
 	*ret_t = token;
     return 0;

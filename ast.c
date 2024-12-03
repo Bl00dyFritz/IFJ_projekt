@@ -319,6 +319,7 @@ void AddExpNodes (tAstNode **node_dest, tTokenStack *stack){
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
 	if(!(*node_dest)) exit(99);
 	tToken token = TopTStack(stack);
+	PopTStack(stack);
 	switch (token.type){
 		case Token_Multiply:
 		case Token_Divide:

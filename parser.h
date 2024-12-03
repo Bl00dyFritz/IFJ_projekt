@@ -74,7 +74,7 @@ int var_init(tToken *in_t, tAstNode **synt_tree);
  * @param synt_tree Pointer to the AST node representing the constant.
  * @return Returns an error code or 0 if successful.
  */
-int const_def(tToken *id_tok, tToken *ret_t, tAstNode **synt_tree);
+int const_def(tToken *in_t ,tToken *id_tok, tToken *ret_t, tAstNode **synt_tree);
 
 /**
  * @brief Parses a variable definition.
@@ -83,14 +83,14 @@ int const_def(tToken *id_tok, tToken *ret_t, tAstNode **synt_tree);
  * @param synt_tree Pointer to the AST node representing the variable.
  * @return Returns an error code or 0 if successful.
  */
-int var_def(tToken *id_tok, tToken *ret_t, tAstNode **synt_tree);
+int var_def(tToken *in_t ,tToken *id_tok, tToken *ret_t, tAstNode **synt_tree);
 
 /**
  * @brief Parses a type declaration from the token stack.
  * @param stack Pointer to the token stack.
  * @return Returns an error code or 0 if successful.
  */
-int type_decl(tTokenStack *stack);
+int type_decl(tTokenStack *stack, tToken *out_t);
 
 /**
  * @brief Parses a null type declaration.
@@ -120,7 +120,7 @@ int type(tTokenStack *stack);
  * @param synt_tree Pointer to the AST node representing the constant.
  * @return Returns an error code or 0 if successful.
  */
-int const_decl(tToken *in_t, tToken *id_tok, tAstNode **synt_tree);
+int const_decl(tToken *in_t, tToken *out_t, tToken *id_tok, tAstNode **synt_tree);
 
 /**
  * @brief Parses a variable declaration.
@@ -129,7 +129,7 @@ int const_decl(tToken *in_t, tToken *id_tok, tAstNode **synt_tree);
  * @param synt_tree Pointer to the AST node representing the variable.
  * @return Returns an error code or 0 if successful.
  */
-int var_decl(tToken *in_t, tToken *id_tok, tAstNode **synt_tree);
+int var_decl(tToken *in_t, tToken *out_t, tToken *id_tok, tAstNode **synt_tree);
 
 /**
  * @brief Parses the definition of an argument list.
@@ -334,7 +334,7 @@ int operand(tToken *in_t, tTokenStack *input_stack, tTokenStack *output_stack, t
  * @param synt_tree Pointer to the AST node representing the expression.
  * @return Returns an error code or 0 if successful.
  */
-int next_expression(tToken *ret_t, tTokenStack *input_stack, tTokenStack *output_stack, tAstNode **synt_tree);
+int next_expression(tToken *in_t, tToken *ret_t, tTokenStack *input_stack, tTokenStack *output_stack, tAstNode **synt_tree);
 
 /**
  * @brief Parses an operator.

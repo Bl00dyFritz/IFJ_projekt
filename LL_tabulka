@@ -10,8 +10,6 @@ IMPORTED_ID ::= token_readstr | token_readi32 | token_readf64 | token_write | to
 
 CONST_INIT ::= CONST_DECL CONST_DEF token_;
 VAR_INIT ::= VAR_DECL VAR_DEF token_;
-CONST_INIT ::= CONST_DECL CONST_DEF token_;
-VAR_INIT ::= VAR_DECL VAR_DEF token_;
 
 CONST_DEF ::= token_= EXPR | ε
 VAR_DEF ::= token_= EXPR | ε
