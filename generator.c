@@ -73,9 +73,30 @@ bool CheckNill(tAstNode *node) {
     } else return false;
 }
 
+void CheckSameType(tAstNode *node) {
+    if (node->structure.bin_op.op1->type == VAR && node->structure.bin_op.op2->type == VAL) {
+        if (node->structure.bin_op.op1->structure.var.type == F64 || node->structure.bin_op.op1->structure.var.type == NF64) {
+                printf("POP GF@tmp3\n");
+                printf("FLOAT2INTS\n");
+                printf("PUSHS GF@tmp3\n");
+        } else if (node->structure.bin_op.op1->structure.var.type == I32 || node->structure.bin_op.op1->structure.var.type == NI32) {
+                printf("POP GF@tmp3\n");
+                printf("INT2FLOATS\n");
+                printf("PUSHS GF@tmp3\n");
+        }
+    } else if (node->structure.bin_op.op2->type == VAR && node->structure.bin_op.op1->type == VAL) {
+        if (node->structure.bin_op.op2->structure.var.type == F64 || node->structure.bin_op.op2->structure.var.type == NF64) {
+                printf("FLOAT2INTS\n");
+        } else if (node->structure.bin_op.op2->structure.var.type == I32 || node->structure.bin_op.op2->structure.var.type == NI32) {
+                printf("FLOAT2INTS\n");
+        }
+    }
+}
+
 void GenStackOp(tAstNode *node) {
     GenPushIntFloat(node->structure.bin_op.op2);
     GenPushIntFloat(node->structure.bin_op.op1);
+    CheckSameType(node);
     switch (node->structure.bin_op.token.type) {
         case Token_Lesser:
         case Token_Lesser_Equal:
@@ -141,13 +162,13 @@ void GenStackOp(tAstNode *node) {
 }
 
 void GenWhile(int LocalWhileCounter) {
-    printf("POPS GF@WhileTmp%d\n", LocalWhileCounter);
-    printf("JUMPIFEQ $EndWhile%d$ GF@WhileTmp%d bool@false\n", LocalWhileCounter,LocalWhileCounter);
+    printf("POPS LF@WhileTmp%d\n", LocalWhileCounter);
+    printf("JUMPIFEQ $EndWhile%d$ LF@WhileTmp%d bool@false\n", LocalWhileCounter,LocalWhileCounter);
 }
 
 void GenWhileNN(int LocalWhileCounter) {
-    printf("POPS GF@WhileTmp%d\n", LocalWhileCounter);
-    printf("JUMPIFEQ $EndWhile%d$ GF@WhileTmp%d nil@nil\n", LocalWhileCounter, LocalWhileCounter);
+    printf("POPS LF@WhileTmp%d\n", LocalWhileCounter);
+    printf("JUMPIFEQ $EndWhile%d$ LF@WhileTmp%d nil@nil\n", LocalWhileCounter, LocalWhileCounter);
 }
 
 void GenWhileEnd(int LocalWhileCounter) {
@@ -386,7 +407,7 @@ void StringToIFJ24string(tAstNode *node) {
         exit(INTERNAL_COMP_ERROR);
     }
     while (TmpStrIn[i]) {
-        if (TmpStrIn[i] <= 32 || TmpStrIn[i] == '#' || TmpStrIn[i] == '"') {
+        if (TmpStrIn[i] <= 32 || TmpStrIn[i] == '#' || TmpStrIn[i] == '"' || TmpStrIn[i] == '\\') {
             j += sprintf(&TmpStrOut[j], "\\%03d", (unsigned char)TmpStrIn[i]);
         } else {
             TmpStrOut[j++] = TmpStrIn[i];
@@ -513,21 +534,21 @@ void GenAssign(tAstNode *node) {
 }
 
 void GenIfStart(int LocalIfCounter) {
-    printf("POPS GF@$IfTmp%d\n", LocalIfCounter);
-    printf("JUMPIFNEQ $else_label%d$ GF@$IfTmp%d bool@true\n", LocalIfCounter, LocalIfCounter);
+    printf("POPS LF@$IfTmp%d\n", LocalIfCounter);
+    printf("JUMPIFNEQ $else_label%d$ LF@$IfTmp%d bool@true\n", LocalIfCounter, LocalIfCounter);
 }
 
 void GenIfStartNN(int LocalIfCounter) {
-    printf("POPS GF@$IfTmp%d\n", LocalIfCounter);
-    printf("JUMPIFEQ $else_label%d$ GF@$IfTmp%d nil@nil\n", LocalIfCounter, LocalIfCounter);
+    printf("POPS LF@$IfTmp%d\n", LocalIfCounter);
+    printf("JUMPIFEQ $else_label%d$ LF@$IfTmp%d nil@nil\n", LocalIfCounter, LocalIfCounter);
 }
 
 void GenIfEnd(int LocalIfCounter) {
-    printf("JUMPIFNEQ $endif_label%d$ GF@$IfTmp%d bool@false\n", LocalIfCounter, LocalIfCounter);
+    printf("JUMPIFNEQ $endif_label%d$ LF@$IfTmp%d bool@false\n", LocalIfCounter, LocalIfCounter);
 }
 
 void GenIfEndNN(int LocalIfCounter) {
-    printf("JUMPIFNEQ $endif_label%d$ GF@$IfTmp%d nil@nil\n", LocalIfCounter, LocalIfCounter);
+    printf("JUMPIFNEQ $endif_label%d$ LF@$IfTmp%d nil@nil\n", LocalIfCounter, LocalIfCounter);
 }
 
 void GenElseStart(int LocalIfCounter) {
@@ -579,7 +600,7 @@ void GenerateOutput(tAstNode *node) {
             break;
 	    case WHILE:
             LocalWhileCounter = GlobalWhileCounter++;
-            printf("DEFVAR GF@WhileTmp%d\n", LocalWhileCounter);
+            printf("DEFVAR LF@WhileTmp%d\n", LocalWhileCounter);
             if (node->structure.while_loop.nn_id != NULL) {
                 printf("DEFVAR LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string);
                 printf("LABEL $while%d$\n", LocalWhileCounter);
@@ -604,7 +625,7 @@ void GenerateOutput(tAstNode *node) {
             break;
 	    case IF:
             LocalIfCounter = GlobalIfCounter++;
-            printf("DEFVAR GF@$IfTmp%d\n", LocalIfCounter);
+            printf("DEFVAR LF@$IfTmp%d\n", LocalIfCounter);
             if (node->structure.if_block.nn_id != NULL) {
                 printf("DEFVAR LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string);
                 printf("MOVE LF@%s LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string, node->structure.if_block.expr->structure.var.token.value.string);
