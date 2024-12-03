@@ -84,47 +84,47 @@ void GenStackOp(tAstNode *node);
 /**
  * @brief Generates code for the start of an if statement.
  */
-void GenIfStart(void);
+void GenIfStart(int LocalIfCounter);
 
 /**
  * @brief Generates code for the start of an if statement with a non-nil check.
  */
-void GenIfStartNN(void);
+void GenIfStartNN(int LocalIfCounter);
 
 /**
  * @brief Generates code for the end of an if statement.
  */
-void GenIfEnd(void);
+void GenIfEnd(int LocalIfCounter);
 
 /**
  * @brief Generates code for the start of an else statement.
  */
-void GenElseStart(void);
+void GenElseStart(int LocalIfCounter);
 
 /**
  * @brief Generates code for the end of an else statement.
  */
-void GenElseEnd(void);
+void GenElseEnd(int LocalIfCounter);
 
 /**
  * @brief Generates code for the head of a while loop.
  */
-void GenWhileHead(void);
+void GenWhileHead(int LocalWhileCounter);
 
 /**
  * @brief Generates code for the start of a while loop.
  */
-void GenWhile(void);
+void GenWhile(int LocalWhileCounter);
 
 /**
  * @brief Generates code for the start of a while loop with a non-nil check.
  */
-void GenWhileNN(void);
+void GenWhileNN(int LocalWhileCounter);
 
 /**
  * @brief Generates code for the end of a while loop.
  */
-void GenWhileEnd(void);
+void GenWhileEnd(int LocalWhileCounter);
 
 /**
  * @brief Generates code for output statements.

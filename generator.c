@@ -140,23 +140,23 @@ void GenStackOp(tAstNode *node) {
     }
 }
 
-void GenWhileHead(void) {
-    printf("LABEL $while%d$\n", GlobalWhileCounter);
+void GenWhileHead(int LocalWhileCounter) {
+    printf("LABEL $while%d$\n", LocalWhileCounter);
 }
 
-void GenWhile(void) {
+void GenWhile(int LocalWhileCounter) {
     printf("POPS GF@tmp2\n");
-    printf("JUMPIFEQ $EndWhile%d$ GF@tmp2 bool@false\n", GlobalWhileCounter);
+    printf("JUMPIFEQ $EndWhile%d$ GF@tmp2 bool@false\n", LocalWhileCounter);
 }
 
-void GenWhileNN(void) {
+void GenWhileNN(int LocalWhileCounter) {
     printf("POPS GF@tmp2\n");
-    printf("JUMPIFEQ $EndWhile%d$ GF@tmp2 nil@nil\n", GlobalWhileCounter);
+    printf("JUMPIFEQ $EndWhile%d$ GF@tmp2 nil@nil\n", LocalWhileCounter);
 }
 
-void GenWhileEnd(void) {
-    printf("JUMP $while%d$\n", GlobalWhileCounter);
-    printf("LABEL $EndWhile%d$\n", GlobalWhileCounter);
+void GenWhileEnd(int LocalWhileCounter) {
+    printf("JUMP $while%d$\n", LocalWhileCounter);
+    printf("LABEL $EndWhile%d$\n", LocalWhileCounter);
 }
 
 void GenBuiltInFuncs(void) {
@@ -516,31 +516,33 @@ void GenAssign(tAstNode *node) {
     }
 }
 
-void GenIfStart(void) {
+void GenIfStart(int LocalIfCounter) {
     printf("POPS GF@tmp1\n");
-    printf("JUMPIFNEQ $else_label%d$ GF@tmp1 bool@true\n", GlobalIfCounter);
+    printf("JUMPIFNEQ $else_label%d$ GF@tmp1 bool@true\n", LocalIfCounter);
 }
 
-void GenIfStartNN(void) {
+void GenIfStartNN(int LocalIfCounter) {
     printf("POPS GF@tmp1\n");
-    printf("JUMPIFEQ $else_label$%d$ GF@tmp1 nil@nil\n", GlobalIfCounter);
+    printf("JUMPIFEQ $else_label%d$ GF@tmp1 nil@nil\n", LocalIfCounter);
 }
 
-void GenIfEnd(void) {
-    printf("JUMPIFNEQ $endif_label%d$ GF@tmp1 bool@false\n", GlobalIfCounter);
+void GenIfEnd(int LocalIfCounter) {
+    printf("JUMPIFNEQ $endif_label%d$ GF@tmp1 bool@false\n", LocalIfCounter);
 }
 
-void GenElseStart(void) {
-    printf("LABEL $else_label%d$\n", GlobalIfCounter);
+void GenElseStart(int LocalIfCounter) {
+    printf("LABEL $else_label%d$\n", LocalIfCounter);
 }
 
-void GenElseEnd(void) {
-    printf("LABEL $endif_label%d$\n", GlobalIfCounter);
+void GenElseEnd(int LocalIfCounter) {
+    printf("LABEL $endif_label%d$\n", LocalIfCounter);
 }
 
 void GenerateOutput(tAstNode *node) {
     tAstNode *tmpS;
     tAstNode *tmpC;
+    int LocalIfCounter;
+    int LocalWhileCounter;
     switch (node->type) {
         case STATEMENT:
             tmpS = node;
@@ -576,15 +578,16 @@ void GenerateOutput(tAstNode *node) {
             }
             break;
 	    case WHILE:
-            GenWhileHead();
+            LocalWhileCounter = GlobalWhileCounter++;
+            GenWhileHead(LocalWhileCounter);
             if (node->structure.while_loop.nn_id != NULL) {
                 printf("DEFVAR LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string);
                 printf("MOVE LF@%s LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string, node->structure.while_loop.expr->structure.var.token.value.string);
                 printf("PUSHS LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string);
-                GenWhileNN();
+                GenWhileNN(LocalWhileCounter);
             } else {
                 GenerateOutput(node->structure.while_loop.expr);
-                GenWhile();
+                GenWhile(LocalWhileCounter);
             }
             GenerateOutput(node->structure.while_loop.code);
             if (node->structure.while_loop.nn_id != NULL) {
@@ -594,27 +597,27 @@ void GenerateOutput(tAstNode *node) {
             } else if (node->structure.while_loop.expr->structure.bin_op.op2->type == VAR) {
                 printf("POPS LF@%s\n", node->structure.while_loop.expr->structure.bin_op.op2->structure.var.token.value.string);
             }
-            GenWhileEnd();
+            GenWhileEnd(LocalWhileCounter);
             GlobalWhileCounter++;
             break;
 	    case IF:
+            LocalIfCounter = GlobalIfCounter++;
             if (node->structure.if_block.nn_id != NULL) {
                 printf("DEFVAR LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string);
                 printf("MOVE LF@%s LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string, node->structure.if_block.expr->structure.var.token.value.string);
                 printf("PUSHS LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string);
-                GenIfStartNN();
+                GenIfStartNN(LocalIfCounter);
             } else {
                 GenerateOutput(node->structure.if_block.expr);
-                GenIfStart();
+                GenIfStart(LocalIfCounter);
             }
             GenerateOutput(node->structure.if_block.if_code);
-            GenIfEnd();
+            GenIfEnd(LocalIfCounter);
             if (node->structure.if_block.else_code) {
-                GenElseStart();
+                GenElseStart(LocalIfCounter);
                 GenerateOutput(node->structure.if_block.else_code);
             }
-            GenElseEnd();
-            GlobalIfCounter++;
+            GenElseEnd(LocalIfCounter);
             break;
 	    case BIN_OP:
             GenStackOp(node);
