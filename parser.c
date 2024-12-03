@@ -683,7 +683,6 @@ int check_var_or_func(tToken *in_t, tAstNode **synt_tree, tTokenStack *input_sta
 		*in_t = token;
 		return 1;
 	}
-	printf("%d\n%d\n", Token_Equal, token.type);
 	PrecedenceCheck(in_t, input_stack, output_stack);
 	*in_t = token;
 	return 0;
@@ -706,6 +705,7 @@ int operand(tToken *in_t, tTokenStack *input_stack, tTokenStack *output_stack, t
 			if(lex_ret) exit(lex_ret);
 			*in_t = token;
 			return 1;
+		case Token_null:
 		case Token_Integer:
 		case Token_Float:
 			PrecedenceCheck(&token, input_stack, output_stack);

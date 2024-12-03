@@ -169,6 +169,7 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 					case Token_Divide:
 					case Token_Integer:
 					case Token_Float:
+					case Token_null:
 					case Token_FuncID:
 					case Token_Rpar:
 						cmp_op = '>';
@@ -197,6 +198,7 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 					case Token_Minus:
 					case Token_Integer:
 					case Token_Float:
+					case Token_null:
 					case Token_FuncID:
 					case Token_Rpar:
 						cmp_op = '>';
@@ -227,6 +229,7 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 					case Token_Minus:
 					case Token_Integer:
 					case Token_Float:
+					case Token_null:
 					case Token_FuncID:
 					case Token_Rpar:
 						cmp_op = '>';
@@ -248,6 +251,7 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 				break;
 			case Token_Integer:
 			case Token_Float:
+			case Token_null:
 			case Token_FuncID:
 			case Token_Lpar:
 				switch (token_top.type){
@@ -267,6 +271,7 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 						break;
 					case Token_Integer:
 					case Token_Float:
+					case Token_null:
 					case Token_FuncID:
 					case Token_Rpar:
 						exit(SYNTAX_ERROR);
@@ -338,6 +343,7 @@ void AddExpNodes (tAstNode **node_dest, tTokenStack *stack){
 			break;
 		case Token_Integer:
 		case Token_Float:
+		case Token_null:
 			(*node_dest)->type = VAL;
 			(*node_dest)->structure.val.token = token;
 			return;
