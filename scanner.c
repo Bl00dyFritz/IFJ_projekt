@@ -96,6 +96,13 @@ int GetToken(tToken *token) {
                             token->state = State_Underscore;
                             String_Add(&str, c);
                         break;
+                    case '\\':
+                           token->state = State_String;
+                           c = getc(file);
+                           if (c != '\\') {
+                                exit(LEXICAL_ERROR);
+                           }
+                       break;
                     case EOF:
                             token->state = State_EOF;
                         break;
@@ -367,17 +374,34 @@ int GetToken(tToken *token) {
                 }
                 break;
             case State_String:
-                if (c < 32) {
-                    String_Free(&str);
-                    fprintf(stderr, "Error: Unsupported characters\n");
-                    return LEXICAL_ERROR;
+                if (isspace(c)) {
+                    String_Add(&str, c);
+                    if (c == '\n') {
+                        while (isspace(c)) {
+                            c = getc(file);
+                        }
+                        if (c == ')') {
+                            token->state = State_StringEnd;
+                        } else if (c == '\\') {
+                            c = getc(file);
+                            if (c != '\\') {
+                                exit(LEXICAL_ERROR);
+                            }
+                            c = getc(file);
+                        }
+                        ungetc(c, file);
+                    }
                 } else if (c == '"') {
                     token->state = State_StringEnd;
                 } else if (c == '\\') {
                     token->state = State_Esc_Seq;
+                } else if (c < 32) {
+                    String_Free(&str);
+                    fprintf(stderr, "Error: Unsupported characters\n");
+                    return LEXICAL_ERROR;
                 } else {
                     String_Add(&str, c);
-                }
+                } 
                 break;
             case State_Esc_Seq:
                 switch (c) {
