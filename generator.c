@@ -120,6 +120,23 @@ void GenStackOp(tAstNode *node) {
             printf("MULS\n");
             break;
         case Token_Divide:
+            /*  This will be probably used, when the semantics will work
+            switch (node->structure.bin_op.op1->type){
+                case VAL:
+                    if (node->structure.bin_op.op1->structure.val.token.value.integer == 0) {
+                        exit(57);
+                    }
+                    break;
+                case VAR:
+                    if (node->structure.bin_op.op1->structure.var.val.i == 0) {
+                        exit(57);
+                    }
+                    break;
+                default:
+                    break;
+            }
+            */
+            
             if (node->structure.bin_op.op2->structure.val.token.value.integer == 0) {
                 exit(57);
             }
@@ -329,7 +346,7 @@ void GenBuiltInFuncs(void) {
     printf("LABEL $returnORD0$\n");
     printf("PUSHS int@0\n");
     printf("LABEL $ENDofORDfunction$\n");
-    printf("POPS GF@func_resul\n");
+    printf("POPS GF@func_result\n");
     printf("POPFRAME\n");
     printf("RETURN\n\n");
     //ifj.chr
@@ -340,7 +357,7 @@ void GenBuiltInFuncs(void) {
     printf("DEFVAR LF@CHRresult\n");
     printf("INT2CHAR LF@CHRresult LF@InVal\n");
     printf("PUSHS LF@CHRresult\n");
-    printf("POPS GF@func_resul\n");
+    printf("POPS GF@func_result\n");
     printf("POPFRAME\n");
     printf("RETURN\n\n");
     //ifj.strcmp
