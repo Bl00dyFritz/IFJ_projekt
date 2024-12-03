@@ -768,8 +768,9 @@ int program(void){ //the whole program
 	next_statement(current_p, &func_tree);
 	tSymtableList symlist;
 	InitSymtableList(&symlist);
-	//tComData data;
-	//ExamineSemantics(synt_tree, &symlist, NULL, &data, NULL);
+	tComData data;
+	if(!CheckMain(func_tree)) exit(SEMANTIC_UNDEF_ERROR);
+	ExamineSemantics(synt_tree, &symlist, NULL, &data, NULL);
 	GenInitial();
 	GenerateOutput(synt_tree);
     return 0;

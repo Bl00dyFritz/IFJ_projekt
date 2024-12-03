@@ -911,6 +911,14 @@ void BstCheckUse(tBstNode *tree){
 	if (!vals->is_used) exit(SEMANTIC_UNUSED_VAR_ERROR);
 }
 
+int CheckMain(tBstNode *tree){
+	if (!tree) return 0;
+	if (CheckMain(tree->left)) return 1;
+	if (CheckMain(tree->right)) return 1;
+	if (!strcmp(tree->key, "main")) return 1;
+	return 0;
+}
+
 void ExamineSemantics (tAstNode *node, tSymtableList *symlist, tComData *in_data, tComData *out_data, tTokenType *ret_type){
 	if(!node) return;
 	switch (node->type){

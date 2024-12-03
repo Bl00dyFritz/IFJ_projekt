@@ -193,6 +193,13 @@ void ExamineAssign(tAstNode *node, tSymtableList *symlist);
 void ExamineRet(tAstNode *node, tSymtableList *symlist, tTokenType *ret_type);
 
 /**
+ * @brief Checks for the presence of the main function
+ * @param tree the root of the function symtable binary searchtree
+ * @return returns 1 if the main function has been found otherwise 0
+ */
+int CheckMain(tBstNode *tree);
+
+/**
  * @brief Conducts a semantic analysis on a given AST node, ensuring all nodes are used correctly and adhere to the language rules.
  * @param node Pointer to the AST node to be analyzed.
  * @param symlist Pointer to the symbol table list.
