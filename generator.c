@@ -58,38 +58,26 @@ bool CheckNill(tAstNode *node) {
 }
 
 void PrintDiv(tBinOp BO) {
-    if (BO.op1->type == BIN_OP) {
-        PrintDiv(BO.op1->structure.bin_op);
-    } else if (BO.op2->type == BIN_OP) {
-        PrintDiv(BO.op2->structure.bin_op);
-    } else if ((BO.op1->type == VAL && BO.op1->structure.val.token.type == Token_Integer) || 
-               (BO.op1->type == VAR && (BO.op1->structure.var.type == I32 || BO.op1->structure.var.type == NI32))) {
-                    printf("IDIVS\n");
-                    switch (BO.op1->type) {             //<----uvidim ktore bude lepsie, bud toto alebo v GenStackOp 
-                    case VAL:       
-                        //if (BO.op1->structure.val.token.value.integer == 0) exit(57);         
-                        break;
-                    case VAR:
-                        //if (BO.op1->structure.var.val.i == 0) exit(57);
-                        break;
-                    default:
-                        break;
-                    }
-            } else if ((BO.op2->type == VAL && BO.op2->structure.val.token.type == Token_Integer) || 
-                       (BO.op2->type == VAR && (BO.op2->structure.var.type == I32 || BO.op2->structure.var.type == NI32))) {
-                            printf("IDIVS\n");
-                    } else printf("DIVS\n");
+    if ((BO.op1->type == VAL && BO.op1->structure.val.token.type == Token_Integer) || 
+        (BO.op1->type == VAR && (BO.op1->structure.var.type == I32 || BO.op1->structure.var.type == NI32))) {
+            printf("IDIVS\n");
+        } else if ((BO.op2->type == VAL && BO.op2->structure.val.token.type == Token_Integer) || 
+                   (BO.op2->type == VAR && (BO.op2->structure.var.type == I32 || BO.op2->structure.var.type == NI32))) {
+                        printf("IDIVS\n");
+                } else printf("DIVS\n");
 }
 
 void CheckSameType(tAstNode *node) {
     if (node->structure.bin_op.op1->type == VAR && node->structure.bin_op.op2->type == VAL) {
-        if (node->structure.bin_op.op1->structure.var.type == F64 || node->structure.bin_op.op1->structure.var.type == NF64) {
+        if ((node->structure.bin_op.op1->structure.var.type == F64 || node->structure.bin_op.op1->structure.var.type == NF64) &&
+            node->structure.bin_op.op2->structure.val.token.type == Token_Integer) {
                 printf("POPS GF@tmp3\n");
                 printf("CREATEFRAME\n");
                 printf("CALL $$ifj_i2f\n");
                 printf("PUSHS GF@func_result\n");
                 printf("PUSHS GF@tmp3\n");
-        } else if (node->structure.bin_op.op1->structure.var.type == I32 || node->structure.bin_op.op1->structure.var.type == NI32) {
+        } else if ((node->structure.bin_op.op1->structure.var.type == I32 || node->structure.bin_op.op1->structure.var.type == NI32) &&
+                    node->structure.bin_op.op2->structure.val.token.type == Token_Float) {
                 printf("POPS GF@tmp3\n");
                 printf("CREATEFRAME\n");
                 printf("CALL $$ifj_f2i\n");
@@ -144,11 +132,11 @@ void GenStackOp(tAstNode *node) {
             printf("MULS\n");
             break;
         case Token_Divide:
-            //Checks if it's not going to divide with 0 <------ treba semantiku 
+            //Checks if it's not going to divide with 0 
             if (node->structure.bin_op.op1->type == VAL) {
                 if ((node->structure.bin_op.op1->structure.val.token.type == Token_Integer && node->structure.bin_op.op1->structure.val.token.value.integer == 0) ||
                     (node->structure.bin_op.op1->structure.val.token.type == Token_Float && node->structure.bin_op.op1->structure.val.token.value.decimal == 0)) {
-                        //exit(57);
+                        exit(57);
                 }
             } else if (node->structure.bin_op.op1->type == VAR) {
                 if (((node->structure.bin_op.op1->structure.var.type == I32 || node->structure.bin_op.op1->structure.var.type == NI32) 
@@ -156,6 +144,7 @@ void GenStackOp(tAstNode *node) {
                     ((node->structure.bin_op.op1->structure.var.type == F64 || node->structure.bin_op.op1->structure.var.type == F64)
                       && node->structure.bin_op.op1->structure.var.val.f == 0)) {
                         //exit(57);
+                        //printf("DEBUG2\n");
                 }
             }
             PrintDiv(node->structure.bin_op);
