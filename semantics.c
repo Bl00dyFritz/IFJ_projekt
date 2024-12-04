@@ -1115,28 +1115,28 @@ void ExamineIf(tAstNode *node, tSymtableList *symlist, tTokenType *ret_type){
 void ExamineRet(tAstNode *node, tSymtableList *symlist, tTokenType *ret_type){
 	tComData data;
 	data.type = VOID;
-	ExamineSemantics(node, symlist, NULL, &data, NULL);
+	ExamineSemantics(node->structure.ret.ret_expr, symlist, NULL, &data, NULL);
 	switch (data.type){
 		case U8:
-			if (*ret_type==Token_u8) exit(SEMANTIC_RETURN_ERROR);
+			if (*ret_type!=Token_u8) exit(SEMANTIC_RETURN_ERROR);
 			break;
 		case I32:
-			if (*ret_type==Token_i32) exit(SEMANTIC_RETURN_ERROR);
+			if (*ret_type!=Token_i32) exit(SEMANTIC_RETURN_ERROR);
 			break;
 		case F64:
-			if (*ret_type==Token_f64) exit(SEMANTIC_RETURN_ERROR);
+			if (*ret_type!=Token_f64) exit(SEMANTIC_RETURN_ERROR);
 			break;
 		case NU8:
-			if (*ret_type==Token_Nu8) exit(SEMANTIC_RETURN_ERROR);
+			if (*ret_type!=Token_Nu8) exit(SEMANTIC_RETURN_ERROR);
 			break;
 		case NI32:
-			if (*ret_type==Token_Ni32) exit(SEMANTIC_RETURN_ERROR);
+			if (*ret_type!=Token_Ni32) exit(SEMANTIC_RETURN_ERROR);
 			break;
 		case NF64:
-			if (*ret_type==Token_Nf64) exit(SEMANTIC_RETURN_ERROR);
+			if (*ret_type!=Token_Nf64) exit(SEMANTIC_RETURN_ERROR);
 			break;
 		case VOID:
-			if (*ret_type==Token_void) exit(SEMANTIC_RETURN_ERROR);
+			if (*ret_type!=Token_void) exit(SEMANTIC_RETURN_ERROR);
 			break;
 		default:exit(INTERNAL_COMP_ERROR);
 	}
