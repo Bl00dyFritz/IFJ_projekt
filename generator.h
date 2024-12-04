@@ -96,6 +96,14 @@ void CheckSameType(tAstNode *node);
 void GenStackOp(tAstNode *node);
 
 /**
+ * @brief Defines Variables, that will be used in while loop.
+ *
+ * @param IfCounter Counter representing the current number of if-statements, that's used for declaring auxiliary variable.
+ * @param WhileCounter Counter representing the current number of while-loops, that's used for declaring auxiliary variable.
+ */
+void GenDefineVarsForWhile(tAstNode *node, int IfCouter, int WhileCounter);
+
+/**
  * @brief Generates code for the start of an if statement.
  * @param LocalIfCounter Counter to distinguish from different IF's
  */

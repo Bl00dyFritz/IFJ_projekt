@@ -11,6 +11,8 @@
 
 static int GlobalIfCounter = 1;
 static int GlobalWhileCounter = 1;
+static bool InWhile = false;
+static bool Defined = false;
 
 void GenInitial(void) {
     GenHead();
@@ -63,6 +65,16 @@ void PrintDiv(tBinOp BO) {
     } else if ((BO.op1->type == VAL && BO.op1->structure.val.token.type == Token_Integer) || 
                (BO.op1->type == VAR && (BO.op1->structure.var.type == I32 || BO.op1->structure.var.type == NI32))) {
                     printf("IDIVS\n");
+                    switch (BO.op1->type) {             //<----uvidim ktore bude lepsie, bud toto alebo v GenStackOp 
+                    case VAL:       
+                        //if (BO.op1->structure.val.token.value.integer == 0) exit(57);         
+                        break;
+                    case VAR:
+                        //if (BO.op1->structure.var.val.i == 0) exit(57);
+                        break;
+                    default:
+                        break;
+                    }
             } else if ((BO.op2->type == VAL && BO.op2->structure.val.token.type == Token_Integer) || 
                        (BO.op2->type == VAR && (BO.op2->structure.var.type == I32 || BO.op2->structure.var.type == NI32))) {
                             printf("IDIVS\n");
@@ -72,15 +84,17 @@ void PrintDiv(tBinOp BO) {
 void CheckSameType(tAstNode *node) {
     if (node->structure.bin_op.op1->type == VAR && node->structure.bin_op.op2->type == VAL) {
         if (node->structure.bin_op.op1->structure.var.type == F64 || node->structure.bin_op.op1->structure.var.type == NF64) {
-                printf("POP GF@tmp3\n");
-                printf("CREATEFRAME\n");
-                printf("CALL $$ifj_f2i\n");
-                printf("PUSHS GF@func_result\n");
-        } else if (node->structure.bin_op.op1->structure.var.type == I32 || node->structure.bin_op.op1->structure.var.type == NI32) {
-                printf("POP GF@tmp3\n");
+                printf("POPS GF@tmp3\n");
                 printf("CREATEFRAME\n");
                 printf("CALL $$ifj_i2f\n");
                 printf("PUSHS GF@func_result\n");
+                printf("PUSHS GF@tmp3\n");
+        } else if (node->structure.bin_op.op1->structure.var.type == I32 || node->structure.bin_op.op1->structure.var.type == NI32) {
+                printf("POPS GF@tmp3\n");
+                printf("CREATEFRAME\n");
+                printf("CALL $$ifj_f2i\n");
+                printf("PUSHS GF@func_result\n");
+                printf("PUSHS GF@tmp3\n");
         }
     } else if (node->structure.bin_op.op2->type == VAR && node->structure.bin_op.op1->type == VAL) {
         if ((node->structure.bin_op.op2->structure.var.type == F64 || node->structure.bin_op.op2->structure.var.type == NF64) &&
@@ -130,18 +144,18 @@ void GenStackOp(tAstNode *node) {
             printf("MULS\n");
             break;
         case Token_Divide:
-            //Checks if it's not going to divide with 0
+            //Checks if it's not going to divide with 0 <------ treba semantiku 
             if (node->structure.bin_op.op1->type == VAL) {
                 if ((node->structure.bin_op.op1->structure.val.token.type == Token_Integer && node->structure.bin_op.op1->structure.val.token.value.integer == 0) ||
                     (node->structure.bin_op.op1->structure.val.token.type == Token_Float && node->structure.bin_op.op1->structure.val.token.value.decimal == 0)) {
-                        exit(57);
+                        //exit(57);
                 }
             } else if (node->structure.bin_op.op1->type == VAR) {
                 if (((node->structure.bin_op.op1->structure.var.type == I32 || node->structure.bin_op.op1->structure.var.type == NI32) 
                       && node->structure.bin_op.op1->structure.var.val.i == 0) ||
                     ((node->structure.bin_op.op1->structure.var.type == F64 || node->structure.bin_op.op1->structure.var.type == F64)
                       && node->structure.bin_op.op1->structure.var.val.f == 0)) {
-                        exit(57);
+                        //exit(57);
                 }
             }
             PrintDiv(node->structure.bin_op);
@@ -155,6 +169,12 @@ void GenStackOp(tAstNode *node) {
             break;
         case Token_Lesser_Equal:
             printf("LTS\n");
+            if (node->structure.bin_op.op2->type == BIN_OP) {
+                GenStackOp(node->structure.bin_op.op2);
+            }
+            if (node->structure.bin_op.op1->type == BIN_OP) {
+                GenStackOp(node->structure.bin_op.op1);
+            }
             GenPushIntFloat(node->structure.bin_op.op1);
             GenPushIntFloat(node->structure.bin_op.op2);
             printf("EQS\n");
@@ -165,6 +185,12 @@ void GenStackOp(tAstNode *node) {
             break;
         case Token_Greater_Equal:
             printf("GTS\n");
+            if (node->structure.bin_op.op2->type == BIN_OP) {
+                GenStackOp(node->structure.bin_op.op2);
+            }
+            if (node->structure.bin_op.op1->type == BIN_OP) {
+                GenStackOp(node->structure.bin_op.op1);
+            }
             GenPushIntFloat(node->structure.bin_op.op1);
             GenPushIntFloat(node->structure.bin_op.op2);
             printf("EQS\n");
@@ -176,6 +202,31 @@ void GenStackOp(tAstNode *node) {
         default:
             break;
     }
+}
+
+void GenDefineVarsForWhile(tAstNode *node, int IfCouter, int WhileCounter) {
+    int ic = IfCouter;
+    int wc = WhileCounter;
+    while (node) {
+        if (node->structure.code.operation->type == VAR_DECL || node->structure.code.operation->type == CONST_DECL) {
+            printf("DEFVAR LF@%s\n", node->structure.code.operation->structure.var_decl.token.value.string);
+        } else if (node->structure.code.operation->type == WHILE) {
+            printf("DEFVAR LF@WhileTmp%d\n", wc++);
+            if (node->structure.code.operation->structure.while_loop.nn_id != NULL) {
+                printf("DEFVAR LF@%s\n", node->structure.code.operation->structure.while_loop.nn_id->structure.var.token.value.string);
+            }
+            GenDefineVarsForWhile(node->structure.code.operation->structure.while_loop.code, ic, wc);
+        } else if (node->structure.code.operation->type == IF) {
+            printf("DEFVAR LF@$IfTmp%d\n", ic++);
+            if (node->structure.code.operation->structure.if_block.nn_id != NULL) {
+                    printf("DEFVAR LF@%s\n", node->structure.code.operation->structure.if_block.nn_id->structure.var.token.value.string);
+            }
+            GenDefineVarsForWhile(node->structure.code.operation->structure.if_block.if_code, ic, wc);
+            GenDefineVarsForWhile(node->structure.code.operation->structure.if_block.else_code, ic, wc);
+        }
+        node = node->structure.code.next_code;
+    }
+    Defined = true;
 }
 
 void GenWhile(int LocalWhileCounter) {
@@ -538,6 +589,9 @@ void GenAssign(tAstNode *node) {
                 printf("MOVE LF@%s float@%a\n", node->structure.assign.dst->structure.var.token.value.string,
                                                 node->structure.assign.src->structure.val.token.value.decimal);
                 break;
+            case Token_null:
+                printf("MOVE LF@%s nil@nil\n", node->structure.assign.dst->structure.var.token.value.string);
+                break;
             default:
                 break;
         }
@@ -579,6 +633,7 @@ void GenElseEnd(int LocalIfCounter) {
 void GenerateOutput(tAstNode *node) {
     tAstNode *tmpS;
     tAstNode *tmpC;
+    tAstNode *tmpW;
     int LocalIfCounter;
     int LocalWhileCounter;
     switch (node->type) {
@@ -629,9 +684,18 @@ void GenerateOutput(tAstNode *node) {
             break;  
 	    case WHILE:
             LocalWhileCounter = GlobalWhileCounter++;
-            printf("DEFVAR LF@WhileTmp%d\n", LocalWhileCounter);
+            tmpW = node->structure.while_loop.code;
+            if (!Defined) {
+                GenDefineVarsForWhile(tmpW, 1, GlobalWhileCounter);
+            }
+            if (!InWhile) {
+                printf("DEFVAR LF@WhileTmp%d\n", LocalWhileCounter);
+                if (node->structure.while_loop.nn_id != NULL) {
+                    printf("DEFVAR LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string);
+                }
+                InWhile = true;
+            }
             if (node->structure.while_loop.nn_id != NULL) {
-                printf("DEFVAR LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string);
                 printf("LABEL $while%d$\n", LocalWhileCounter);
                 printf("MOVE LF@%s LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string, node->structure.while_loop.expr->structure.var.token.value.string);
                 printf("PUSHS LF@%s\n", node->structure.while_loop.nn_id->structure.var.token.value.string);
@@ -651,12 +715,17 @@ void GenerateOutput(tAstNode *node) {
             }
             GenWhileEnd(LocalWhileCounter);
             GlobalWhileCounter++;
+            InWhile = false;
             break;
 	    case IF:
             LocalIfCounter = GlobalIfCounter++;
-            printf("DEFVAR LF@$IfTmp%d\n", LocalIfCounter);
+            if (!InWhile) {
+                printf("DEFVAR LF@$IfTmp%d\n", LocalIfCounter);
+                if (node->structure.if_block.nn_id != NULL) {
+                    printf("DEFVAR LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string);
+                }
+            }
             if (node->structure.if_block.nn_id != NULL) {
-                printf("DEFVAR LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string);
                 printf("MOVE LF@%s LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string, node->structure.if_block.expr->structure.var.token.value.string);
                 printf("PUSHS LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string);
                 GenIfStartNN(LocalIfCounter);
@@ -681,13 +750,16 @@ void GenerateOutput(tAstNode *node) {
             GenAssign(node);
             break;
 	     case CONST_DECL: case VAR_DECL:
-            printf("DEFVAR LF@%s\n", node->structure.var_decl.token.value.string);
+            if (!InWhile) {
+                printf("DEFVAR LF@%s\n", node->structure.var_decl.token.value.string);
+            }
             break;
 	    case FUNC_CALL:
             printf("CREATEFRAME\n");
             GenCallFunc(node);
             break;
 	    case FUNC_DEF:
+            printf("\n");
             if (!strcmp(node->structure.func_def.token.value.string, "main")) {
                 GenMainHead();
                 GenerateOutput(node->structure.func_def.code);
