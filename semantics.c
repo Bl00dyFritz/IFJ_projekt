@@ -187,32 +187,32 @@ no_data:
 	switch ((*v)->type){
 		case Token_u8:
 			node->structure.var.type = U8;
-			node->structure.var.val.str = (*v)->value; 
+			node->structure.var.val.str = (*v)->value;
 			out_data->type = U8;
 			break;
 		case Token_i32:
 			node->structure.var.type = I32;
-			node->structure.var.val.i = *(int*)(*v)->value;
+			node->structure.var.val.i = (*v)->value;
 			out_data->type = I32;
 			break;
 		case Token_f64:
 			node->structure.var.type = F64;
-			node->structure.var.val.f = *(double*)(*v)->value;
+			node->structure.var.val.f = (*v)->value;
 			out_data->type = F64;
 			break;
 		case Token_Nu8:
 			node->structure.var.type = NU8;
-			node->structure.var.val.str = (*v)->value; 
+			node->structure.var.val.str = (*v)->value;
 			out_data->type = NU8;
 			break;
 		case Token_Ni32:
 			node->structure.var.type = NI32;
-			node->structure.var.val.i = *(int*)(*v)->value;
+			node->structure.var.val.i = (*v)->value;
 			out_data->type = NI32;
 			break;
 		case Token_Nf64:
 			node->structure.var.type = NF64;
-			node->structure.var.val.f = *(double*)(*v)->value;
+			node->structure.var.val.f = (*v)->value;
 			out_data->type = NF64;
 			break;
 		default:exit(INTERNAL_COMP_ERROR);
@@ -1170,7 +1170,11 @@ int CheckMain(tBstNode *tree){
 	if (!tree) return 0;
 	if (CheckMain(tree->left)) return 1;
 	if (CheckMain(tree->right)) return 1;
-	if (!strcmp(tree->key, "main")) return 1;
+	if (!strcmp(tree->key, "main")){
+		if (((tFunctionVals*)tree->content.value)->paramCnt != 0) exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+		if (((tFunctionVals*)tree->content.value)->ret_type != Token_void) exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
+		return 1;
+	}
 	return 0;
 }
 

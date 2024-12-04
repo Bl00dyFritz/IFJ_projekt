@@ -47,8 +47,8 @@ typedef enum type{
  * @brief Union to store return value
  */
 typedef union ret_val{
-	int i;
-	double f;
+	int *i;
+	double *f;
 	char *str;
 	void *nil;
 }tRetVal;
