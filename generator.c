@@ -139,12 +139,16 @@ void GenStackOp(tAstNode *node) {
                         exit(57);
                 }
             } else if (node->structure.bin_op.op1->type == VAR) {
-                if (((node->structure.bin_op.op1->structure.var.type == I32 || node->structure.bin_op.op1->structure.var.type == NI32) 
-                      && node->structure.bin_op.op1->structure.var.val.i == 0) ||
-                    ((node->structure.bin_op.op1->structure.var.type == F64 || node->structure.bin_op.op1->structure.var.type == F64)
-                      && node->structure.bin_op.op1->structure.var.val.f == 0)) {
-                        //exit(57);
-                        //printf("DEBUG2\n");
+                if ((node->structure.bin_op.op1->structure.var.type == I32 || node->structure.bin_op.op1->structure.var.type == NI32) &&
+                      node->structure.bin_op.op1->structure.var.val.i != NULL) {
+                        if (*node->structure.bin_op.op1->structure.var.val.i == 0) {
+                            exit(57);    
+                        }
+                      } else if ((node->structure.bin_op.op1->structure.var.type == F64 || node->structure.bin_op.op1->structure.var.type == F64) &&
+                                  node->structure.bin_op.op1->structure.var.val.f != NULL) {
+                                    if (*node->structure.bin_op.op1->structure.var.val.f == 0) {
+                                        exit(57);    
+                                    }
                 }
             }
             PrintDiv(node->structure.bin_op);
@@ -560,7 +564,7 @@ void GenAssign(tAstNode *node) {
                 break;
             case F64: case NF64:
                 printf("MOVE LF@%s float@%a\n", node->structure.assign.dst->structure.var.token.value.string,
-                                                node->structure.assign.src->structure.var.val.f);
+                                                *node->structure.assign.src->structure.var.val.f);
                 break;
             case VOID: case UNDEF:
                 printf("MOVE LF@%s nil@nil\n", node->structure.assign.dst->structure.var.token.value.string);
@@ -649,7 +653,7 @@ void GenerateOutput(tAstNode *node) {
                     printf("MOVE LF@%s int@%lld\n", node->structure.var.token.value.string, (long long int)node->structure.var.val.i);
                     break;
 	            case F64: case NF64:
-                    printf("MOVE LF@%s float@%a\n", node->structure.var.token.value.string, node->structure.var.val.f);
+                    printf("MOVE LF@%s float@%a\n", node->structure.var.token.value.string, *node->structure.var.val.f);
                     break;
                 case U8: case NU8:
                     printf("MOVE LF@%s string@%s\n", node->structure.var.token.value.string, node->structure.var.val.str);
