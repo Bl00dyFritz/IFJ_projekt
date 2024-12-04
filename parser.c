@@ -335,7 +335,7 @@ int next_argument_def(tToken *ret_t, tTokenStack *arg_stack){
 }
 
 int function_body(tToken *ret_t, tAstNode **synt_tree){
-	body(ret_t, synt_tree);
+	body(NULL, ret_t, synt_tree);
     return 0;
 }
 
@@ -374,10 +374,15 @@ is_func_call:
     return 0;
 }
 
-int body(tToken *ret_t, tAstNode **synt_tree){
+int body(tToken *in_t, tToken *ret_t, tAstNode **synt_tree){
 	tToken token;
 	tAstNode **current_p = synt_tree;
-	body_statement(NULL, &token, synt_tree, &current_p);
+	if (in_t){
+		token = *in_t;
+		body_statement(&token, &token, synt_tree, &current_p);
+	}
+	else
+		body_statement(NULL, &token, synt_tree, &current_p);
 	next_body_statement(&token, ret_t, current_p);
     return 0;
 }
@@ -441,6 +446,8 @@ int body_statement(tToken *in_t, tToken *ret_t, tAstNode **synt_tree, tAstNode *
 					   break;
 		case Token_Underscore:
 					   dispose(&token, code_tree);
+					   lex_ret = GetToken(&token);
+					   if (lex_ret) exit(lex_ret);
 					   break;
 		case Token_BuildIn_Func: 
 						   function_call(&token, code_tree);
@@ -449,7 +456,7 @@ int body_statement(tToken *in_t, tToken *ret_t, tAstNode **synt_tree, tAstNode *
 						   if(token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
 						   lex_ret = GetToken(&token);
 						   break;
-		default:break;
+		default:exit(SYNTAX_ERROR);
 	}
 	if(lex_ret) exit(lex_ret);
 	*next_synt_tree = &(*synt_tree)->structure.code.next_code;
@@ -537,7 +544,7 @@ is_func_call:
 	if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
 	non_null_ID(&token, &(*synt_tree)->structure.if_block.nn_id);
 	if(token.type!=Token_Lbrack) exit(SYNTAX_ERROR);
-	body(&token, &(*synt_tree)->structure.if_block.if_code);
+	body(NULL ,&token, &(*synt_tree)->structure.if_block.if_code);
 	if(token.type!=Token_Rbrack) exit(SYNTAX_ERROR);
     return 0;
 }
@@ -550,7 +557,10 @@ int else_(tToken *ret_t,tAstNode **synt_tree){
 		lex_ret = GetToken(&token);
 		if (lex_ret) exit(lex_ret);
 		if (token.type!=Token_Lbrack) exit(SYNTAX_ERROR);
-		body(&token, &(*synt_tree)->structure.if_block.else_code);
+		lex_ret = GetToken(&token);
+		if (token.type == Token_Rbrack) goto nocode;
+		body(&token, &token, &(*synt_tree)->structure.if_block.else_code);
+nocode:
 		if (token.type!=Token_Rbrack) exit(SYNTAX_ERROR);
 		lex_ret = GetToken(&token);
 		if (lex_ret) exit(lex_ret);
@@ -600,7 +610,7 @@ is_func_call:
 	if (token.type!=Token_Rpar) exit(SYNTAX_ERROR);
 	non_null_ID(&token, &(*synt_tree)->structure.while_loop.nn_id);
 	if(token.type!=Token_Lbrack) exit(SYNTAX_ERROR);
-	body(&token, &(*synt_tree)->structure.while_loop.code);
+	body(NULL, &token, &(*synt_tree)->structure.while_loop.code);
 	if (token.type!=Token_Rbrack) exit(SYNTAX_ERROR);
     return 0;
 }

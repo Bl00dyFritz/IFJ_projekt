@@ -185,7 +185,7 @@ int return_expression(tToken *ret_t, tAstNode **synt_tree);
  * @param synt_tree Pointer to the AST node representing the body.
  * @return Returns an error code or 0 if successful.
  */
-int body(tToken *ret_t, tAstNode **synt_tree);
+int body(tToken *in_t, tToken *ret_t, tAstNode **synt_tree);
 
 /**
  * @brief Parses the next statement in a function or block body.
