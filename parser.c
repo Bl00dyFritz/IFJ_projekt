@@ -449,7 +449,7 @@ int body_statement(tToken *in_t, tToken *ret_t, tAstNode **synt_tree, tAstNode *
 						   if(token.type!=Token_Semicolon) exit(SYNTAX_ERROR);
 						   lex_ret = GetToken(&token);
 						   break;
-		default: exit(SYNTAX_ERROR);
+		default:break;
 	}
 	if(lex_ret) exit(lex_ret);
 	*next_synt_tree = &(*synt_tree)->structure.code.next_code;
