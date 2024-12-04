@@ -13,8 +13,6 @@ VAR_INIT ::= VAR_DECL VAR_DEF token_;
 
 CONST_DEF ::= token_= EXPR | ε
 VAR_DEF ::= token_= EXPR | ε
-CONST_DEF ::= token_= EXPR | ε
-VAR_DEF ::= token_= EXPR | ε
 TYPE_DECL ::= token_: TYP | ε
 NULL_TYP ::= token_?i32 | token_?f64 | token_?[]u8
 NN_TYP ::= token_i32 | token_f64 | token_[]u8 | token_void
@@ -37,7 +35,6 @@ BODY_STATEMENT ::= IF_BLOCK | WHILE_LOOP | VAR_INIT | CONST_INIT | ASSIGN_VAL | 
 DISPOSE ::= token_underscore token_= EXPR
 
 ASSIGN_VAL ::= token_id token_= EXPR token_;
-ASSIGN_VAL ::= token_id token_= EXPR token_;
 
 IF_BLOCK ::= IF ELSE
 IF ::= token_if token_( EXPR token_) NON_NULL_ID token_{ BODY token_}
@@ -47,7 +44,6 @@ NON_NULL_ID ::= token_| token_id token_| | ε
 
 WHILE_LOOP ::= token_while token_( EXPR token_) NON_NULL_ID token_{ BODY token_}
 
-FCE_CALL ::= FCE_ID token_( ARGS token_)
 FCE_CALL ::= FCE_ID token_( ARGS token_)
 ARGS ::= ARG NEXT_ARG | ε
 ARG ::= token_id | EXPR
