@@ -689,7 +689,7 @@ void GenerateOutput(tAstNode *node) {
             LocalWhileCounter = GlobalWhileCounter++;
             tmpW = node->structure.while_loop.code;
             if (!Defined) {
-                GenDefineVarsForWhile(tmpW, 1, GlobalWhileCounter);
+                GenDefineVarsForWhile(tmpW, GlobalIfCounter, GlobalWhileCounter);
             }
             if (!InWhile) {
                 printf("DEFVAR LF@WhileTmp%d\n", LocalWhileCounter);
@@ -719,6 +719,7 @@ void GenerateOutput(tAstNode *node) {
             GenWhileEnd(LocalWhileCounter);
             GlobalWhileCounter++;
             InWhile = false;
+            Defined = false;
             break;
 	    case IF:
             LocalIfCounter = GlobalIfCounter++;
