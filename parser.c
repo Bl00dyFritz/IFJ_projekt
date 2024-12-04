@@ -102,7 +102,7 @@ int function(tToken *in_t, tAstNode **synt_tree, tBstNode **func_tree){
 						   cmp_type=Token_Lpar;
 						   PushTStack(&stack, token);
 						   break;
-			default: exit(99);
+			default: exit(INTERNAL_COMP_ERROR);
 		}
 	}
 	if (err_found) exit(SYNTAX_ERROR);
@@ -115,7 +115,7 @@ int function(tToken *in_t, tAstNode **synt_tree, tBstNode **func_tree){
 	tBstNodeContent content;
 	content.type = FUNCTION;
 	content.value = (tFunctionVals *) malloc(sizeof(tFunctionVals));
-	if (!content.value) exit(99);
+	if (!content.value) exit(INTERNAL_COMP_ERROR);
 	tFunctionVals *func_vals = (tFunctionVals *) content.value;
 	func_vals->ret_type = (*synt_tree)->structure.func_def.ret_type_token.type;
 	tArgDef *args = (*synt_tree)->structure.func_def.args;
@@ -123,7 +123,7 @@ int function(tToken *in_t, tAstNode **synt_tree, tBstNode **func_tree){
 	while (args){
 		func_vals->paramCnt++;
 		tBstNodeContent *arg = (tBstNodeContent *) malloc(sizeof(tBstNodeContent));
-		if(!arg) exit(99);
+		if(!arg) exit(INTERNAL_COMP_ERROR);
 		arg->type = VARIABLE;
 		arg->value = (tVarVals*) malloc(sizeof(tVarVals));
 		tVarVals *vals = (tVarVals *) arg->value;

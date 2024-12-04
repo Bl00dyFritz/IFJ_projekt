@@ -14,27 +14,27 @@
 
 
 void AddStatmentNode (tAstNode **node_dest){
-	if(!node_dest) exit(99);
+	if(!node_dest) exit(INTERNAL_COMP_ERROR);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
-	if(!(*node_dest)) exit(99);
+	if(!(*node_dest)) exit(INTERNAL_COMP_ERROR);
 	(*node_dest)->type = STATEMENT;
 	(*node_dest)->structure.statement.next_statement = NULL;
 	(*node_dest)->structure.statement.function = NULL;
 }
 
 void AddCodeNode (tAstNode **node_dest){
-	if(!node_dest) exit(99);
+	if(!node_dest) exit(INTERNAL_COMP_ERROR);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
-	if(!(*node_dest)) exit(99);
+	if(!(*node_dest)) exit(INTERNAL_COMP_ERROR);
 	(*node_dest)->type = CODE;
 	(*node_dest)->structure.code.next_code = NULL;
 	(*node_dest)->structure.code.operation = NULL;
 }
 
 void AddIfBlockNode (tAstNode **node_dest){
-	if(!node_dest) exit(99);
+	if(!node_dest) exit(INTERNAL_COMP_ERROR);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
-	if (!(*node_dest)) exit(99);
+	if (!(*node_dest)) exit(INTERNAL_COMP_ERROR);
 	(*node_dest)->type = IF;
 	(*node_dest)->structure.if_block.else_code = NULL;
 	(*node_dest)->structure.if_block.if_code = NULL;
@@ -45,9 +45,9 @@ void AddIfBlockNode (tAstNode **node_dest){
 }
 
 void AddWhileNode (tAstNode **node_dest){
-	if(!node_dest) exit(99);
+	if(!node_dest) exit(INTERNAL_COMP_ERROR);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
-	if(!(*node_dest)) exit(99);
+	if(!(*node_dest)) exit(INTERNAL_COMP_ERROR);
 	(*node_dest)->type = WHILE;
 	(*node_dest)->structure.while_loop.code = NULL;
 	(*node_dest)->structure.while_loop.expr = NULL;
@@ -56,18 +56,18 @@ void AddWhileNode (tAstNode **node_dest){
 }
 
 void AddAssignNode (tAstNode **node_dest){
-	if(!node_dest) exit(99);
+	if(!node_dest) exit(INTERNAL_COMP_ERROR);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
-	if(!(*node_dest)) exit(99);
+	if(!(*node_dest)) exit(INTERNAL_COMP_ERROR);
 	(*node_dest)->type = ASSIGN;
 	(*node_dest)->structure.assign.dst = NULL;
 	(*node_dest)->structure.assign.src = NULL;
 }
 
 void AddDeclNode (tAstNode **node_dest, tTokenStack *stack){
-	if(!node_dest || !stack) exit(99);
+	if(!node_dest || !stack) exit(INTERNAL_COMP_ERROR);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
-	if(!(*node_dest)) exit(99);
+	if(!(*node_dest)) exit(INTERNAL_COMP_ERROR);
 	tToken token = TopTStack(stack);
 	PopTStack(stack);
 	switch (token.type){
@@ -87,7 +87,7 @@ void AddDeclNode (tAstNode **node_dest, tTokenStack *stack){
 			(*node_dest)->structure.var_decl.type = NF64; break;
 		case Token_Nu8:
 			(*node_dest)->structure.var_decl.type = NU8; break;
-		default: exit(99);
+		default: exit(INTERNAL_COMP_ERROR);
 	}
 	token = TopTStack(stack);
 	(*node_dest)->structure.var_decl.token = token;
@@ -98,14 +98,14 @@ void AddDeclNode (tAstNode **node_dest, tTokenStack *stack){
 		(*node_dest)->type = CONST_DECL;
 	else if(token.type == Token_var)
 		(*node_dest)->type = VAR_DECL;
-	else exit(99);
+	else exit(INTERNAL_COMP_ERROR);
 }
 
 void AddFuncDefNode (tAstNode **node_dest, tTokenStack *stack, 
 		tTokenStack *arg_stack){
-	if(!node_dest || !stack) exit(99);
+	if(!node_dest || !stack) exit(INTERNAL_COMP_ERROR);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
-	if(!(*node_dest)) exit(99);
+	if(!(*node_dest)) exit(INTERNAL_COMP_ERROR);
 	tToken token = TopTStack(stack);
 	PopTStack(stack);
 	(*node_dest)->type = FUNC_DEF;
@@ -116,7 +116,7 @@ void AddFuncDefNode (tAstNode **node_dest, tTokenStack *stack,
 	(*node_dest)->structure.func_def.internal_symtable = NULL;
 	while(!StackIsEmpty(arg_stack)){
 		tArgDef *tmp = (tArgDef *) malloc(sizeof(tArgDef));
-		if(!tmp) exit(99);
+		if(!tmp) exit(INTERNAL_COMP_ERROR);
 		token = TopTStack(arg_stack);
 		PopTStack(arg_stack);
 		tmp->type_token = token;
@@ -131,15 +131,15 @@ void AddFuncDefNode (tAstNode **node_dest, tTokenStack *stack,
 
 void AddFuncCallNode (tAstNode **node_dest, tToken id_t,
 		tTokenStack *arg_stack){
-	if(!node_dest) exit(99);
+	if(!node_dest) exit(INTERNAL_COMP_ERROR);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
-	if(!(*node_dest)) exit(99);
+	if(!(*node_dest)) exit(INTERNAL_COMP_ERROR);
 	(*node_dest)->type = FUNC_CALL;
 	(*node_dest)->structure.func_call.arg_cnt = 0;
 	(*node_dest)->structure.func_call.name_token = id_t;
 	while(arg_stack->top){
 		tArgs *tmp = (tArgs *) malloc(sizeof(tArgs));
-		if(!tmp) exit(99);
+		if(!tmp) exit(INTERNAL_COMP_ERROR);
 		tToken token = TopTStack(arg_stack);
 		PopTStack(arg_stack);
 		tmp->token = token;
@@ -186,7 +186,7 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 					case Token_Dollar:
 						cmp_op = '<';
 						break;
-					default: exit(99);
+					default: exit(INTERNAL_COMP_ERROR);
 				}
 				break;
 			case Token_Plus:
@@ -213,7 +213,7 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 					case Token_Dollar:
 						cmp_op = '<';
 						break;
-					default: exit(99);
+					default: exit(INTERNAL_COMP_ERROR);
 				}
 				break;
 			case Token_Equal:
@@ -246,7 +246,7 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 					case Token_Dollar:
 						cmp_op = '<';
 						break;
-					default: exit(99);
+					default: exit(INTERNAL_COMP_ERROR);
 				}
 				break;
 			case Token_Integer:
@@ -276,7 +276,7 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 					case Token_Rpar:
 						exit(SYNTAX_ERROR);
 						break;
-					default: exit(99);
+					default: exit(INTERNAL_COMP_ERROR);
 				}
 				break;
 			case Token_Rpar:
@@ -289,7 +289,7 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 				PopTStack(input_stack);
 				return;
 				break;
-			default: exit(99);
+			default: exit(INTERNAL_COMP_ERROR);
 		}
 		if (cmp_op=='<') PushTStack(input_stack, token_in);
 		else if(cmp_op=='>'){
@@ -309,20 +309,20 @@ void PrecedenceCheck (tToken *in_t, tTokenStack *input_stack,
 }
 
 void AddRetNode(tAstNode **node_dest){
-	if (!node_dest) exit(99);
+	if (!node_dest) exit(INTERNAL_COMP_ERROR);
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
-	if(!(*node_dest)) exit(99);
+	if(!(*node_dest)) exit(INTERNAL_COMP_ERROR);
 	(*node_dest)->type = RET;
 	(*node_dest)->structure.ret.ret_expr = NULL;
 	(*node_dest)->structure.ret.type = VOID;
 }
 
 void AddExpNodes (tAstNode **node_dest, tTokenStack *stack){
-	if(!node_dest) exit(99);
+	if(!node_dest) exit(INTERNAL_COMP_ERROR);
 	if(!stack) exit(SYNTAX_ERROR);
 	if (StackIsEmpty(stack)) return;
 	(*node_dest) = (tAstNode *) malloc(sizeof(tAstNode));
-	if(!(*node_dest)) exit(99);
+	if(!(*node_dest)) exit(INTERNAL_COMP_ERROR);
 	tToken token = TopTStack(stack);
 	PopTStack(stack);
 	switch (token.type){
@@ -351,14 +351,14 @@ void AddExpNodes (tAstNode **node_dest, tTokenStack *stack){
 			(*node_dest)->type = VAR;
 			(*node_dest)->structure.var.token = token;
 			return;
-		default: exit(99);
+		default: exit(INTERNAL_COMP_ERROR);
 	}
 	AddExpNodes(&(*node_dest)->structure.bin_op.op1, stack);
 	AddExpNodes(&(*node_dest)->structure.bin_op.op2, stack);
 }
 
 void AstDispose (tAstNode **tree){
-	if(!tree) exit(99);
+	if(!tree) exit(INTERNAL_COMP_ERROR);
 	if(!(*tree)) return;
 	switch ((*tree)->type){
 		case STATEMENT:

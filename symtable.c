@@ -12,7 +12,7 @@
 #include <stdbool.h>
 
 void FreeNodeContent(tBstNode **tree){
-	if (!tree) exit(99);
+	if (!tree) exit(INTERNAL_COMP_ERROR);
 	if ((*tree)->content.type==VARIABLE)
 		free(((tVarVals*)(*tree)->content.value)->value);
 	else{
@@ -25,12 +25,12 @@ void FreeNodeContent(tBstNode **tree){
 }
 
 void BstInit(tBstNode **tree){
-	if (!tree) exit(99);
+	if (!tree) exit(INTERNAL_COMP_ERROR);
 	(*tree) = NULL;
 }
 
 void RotLeft(tBstNode **tree){
-	if (!tree) exit(99);
+	if (!tree) exit(INTERNAL_COMP_ERROR);
 	if(!(*tree)) return;
 	tBstNode *tmp = (*tree)->right;
 	(*tree)->right = tmp->left;
@@ -39,7 +39,7 @@ void RotLeft(tBstNode **tree){
 }
 
 void RotRight(tBstNode **tree){
-	if (!tree) exit(99);
+	if (!tree) exit(INTERNAL_COMP_ERROR);
 	if (!(*tree)) return;
 	tBstNode *tmp = (*tree)->left;
 	(*tree)->left = tmp->right;
@@ -48,7 +48,7 @@ void RotRight(tBstNode **tree){
 }
 
 void RotRLeft(tBstNode **tree){
-	if (!tree) exit (99);
+	if (!tree) exit (INTERNAL_COMP_ERROR);
 	if (!(*tree)) return;
 	tBstNode *tmpA = (*tree);
 	tBstNode *tmpB = (*tree)->right;
@@ -60,7 +60,7 @@ void RotRLeft(tBstNode **tree){
 }
 
 void RotLRight(tBstNode **tree){
-	if (!tree) exit(99);
+	if (!tree) exit(INTERNAL_COMP_ERROR);
 	if (!(*tree)) return;
 	tBstNode *tmpA = (*tree);
 	tBstNode *tmpB = (*tree)->left;
@@ -89,7 +89,7 @@ bool BstSearch(tBstNode *tree, char *key, tBstNodeContent **content){
 }
 
 void BstInsert(tBstNode **tree, char *key, tBstNodeContent content){
-	if (!tree) exit(99);
+	if (!tree) exit(INTERNAL_COMP_ERROR);
 	if (!(*tree)){
 		(*tree) = (tBstNode *) malloc(sizeof(tBstNode));
 		if (!(*tree)) return;
@@ -113,7 +113,7 @@ void BstInsert(tBstNode **tree, char *key, tBstNodeContent content){
 }
 
 void ReplaceByRightmost(tBstNode *target, tBstNode **tree){
-	if (!tree || !target) exit(99);
+	if (!tree || !target) exit(INTERNAL_COMP_ERROR);
 	if (!(*tree)->right){
 		target->key = (*tree)->key;
 		FreeNodeContent(&target);
@@ -137,7 +137,7 @@ void ReplaceByRightmost(tBstNode *target, tBstNode **tree){
 }
 
 void ReplaceByLeftmost(tBstNode *target, tBstNode **tree){
-	if (!tree || !target) exit(99);
+	if (!tree || !target) exit(INTERNAL_COMP_ERROR);
 	if (!(*tree)->left){
 		target->key = (*tree)->key;
 		FreeNodeContent(&target);
@@ -186,7 +186,7 @@ int CheckHeight(tBstNode **tree, tBstNode ***first_break){
 }
 
 void Realign (tBstNode **tree){
-	if(!tree) exit(99);
+	if(!tree) exit(INTERNAL_COMP_ERROR);
 	tBstNode **br = NULL;
 	if (CheckHeight(tree, &br)!=-1) return;
 	int lh = CheckHeight(&(*br)->left, &br);
@@ -218,7 +218,7 @@ void Realign (tBstNode **tree){
 }
 
 void BstDelete(tBstNode **tree, char *key){
-	if (!tree || !key) exit(99);
+	if (!tree || !key) exit(INTERNAL_COMP_ERROR);
 	if (!(*tree)) return;
 	if (strcmp(key, (*tree)->key)<0)
 		BstDelete(&(*tree)->left, key);
@@ -250,19 +250,19 @@ void BstDelete(tBstNode **tree, char *key){
 }
 
 void BstInsAndReal(tBstNode **tree, char *key, tBstNodeContent content){
-	if (!tree || !key) exit(99);
+	if (!tree || !key) exit(INTERNAL_COMP_ERROR);
 	BstInsert(tree, key, content);
 	Realign(tree);
 }
 
 void BstDelAndReal(tBstNode **tree, char *key){
-	if (!tree || !key) exit(99);
+	if (!tree || !key) exit(INTERNAL_COMP_ERROR);
 	BstDelete(tree, key);
 	Realign(tree);
 }
 
 void BstDispose(tBstNode **tree){
-	if (!tree) exit(99);
+	if (!tree) exit(INTERNAL_COMP_ERROR);
 	if ((*tree)==NULL) return;
 	if ((*tree)->left) BstDispose(&(*tree)->left);
 	if ((*tree)->right) BstDispose(&(*tree)->right);
