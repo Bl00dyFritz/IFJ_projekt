@@ -37,33 +37,15 @@ void GenPushIntFloat(tAstNode *node) {
         switch (node->structure.val.token.type) {
             case Token_Integer:
                 printf("PUSHS int@%lld\n", (long long int)node->structure.val.token.value.integer);
-                if (node->structure.bin_op.token.type == Token_Divide) {
-                    printf("INT2FLOATS\n");
-                }
                 break;
             case Token_Float:
                 printf("PUSHS float@%a\n", node->structure.val.token.value.decimal);
-                if (node->structure.bin_op.token.type == Token_Divide) {
-                    printf("FLOAT2INTS\n");
-                }
                 break;
             default:
                 break;
         }
     } else if (node->type == VAR) {
         printf("PUSHS LF@%s\n", node->structure.var.token.value.string);
-        if (node->structure.bin_op.token.type == Token_Divide) {
-            switch (node->structure.var.type) {
-                case I32: case NI32:
-                    printf("INT2FLOATS\n");
-                    break;
-	            case F64: case NF64:
-                    printf("FLOAT2INTS\n");
-                    break;
-                default:
-                    break;
-            }
-        }
     }
 }
 
@@ -73,24 +55,18 @@ bool CheckNill(tAstNode *node) {
     } else return false;
 }
 
-void CheckSameType(tAstNode *node) {
-    if (node->structure.bin_op.op1->type == VAR && node->structure.bin_op.op2->type == VAL) {
-        if (node->structure.bin_op.op1->structure.var.type == F64 || node->structure.bin_op.op1->structure.var.type == NF64) {
-                printf("POP GF@tmp3\n");
-                printf("FLOAT2INTS\n");
-                printf("PUSHS GF@tmp3\n");
-        } else if (node->structure.bin_op.op1->structure.var.type == I32 || node->structure.bin_op.op1->structure.var.type == NI32) {
-                printf("POP GF@tmp3\n");
-                printf("INT2FLOATS\n");
-                printf("PUSHS GF@tmp3\n");
-        }
-    } else if (node->structure.bin_op.op2->type == VAR && node->structure.bin_op.op1->type == VAL) {
-        if (node->structure.bin_op.op2->structure.var.type == F64 || node->structure.bin_op.op2->structure.var.type == NF64) {
-                printf("FLOAT2INTS\n");
-        } else if (node->structure.bin_op.op2->structure.var.type == I32 || node->structure.bin_op.op2->structure.var.type == NI32) {
-                printf("FLOAT2INTS\n");
-        }
-    }
+void PrintDiv(tBinOp BO) {
+    if (BO.op1->type == BIN_OP) {
+        PrintDiv(BO.op1->structure.bin_op);
+    } else if (BO.op2->type == BIN_OP) {
+        PrintDiv(BO.op2->structure.bin_op);
+    } else if ((BO.op1->type == VAL && BO.op1->structure.val.token.type == Token_Integer) || 
+               (BO.op1->type == VAR && (BO.op1->structure.var.type == I32 || BO.op1->structure.var.type == NI32))) {
+                    printf("IDIVS\n");
+            } else if ((BO.op2->type == VAL && BO.op2->structure.val.token.type == Token_Integer) || 
+                       (BO.op2->type == VAR && (BO.op2->structure.var.type == I32 || BO.op2->structure.var.type == NI32))) {
+                            printf("IDIVS\n");
+                    } else printf("DIVS\n");
 }
 
 void GenStackOp(tAstNode *node) {
@@ -102,7 +78,6 @@ void GenStackOp(tAstNode *node) {
     }
     GenPushIntFloat(node->structure.bin_op.op2);
     GenPushIntFloat(node->structure.bin_op.op1);
-    CheckSameType(node);
     switch (node->structure.bin_op.token.type) {
         case Token_Lesser:
         case Token_Lesser_Equal:
@@ -143,14 +118,21 @@ void GenStackOp(tAstNode *node) {
             }
             */
             
-            if (node->structure.bin_op.op2->structure.val.token.value.integer == 0) {
-                exit(57);
+            //Checks if it's not going to divide with 0
+            if (node->structure.bin_op.op1->type == VAL) {
+                if ((node->structure.bin_op.op1->structure.val.token.type == Token_Integer && node->structure.bin_op.op1->structure.val.token.value.integer == 0) ||
+                    (node->structure.bin_op.op1->structure.val.token.type == Token_Float && node->structure.bin_op.op1->structure.val.token.value.decimal == 0)) {
+                        exit(57);
+                }
+            } else if (node->structure.bin_op.op1->type == VAR) {
+                if (((node->structure.bin_op.op1->structure.var.type == I32 || node->structure.bin_op.op1->structure.var.type == NI32) 
+                      && node->structure.bin_op.op1->structure.var.val.i == 0) ||
+                    ((node->structure.bin_op.op1->structure.var.type == F64 || node->structure.bin_op.op1->structure.var.type == F64)
+                      && node->structure.bin_op.op1->structure.var.val.f == 0)) {
+                        exit(57);
+                }
             }
-            if (node->structure.bin_op.op1->structure.val.token.value.integer < 0 || node->structure.bin_op.op2->structure.val.token.value.integer < 0) {
-                printf("IDIVS\n");
-            } else {
-                printf("DIVS\n");
-            }
+            PrintDiv(node->structure.bin_op);
             break;
         case Token_Equal:
             printf("EQS\n");

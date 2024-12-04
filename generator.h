@@ -75,6 +75,13 @@ void GenPushIntFloat(tAstNode *node);
 bool CheckNill(tAstNode *node);
 
 /**
+ * @brief Check if its goint to use DIV or IDIV.
+ *
+ * @param BO strucutre for Bin OP with saved types and values for operands.
+ */
+void PrintDiv(tBinOp BO);
+
+/**
  * @brief Generates code for stack operations.
  *
  * @param node The AST node representing the stack operation.
