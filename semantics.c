@@ -29,7 +29,7 @@ void SymtableListAdd (tSymtableList *list, tBstNode *symtree){
 void SymtableListRemove (tSymtableList *list){
 	tSymtableListElem *tmp = list->first;
 	list->first = list->first->next;
-	BstDispose(&tmp->root_ptr);
+	//BstDispose(&tmp->root_ptr);
 	free(tmp);
 }
 
@@ -122,13 +122,13 @@ void AssignType(tVarVals **vals,tType in_type){
 			if (in_type!=F64) exit(SEMANTIC_COMP_ERROR);
 			break;
 		case Token_Nu8:
-			if (in_type!=NU8 && in_type!=U8) exit(SEMANTIC_COMP_ERROR);
+			if (in_type!=NU8 && in_type!=U8 && in_type!=NUL) exit(SEMANTIC_COMP_ERROR);
 			break;
 		case Token_Ni32:
-			if (in_type!=NI32 && in_type!=I32) exit(SEMANTIC_COMP_ERROR);
+			if (in_type!=NI32 && in_type!=I32 && in_type!=NUL) exit(SEMANTIC_COMP_ERROR);
 			break;
 		case Token_Nf64:
-			if (in_type!=NF64 && in_type!=F64) exit(SEMANTIC_COMP_ERROR);
+			if (in_type!=NF64 && in_type!=F64 && in_type!=NUL) exit(SEMANTIC_COMP_ERROR);
 			break;
 		case Token_Empty:
 			switch (in_type){
@@ -150,6 +150,8 @@ void AssignType(tVarVals **vals,tType in_type){
 				case NF64:
 					(*vals)->type = Token_Nf64;
 					break;
+				case NUL:
+					exit(SEMANTIC_INFER_ERROR);
 				default:exit(SEMANTIC_COMP_ERROR);
 			}
 			break;
@@ -226,6 +228,10 @@ void ExamineVal (tAstNode *node, tComData *out_data){
 			double *d_ptr = (double *)(out_data->val);
 			*d_ptr = node->structure.val.token.value.decimal;
 			break;
+			break;
+		case Token_null:
+			out_data->type = NUL;
+			out_data->val = NULL;
 			break;
 		case Token_string:
 			exit(SEMANTIC_OTHER_ERROR);

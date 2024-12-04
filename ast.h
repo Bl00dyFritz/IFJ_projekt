@@ -32,6 +32,7 @@ typedef union value{
  */
 typedef enum type{
 	VOID,
+	NUL,
 	I32,
 	F64,
 	U8,
