@@ -1199,11 +1199,11 @@ void ExamineSemantics (tAstNode *node, tSymtableList *symlist, tComData *in_data
 			ExamineFunctionCall(node, symlist, &out_data->type);
 			break;
 		case FUNC_DEF:
-			SymtableListAdd(symlist, node->structure.func_def.internal_symtable);
+			SymtableListAdd(symlist, node->structure.func_def.loc_symtree);
 			ExamineSemantics(node->structure.func_def.code, symlist, in_data, out_data, &node->structure.func_def.ret_type_token.type);
 			BstCheckUse(symlist->first->root_ptr);
 			SymtableListRemove(symlist);
-			BstDispose(&node->structure.func_def.loc_symtree);
+			//BstDispose(&node->structure.func_def.loc_symtree);
 			node->structure.func_def.loc_symtree = NULL;
 			break;
 		case RET:
