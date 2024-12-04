@@ -602,9 +602,19 @@ void GenIfStart(int LocalIfCounter) {
     printf("JUMPIFNEQ $else_label%d$ LF@$IfTmp%d bool@true\n", LocalIfCounter, LocalIfCounter);
 }
 
+void GenIfStart2(int LocalIfCounter) {
+    printf("POPS LF@$IfTmp%d\n", LocalIfCounter);
+    printf("JUMPIFNEQ $endif_label%d$ LF@$IfTmp%d bool@true\n", LocalIfCounter, LocalIfCounter);
+}
+
 void GenIfStartNN(int LocalIfCounter) {
     printf("POPS LF@$IfTmp%d\n", LocalIfCounter);
     printf("JUMPIFEQ $else_label%d$ LF@$IfTmp%d nil@nil\n", LocalIfCounter, LocalIfCounter);
+}
+
+void GenIfStartNN2(int LocalIfCounter) {
+    printf("POPS LF@$IfTmp%d\n", LocalIfCounter);
+    printf("JUMPIFEQ $endif_label%d$ LF@$IfTmp%d nil@nil\n", LocalIfCounter, LocalIfCounter);
 }
 
 void GenIfEnd(int LocalIfCounter) {
@@ -721,12 +731,20 @@ void GenerateOutput(tAstNode *node) {
             if (node->structure.if_block.nn_id != NULL) {
                 printf("MOVE LF@%s LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string, node->structure.if_block.expr->structure.var.token.value.string);
                 printf("PUSHS LF@%s\n", node->structure.if_block.nn_id->structure.var.token.value.string);
-                GenIfStartNN(LocalIfCounter);
+                if (node->structure.if_block.else_code) {
+                    GenIfStartNN(LocalIfCounter);
+                } else {
+                    GenIfStartNN2(LocalIfCounter);
+                }
                 GenerateOutput(node->structure.if_block.if_code);
                 GenIfEndNN(LocalIfCounter);
             } else {
                 GenerateOutput(node->structure.if_block.expr);
-                GenIfStart(LocalIfCounter);
+                if (node->structure.if_block.else_code) {
+                    GenIfStart(LocalIfCounter);
+                } else {
+                    GenIfStart2(LocalIfCounter);
+                }
                 GenerateOutput(node->structure.if_block.if_code);
                 GenIfEnd(LocalIfCounter);
             }
@@ -764,10 +782,31 @@ void GenerateOutput(tAstNode *node) {
             }
             break;
         case RET:
-            if (node->structure.ret.ret_expr->type == VAR) {
-                printf("PUSHS LF@%s\n", node->structure.ret.ret_expr->structure.var.token.value.string);
+            if (node->structure.ret.ret_expr != NULL) {
+                if (node->structure.ret.ret_expr->type == VAR) {
+                    if (node->structure.ret.ret_expr->structure.var.type == VOID || node->structure.ret.ret_expr->structure.var.type == NUL) {
+                        printf("RETURN\n");
+                    }
+                    printf("PUSHS LF@%s\n", node->structure.ret.ret_expr->structure.var.token.value.string);
+                    printf("RETURN\n");
+                } else {
+                    GenerateOutput(node->structure.ret.ret_expr);
+                }
             } else {
-                GenerateOutput(node->structure.ret.ret_expr);
+                switch (node->structure.ret.type) {
+                    case VOID:
+                        printf("RETURN\n");
+                        break;
+                    case I32: case NI32:
+                        printf("PUSHS int@%lld\n", (long long int)node->structure.ret.val.i);
+                        printf("RETURN\n");
+                        break;
+	                case F64: case NF64:
+                        printf("PUSHS int@%a\n", node->structure.ret.val.f);
+                        printf("RETURN\n");
+                    default:
+                        break;
+                }
             }
             break;
         default:
