@@ -757,6 +757,7 @@ int operator_(tToken *in_t){
     return 0;
 }
 
+
 int program(void){ //the whole program
    	tAstNode *synt_tree = NULL;
 	tAstNode **current_p = &synt_tree;
@@ -769,6 +770,7 @@ int program(void){ //the whole program
 	tSymtableList symlist;
 	InitSymtableList(&symlist);
 	tComData data;
+	SymtableListAdd(&symlist, func_tree);
 	if(!CheckMain(func_tree)) exit(SEMANTIC_UNDEF_ERROR);
 	ExamineSemantics(synt_tree, &symlist, NULL, &data, NULL);
 	GenInitial();

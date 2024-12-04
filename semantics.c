@@ -184,21 +184,27 @@ no_data:
 	else out_data->is_var = true;
 	switch ((*v)->type){
 		case Token_u8:
+			node->structure.var.type = U8;
 			out_data->type = U8;
 			break;
 		case Token_i32:
+			node->structure.var.type = I32;
 			out_data->type = I32;
 			break;
 		case Token_f64:
+			node->structure.var.type = F64;
 			out_data->type = F64;
 			break;
 		case Token_Nu8:
+			node->structure.var.type = NU8;
 			out_data->type = NU8;
 			break;
 		case Token_Ni32:
+			node->structure.var.type = NI32;
 			out_data->type = NI32;
 			break;
 		case Token_Nf64:
+			node->structure.var.type = NF64;
 			out_data->type = NF64;
 			break;
 		default:exit(INTERNAL_COMP_ERROR);
@@ -584,6 +590,13 @@ tType FuncType(tTokenType tok_type){
 	}
 }
 
+void PrintFoos(tBstNode *tree){                                    
+    if (!tree) return;                                             
+    PrintFoos(tree->left);                                         
+    PrintFoos(tree->right);                                        
+    printf("%s\n", tree->key);                                     
+} 
+
 void ExamineFunctionCall (tAstNode *node, tSymtableList *symlist, tType *out_type){
 	tBstNodeContent *content = NULL;
 	tSymtableListElem *tree = symlist->first;
@@ -594,11 +607,11 @@ void ExamineFunctionCall (tAstNode *node, tSymtableList *symlist, tType *out_typ
 		ExamineBuiltInFunc(node, out_type, symlist);
 		return;
 	}
-
 	while(tree){
 		if (BstSearch(tree->root_ptr, node->structure.func_call.name_token.value.string, &content)) break;
 		tree = tree->next;
 	}
+	tTokenType t_out = ((tFunctionVals*)content->value)->ret_type;
 	if(!tree) exit(SEMANTIC_UNDEF_ERROR);
 	if(node->structure.func_call.arg_cnt !=((tFunctionVals *)content->value)->paramCnt) 
 		exit(SEMANTIC_WRONG_NUM_OF_PAR_ERROR);
@@ -638,7 +651,7 @@ void ExamineFunctionCall (tAstNode *node, tSymtableList *symlist, tType *out_typ
 		arg_data = arg_data->next;
 		symtable_data = symtable_data->next;
 	}
-	*out_type = FuncType(symtable_data->type_token.type);
+	*out_type = FuncType(t_out);
 }
 
 void ExamineAssign (tAstNode *node, tSymtableList *symlist){
