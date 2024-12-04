@@ -790,6 +790,19 @@ void GenerateOutput(tAstNode *node) {
                     }
                     printf("PUSHS LF@%s\n", node->structure.ret.ret_expr->structure.var.token.value.string);
                     printf("RETURN\n");
+                } else if (node->structure.ret.ret_expr->type == VAL) {
+                    switch (node->structure.ret.ret_expr->structure.val.token.type) {
+                        case Token_Integer:
+                            printf("PUSHS int@%lld\n", (long long int)node->structure.ret.ret_expr->structure.val.token.value.integer);
+                            printf("RETURN\n");
+                            break;
+                        case Token_Float:
+                            printf("PUSHS int@%a\n", node->structure.ret.ret_expr->structure.val.token.value.decimal);
+                            printf("RETURN\n");
+                            break;
+                        default:
+                            break;
+                    }
                 } else {
                     GenerateOutput(node->structure.ret.ret_expr);
                 }

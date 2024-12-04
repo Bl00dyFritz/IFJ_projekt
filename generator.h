@@ -110,6 +110,12 @@ void GenDefineVarsForWhile(tAstNode *node, int IfCouter, int WhileCounter);
 void GenIfStart(int LocalIfCounter);
 
 /**
+ * @brief Generates code for the start of an if statement without else code.
+ * @param LocalIfCounter Counter to distinguish from different IF's
+ */
+void GenIfStart2(int LocalIfCounter);
+
+/**
  * @brief Generates code for the start of an if statement with a non-nil check.
  * @param LocalIfCounter Counter to distinguish from different IF's
  */
