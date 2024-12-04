@@ -11,21 +11,21 @@
 #include "error.h"
 
 void InitTStack (tTokenStack *stack){
-	if (!stack) exit(99);
+	if (!stack) exit(INTERNAL_COMP_ERROR);
 	stack->top = NULL;
 }
 
 void PushTStack (tTokenStack *stack, tToken token){
-	if (!stack) exit(99);
+	if (!stack) exit(INTERNAL_COMP_ERROR);
 	tTokenStackElem *new = (tTokenStackElem*) malloc(sizeof(tTokenStackElem));
-	if (!new) exit(99);
+	if (!new) exit(INTERNAL_COMP_ERROR);
 	new->token = token;
 	new->next = stack->top;
 	stack->top = new;
 }
 
 void PopTStack (tTokenStack *stack){
-	if(!stack) exit(99);
+	if(!stack) exit(INTERNAL_COMP_ERROR);
 	tTokenStackElem *elemP;
 	if(stack->top){
 		elemP = stack->top;
