@@ -69,6 +69,34 @@ void PrintDiv(tBinOp BO) {
                     } else printf("DIVS\n");
 }
 
+void CheckSameType(tAstNode *node) {
+    if (node->structure.bin_op.op1->type == VAR && node->structure.bin_op.op2->type == VAL) {
+        if (node->structure.bin_op.op1->structure.var.type == F64 || node->structure.bin_op.op1->structure.var.type == NF64) {
+                printf("POP GF@tmp3\n");
+                printf("CREATEFRAME\n");
+                printf("CALL $$ifj_f2i\n");
+                printf("PUSHS GF@func_result\n");
+        } else if (node->structure.bin_op.op1->structure.var.type == I32 || node->structure.bin_op.op1->structure.var.type == NI32) {
+                printf("POP GF@tmp3\n");
+                printf("CREATEFRAME\n");
+                printf("CALL $$ifj_i2f\n");
+                printf("PUSHS GF@func_result\n");
+        }
+    } else if (node->structure.bin_op.op2->type == VAR && node->structure.bin_op.op1->type == VAL) {
+        if ((node->structure.bin_op.op2->structure.var.type == F64 || node->structure.bin_op.op2->structure.var.type == NF64) &&
+             node->structure.bin_op.op1->structure.val.token.type == Token_Integer) {
+                printf("CREATEFRAME\n");
+                printf("CALL $$ifj_i2f\n");
+                printf("PUSHS GF@func_result\n");
+        } else if ((node->structure.bin_op.op2->structure.var.type == I32 || node->structure.bin_op.op2->structure.var.type == NI32) &&
+                    node->structure.bin_op.op1->structure.val.token.type == Token_Float) {
+                printf("CREATEFRAME\n");
+                printf("CALL $$ifj_f2i\n");
+                printf("PUSHS GF@func_result\n");
+        }
+    }
+}
+
 void GenStackOp(tAstNode *node) {
     if (node->structure.bin_op.op2->type == BIN_OP) {
         GenStackOp(node->structure.bin_op.op2);
@@ -78,6 +106,7 @@ void GenStackOp(tAstNode *node) {
     }
     GenPushIntFloat(node->structure.bin_op.op2);
     GenPushIntFloat(node->structure.bin_op.op1);
+    CheckSameType(node);
     switch (node->structure.bin_op.token.type) {
         case Token_Lesser:
         case Token_Lesser_Equal:
@@ -101,23 +130,6 @@ void GenStackOp(tAstNode *node) {
             printf("MULS\n");
             break;
         case Token_Divide:
-            /*  This will be probably used, when the semantics will work
-            switch (node->structure.bin_op.op1->type){
-                case VAL:
-                    if (node->structure.bin_op.op1->structure.val.token.value.integer == 0) {
-                        exit(57);
-                    }
-                    break;
-                case VAR:
-                    if (node->structure.bin_op.op1->structure.var.val.i == 0) {
-                        exit(57);
-                    }
-                    break;
-                default:
-                    break;
-            }
-            */
-            
             //Checks if it's not going to divide with 0
             if (node->structure.bin_op.op1->type == VAL) {
                 if ((node->structure.bin_op.op1->structure.val.token.type == Token_Integer && node->structure.bin_op.op1->structure.val.token.value.integer == 0) ||

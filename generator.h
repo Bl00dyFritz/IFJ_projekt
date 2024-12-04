@@ -82,9 +82,16 @@ bool CheckNill(tAstNode *node);
 void PrintDiv(tBinOp BO);
 
 /**
+ * @brief Checks if both operands are of the same type, if not convert them
+ *
+ * @param node The AST node representing the Binary operations.
+ */
+void CheckSameType(tAstNode *node);
+
+/**
  * @brief Generates code for stack operations.
  *
- * @param node The AST node representing the stack operation.
+ * @param node The AST node representing the Binary operations.
  */
 void GenStackOp(tAstNode *node);
 
