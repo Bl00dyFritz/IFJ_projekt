@@ -145,7 +145,7 @@ int GetToken(tToken *token) {
                 if (c == 'f') {
                     String_Add(&str, c);
                     token->state = State_IFJ_2;
-                } else if (isalnum(c)) {
+                } else {
                     ungetc(c, file);
                     token->state = State_FuncID;
                 }
