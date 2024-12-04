@@ -711,7 +711,7 @@ void ExamineBinOp(tAstNode *node, tSymtableList *symlist, tComData *out_data){
 	tComData op1_data;
 	tComData op2_data;
 	ExamineSemantics(node->structure.bin_op.op1, symlist, NULL, &op1_data, NULL);
-	ExamineSemantics(node->structure.bin_op.op1, symlist, NULL, &op2_data, NULL);
+	ExamineSemantics(node->structure.bin_op.op2, symlist, NULL, &op2_data, NULL);
 	if(op1_data.type == U8 || op1_data.type == NU8 || op2_data.type == U8 || op2_data.type == NU8)
 		exit(SEMANTIC_COMP_ERROR);
 	switch (node->structure.bin_op.token.type){
