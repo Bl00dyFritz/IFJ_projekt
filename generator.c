@@ -775,6 +775,7 @@ void GenerateOutput(tAstNode *node) {
             if (!strcmp(node->structure.func_def.token.value.string, "main")) {
                 GenMainHead();
                 GenerateOutput(node->structure.func_def.code);
+                printf("POPFRAME\n");
                 printf("EXIT int@0\n");
             } else {
                 GenDefFunc(node);
@@ -786,18 +787,22 @@ void GenerateOutput(tAstNode *node) {
             if (node->structure.ret.ret_expr != NULL) {
                 if (node->structure.ret.ret_expr->type == VAR) {
                     if (node->structure.ret.ret_expr->structure.var.type == VOID || node->structure.ret.ret_expr->structure.var.type == NUL) {
+                        printf("POPFRAME\n");
                         printf("RETURN\n");
                     }
                     printf("PUSHS LF@%s\n", node->structure.ret.ret_expr->structure.var.token.value.string);
+                    printf("POPFRAME\n");
                     printf("RETURN\n");
                 } else if (node->structure.ret.ret_expr->type == VAL) {
                     switch (node->structure.ret.ret_expr->structure.val.token.type) {
                         case Token_Integer:
                             printf("PUSHS int@%lld\n", (long long int)node->structure.ret.ret_expr->structure.val.token.value.integer);
+                            printf("POPFRAME\n");
                             printf("RETURN\n");
                             break;
                         case Token_Float:
-                            printf("PUSHS int@%a\n", node->structure.ret.ret_expr->structure.val.token.value.decimal);
+                            printf("PUSHS float@%a\n", node->structure.ret.ret_expr->structure.val.token.value.decimal);
+                            printf("POPFRAME\n");
                             printf("RETURN\n");
                             break;
                         default:
@@ -809,14 +814,17 @@ void GenerateOutput(tAstNode *node) {
             } else {
                 switch (node->structure.ret.type) {
                     case VOID:
+                        printf("POPFRAME\n");
                         printf("RETURN\n");
                         break;
                     case I32: case NI32:
                         printf("PUSHS int@%lld\n", (long long int)node->structure.ret.val.i);
+                        printf("POPFRAME\n");
                         printf("RETURN\n");
                         break;
 	                case F64: case NF64:
                         printf("PUSHS int@%a\n", node->structure.ret.val.f);
+                        printf("POPFRAME\n");
                         printf("RETURN\n");
                     default:
                         break;
