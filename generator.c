@@ -789,10 +789,9 @@ void GenerateOutput(tAstNode *node) {
                     if (node->structure.ret.ret_expr->structure.var.type == VOID || node->structure.ret.ret_expr->structure.var.type == NUL) {
                         printf("POPFRAME\n");
                         printf("RETURN\n");
+                    } else {
+                        printf("PUSHS LF@%s\n", node->structure.ret.ret_expr->structure.var.token.value.string);
                     }
-                    printf("PUSHS LF@%s\n", node->structure.ret.ret_expr->structure.var.token.value.string);
-                    printf("POPFRAME\n");
-                    printf("RETURN\n");
                 } else if (node->structure.ret.ret_expr->type == VAL) {
                     switch (node->structure.ret.ret_expr->structure.val.token.type) {
                         case Token_Integer:
